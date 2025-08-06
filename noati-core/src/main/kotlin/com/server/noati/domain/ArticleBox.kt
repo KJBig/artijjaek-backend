@@ -19,9 +19,5 @@ class ArticleBox(
     var article: Article,
 
     ) : BaseEntity() {
-    companion object {
-        fun of(member: Member, article: Article): ArticleBox {
-            return ArticleBox(member = member, article = article)
-        }
-    }
+
 }

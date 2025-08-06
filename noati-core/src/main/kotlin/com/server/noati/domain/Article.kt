@@ -32,23 +32,5 @@ class Article(
     var articleUrl: String,
 
     ) : BaseEntity() {
-    companion object {
-        fun of(
-            company: Company,
-            title: String,
-            summery: String,
-            postedDate: LocalDate,
-            articleUrl: String,
-            category: Category
-        ): Article {
-            return Article(
-                company = company,
-                title = title,
-                summery = summery,
-                postedDate = postedDate,
-                articleUrl = articleUrl,
-                category = category
-            )
-        }
-    }
+
 }

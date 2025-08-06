@@ -20,9 +20,5 @@ class Company(
     var blogUrl: String,
 
     ) : BaseEntity() {
-    companion object {
-        fun of(name: String, logo: String, blogUrl: String): Company {
-            return Company(name = name, logo = logo, blogUrl = blogUrl)
-        }
-    }
+
 }

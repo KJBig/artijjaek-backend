@@ -16,5 +16,4 @@ class Category(
 
     ) : BaseEntity() {
 
-
 }

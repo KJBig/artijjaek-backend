@@ -16,7 +16,5 @@ class Member(
     var email: String,
 
     ) : BaseEntity() {
-    companion object {
-        fun from(email: String): Member = Member(email = email)
-    }
+
 }

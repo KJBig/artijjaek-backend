@@ -19,9 +19,5 @@ class Subscribe(
     var company: Company,
 
     ) : BaseEntity() {
-    companion object {
-        fun of(member: Member, company: Company): Subscribe {
-            return Subscribe(member = member, company = company)
-        }
-    }
+
 }
