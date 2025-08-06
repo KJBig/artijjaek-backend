@@ -1,4 +1,5 @@
 plugins {
+    kotlin("plugin.jpa") version "1.9.25"
 }
 
 tasks.findByName("bootJar")?.enabled = false

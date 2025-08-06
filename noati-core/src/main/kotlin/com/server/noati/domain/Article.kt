@@ -1,7 +1,7 @@
 package com.server.noati.domain
 
 import jakarta.persistence.*
-import java.time.LocalDateTime
+import java.time.LocalDate
 
 @Entity
 class Article(
@@ -15,19 +15,40 @@ class Article(
     @JoinColumn(name = "company_id", nullable = false)
     var company: Company,
 
+    @ManyToOne
+    @JoinColumn(name = "category_id", nullable = false)
+    var category: Category,
+
     @Column(nullable = false)
     var title: String,
 
     @Column(nullable = false)
-    var postedDate: LocalDateTime,
+    var summery: String,
+
+    @Column(nullable = false)
+    var postedDate: LocalDate,
 
     @Column(columnDefinition = "TEXT", nullable = false)
     var articleUrl: String,
 
     ) : BaseEntity() {
     companion object {
-        fun of(company: Company, title: String, postedDate: LocalDateTime, articleUrl: String): Article {
-            return Article(company = company, title = title, postedDate = postedDate, articleUrl = articleUrl)
+        fun of(
+            company: Company,
+            title: String,
+            summery: String,
+            postedDate: LocalDate,
+            articleUrl: String,
+            category: Category
+        ): Article {
+            return Article(
+                company = company,
+                title = title,
+                summery = summery,
+                postedDate = postedDate,
+                articleUrl = articleUrl,
+                category = category
+            )
         }
     }
 }
