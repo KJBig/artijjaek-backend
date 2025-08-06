@@ -1,5 +1,6 @@
 package com.server.noati.domain
 
+import com.server.noati.enums.CategoryType
 import jakarta.persistence.*
 import java.time.LocalDate
 
@@ -15,9 +16,9 @@ class Article(
     @JoinColumn(name = "company_id", nullable = false)
     var company: Company,
 
-    @ManyToOne
-    @JoinColumn(name = "category_id", nullable = false)
-    var category: Category,
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    var category: CategoryType,
 
     @Column(nullable = false)
     var title: String,
