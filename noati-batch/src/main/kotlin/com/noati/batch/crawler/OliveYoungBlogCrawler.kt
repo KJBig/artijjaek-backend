@@ -1,8 +1,7 @@
-package com.server.noati.crawler
+package com.noati.batch.crawler
 
-import com.server.noati.ai.CategoryAnalyzer
-import com.server.noati.domain.Article
-import com.server.noati.domain.Company
+import com.noati.core.domain.Article
+import com.noati.core.domain.Company
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -12,9 +11,7 @@ import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 
 @Component
-class OliveYoungBlogCrawler(
-    private val categoryAnalyzer: CategoryAnalyzer,
-) : BlogCrawler {
+class OliveYoungBlogCrawler : BlogCrawler {
 
     private val log = org.slf4j.LoggerFactory.getLogger(OliveYoungBlogCrawler::class.java)
 
@@ -124,7 +121,7 @@ class OliveYoungBlogCrawler(
                 summery = summary,
                 postedDate = date,
                 articleUrl = articleUrl,
-                category = categoryAnalyzer.analyze(title, articleUrl)
+                category = null
             )
 
         } catch (e: Exception) {

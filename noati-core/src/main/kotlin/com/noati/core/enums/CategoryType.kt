@@ -1,4 +1,4 @@
-package com.server.noati.enums
+package com.noati.core.enums
 
 enum class CategoryType {
     BACKEND

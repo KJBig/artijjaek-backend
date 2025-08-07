@@ -1,4 +1,4 @@
-package com.server.noati.domain
+package com.noati.core.domain
 
 import jakarta.persistence.*
 import jakarta.validation.constraints.Email

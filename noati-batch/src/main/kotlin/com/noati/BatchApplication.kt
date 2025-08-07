@@ -1,11 +1,13 @@
-package com.server.noati
+package com.noati
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
+import org.springframework.scheduling.annotation.EnableScheduling
 
 @SpringBootApplication
-class NoatiApiApplication
+@EnableScheduling
+class BatchApplication
 
 fun main(args: Array<String>) {
-    runApplication<NoatiApiApplication>(*args)
+    runApplication<BatchApplication>(*args)
 }

@@ -1,13 +1,13 @@
-package com.server.noati.domain
+package com.noati.core.domain
 
 import jakarta.persistence.*
 
 @Entity
-class Subscribe(
+class ArticleBox(
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "subscribe_id")
+    @Column(name = "article_box_id")
     var id: Long? = null,
 
     @ManyToOne
@@ -15,8 +15,8 @@ class Subscribe(
     var member: Member,
 
     @ManyToOne
-    @JoinColumn(name = "company_id", nullable = false)
-    var company: Company,
+    @JoinColumn(name = "article_id", nullable = false)
+    var article: Article,
 
     ) : BaseEntity() {
 

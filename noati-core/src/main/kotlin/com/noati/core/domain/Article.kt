@@ -1,6 +1,6 @@
-package com.server.noati.domain
+package com.noati.core.domain
 
-import com.server.noati.enums.CategoryType
+import com.noati.core.enums.CategoryType
 import jakarta.persistence.*
 import java.time.LocalDate
 
@@ -18,7 +18,7 @@ class Article(
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    var category: CategoryType,
+    var category: CategoryType?,
 
     @Column(nullable = false)
     var title: String,
@@ -33,5 +33,9 @@ class Article(
     var articleUrl: String,
 
     ) : BaseEntity() {
+
+    fun changeCategory(category: CategoryType?) {
+        this.category = category
+    }
 
 }
