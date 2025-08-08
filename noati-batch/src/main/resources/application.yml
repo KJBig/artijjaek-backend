@@ -1,9 +1,8 @@
 spring:
   config:
     import:
-      - db-data.yml
+      - db-main.yml
+      - db-batch.yml
   batch:
     job:
       enabled: false
-    jdbc:
-      initialize-schema: always
