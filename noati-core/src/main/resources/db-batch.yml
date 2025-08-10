@@ -1,0 +1,8 @@
+spring:
+  config:
+    import: optional:file:.env[.properties]
+  batch-datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${BATCH_DB_URL}:${BATCH_DB_PORT}/${BATCH_DB_SCHEMA}
+    username: ${BATCH_DB_USERNAME}
+    password: ${BATCH_DB_PASSWORD}

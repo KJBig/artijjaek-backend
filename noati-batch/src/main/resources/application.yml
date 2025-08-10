@@ -1,0 +1,8 @@
+spring:
+  config:
+    import:
+      - db-main.yml
+      - db-batch.yml
+  batch:
+    job:
+      enabled: false

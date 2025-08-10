@@ -1,4 +1,4 @@
-package com.server.noati.domain
+package com.noati.core.domain
 
 import jakarta.persistence.*
 import jakarta.validation.constraints.Email
@@ -16,7 +16,5 @@ class Member(
     var email: String,
 
     ) : BaseEntity() {
-    companion object {
-        fun from(email: String): Member = Member(email = email)
-    }
+
 }

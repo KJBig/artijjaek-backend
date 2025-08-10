@@ -1,11 +1,11 @@
-package com.server.noati
+package com.noati.api
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
 @SpringBootApplication
-class NoatiApplication
+class ApiApplication
 
 fun main(args: Array<String>) {
-	runApplication<NoatiApplication>(*args)
+    runApplication<ApiApplication>(*args)
 }

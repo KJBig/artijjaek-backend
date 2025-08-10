@@ -1,7 +1,8 @@
-package com.server.noati.domain
+package com.noati.core.domain
 
+import com.noati.core.enums.CategoryType
 import jakarta.persistence.*
-import java.time.LocalDateTime
+import java.time.LocalDate
 
 @Entity
 class Article(
@@ -15,19 +16,26 @@ class Article(
     @JoinColumn(name = "company_id", nullable = false)
     var company: Company,
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    var category: CategoryType?,
+
     @Column(nullable = false)
     var title: String,
 
     @Column(nullable = false)
-    var postedDate: LocalDateTime,
+    var summery: String,
+
+    @Column(nullable = false)
+    var postedDate: LocalDate,
 
     @Column(columnDefinition = "TEXT", nullable = false)
     var articleUrl: String,
 
     ) : BaseEntity() {
-    companion object {
-        fun of(company: Company, title: String, postedDate: LocalDateTime, articleUrl: String): Article {
-            return Article(company = company, title = title, postedDate = postedDate, articleUrl = articleUrl)
-        }
+
+    fun changeCategory(category: CategoryType?) {
+        this.category = category
     }
+
 }

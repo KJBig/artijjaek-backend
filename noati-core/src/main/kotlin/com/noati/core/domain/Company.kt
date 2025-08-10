@@ -1,4 +1,4 @@
-package com.server.noati.domain
+package com.noati.core.domain
 
 import jakarta.persistence.*
 
@@ -11,7 +11,10 @@ class Company(
     var id: Long? = null,
 
     @Column(nullable = false)
-    var name: String,
+    var nameKr: String,
+
+    @Column(nullable = false)
+    var nameEn: String,
 
     @Column(columnDefinition = "TEXT", nullable = false)
     var logo: String,
@@ -20,9 +23,5 @@ class Company(
     var blogUrl: String,
 
     ) : BaseEntity() {
-    companion object {
-        fun of(name: String, logo: String, blogUrl: String): Company {
-            return Company(name = name, logo = logo, blogUrl = blogUrl)
-        }
-    }
+
 }
