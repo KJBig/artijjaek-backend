@@ -125,7 +125,7 @@ class OliveYoungBlogCrawler : BlogCrawler {
             )
 
         } catch (e: Exception) {
-            println("parseArticle 실패: ${e.message}")
+            log.error("parseArticle 실패: ${e.message}")
             return null
         }
     }

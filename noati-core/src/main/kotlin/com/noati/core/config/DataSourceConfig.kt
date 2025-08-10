@@ -41,7 +41,6 @@ class DataSourceConfig {
     @Bean
     @Primary
     fun dataSource(): DataSource? {
-        println("url ${url}, username ${username}, pwd: ${password}, drive ${driverClassName}")
         return DataSourceBuilder.create()
             .url(url)
             .username(username)
@@ -53,7 +52,6 @@ class DataSourceConfig {
     @Bean
     @BatchDataSource
     fun batchDataSource(): DataSource? {
-        println("batchUrl ${batchUrl}")
         return DataSourceBuilder.create()
             .url(batchUrl)
             .username(batchUsername)
