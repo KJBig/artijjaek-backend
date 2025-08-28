@@ -70,10 +70,11 @@ class CrawlingBatchConfig(
 
             val newArticles = crawledArticles.filter { it.articleUrl !in existingUrls }
 
-            newArticles.forEach {
-                val articleCategory = geminiClient.analyzeArticleCategory(it.title, it.articleUrl)
-                it.changeCategory(articleCategory)
-            }
+            // 카테고리 분류
+//            newArticles.forEach {
+//                val articleCategory = geminiClient.analyzeArticleCategory(it.title, it.articleUrl)
+//                it.changeCategory(articleCategory)
+//            }
 
             newArticles.reversed()
         }
