@@ -16,6 +16,9 @@ dependencies {
     kapt("com.querydsl:querydsl-apt:5.0.0:jakarta")
     kapt("jakarta.annotation:jakarta.annotation-api")
     kapt("jakarta.persistence:jakarta.persistence-api")
+
+    // AI
+    implementation("com.google.genai:google-genai:1.0.0")
 }
 
 allOpen {

@@ -1,7 +1,7 @@
 package com.noati.batch.job
 
-import com.noati.batch.ai.GeminiClient
 import com.noati.batch.crawler.CrawlerFactory
+import com.noati.core.ai.GeminiClient
 import com.noati.core.domain.Article
 import com.noati.core.domain.Company
 import com.noati.core.repository.ArticleRepository
@@ -70,10 +70,11 @@ class CrawlingBatchConfig(
 
             val newArticles = crawledArticles.filter { it.articleUrl !in existingUrls }
 
-            newArticles.forEach {
-                val articleCategory = geminiClient.analyzeArticleCategory(it.title, it.articleUrl)
-                it.changeCategory(articleCategory)
-            }
+            // 카테고리 분류
+//            newArticles.forEach {
+//                val articleCategory = geminiClient.analyzeArticleCategory(it.title, it.articleUrl)
+//                it.changeCategory(articleCategory)
+//            }
 
             newArticles.reversed()
         }
