@@ -1,0 +1,5 @@
+gemini:
+  api:
+    key: ${GEMINI_API_KEY}
+    model: ${GEMINI_MODEL}
+    prompt: ${GEMINI_API_PROMPT}
