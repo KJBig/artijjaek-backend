@@ -1,8 +1,11 @@
 package com.noati.batch.service
 
+import com.noati.core.domain.Article
+import com.noati.core.domain.Member
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mail.javamail.MimeMessageHelper
 import org.springframework.stereotype.Service
+import java.time.LocalDate
 
 
 @Service
@@ -12,16 +15,17 @@ class MailService(
 
     private val log = org.slf4j.LoggerFactory.getLogger(MailService::class.java)
 
-    fun sendMail() {
+    fun sendMail(member: Member, articles: List<Article>) {
         val mimeMessage = javaMailSender.createMimeMessage()
+        val today = LocalDate.now()
 
         try {
             val mimeMessageHelper = MimeMessageHelper(mimeMessage, false, "UTF-8")
 
             // 메일을 받을 수신자 설정
-            mimeMessageHelper.setTo("kjgi73k@gmail.com")
+            mimeMessageHelper.setTo(member.email)
             // 메일의 제목 설정
-            mimeMessageHelper.setSubject("html 적용 테스트 메일 제목")
+            mimeMessageHelper.setSubject("[${today}] 아티클 목록")
 
             // html 문법 적용한 메일의 내용
             val content = """
@@ -114,7 +118,7 @@ class MailService(
 
             log.info("메일 발송 성공!")
         } catch (e: Exception) {
-            log.info("메일 발송 실패!")
+            log.equals("메일 발송 실패!")
             throw RuntimeException(e)
         }
     }
