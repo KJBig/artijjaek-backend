@@ -44,6 +44,8 @@ class ArticleRepositoryImpl(
                         article.createdAt.goe(startOfYesterday)
                             .and(article.createdAt.lt(startOfToday))
                     )
-            ).fetch()
+            )
+            .orderBy(article.id.desc())
+            .fetch()
     }
 }
