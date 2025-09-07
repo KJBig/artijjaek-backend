@@ -25,6 +25,9 @@ class MailService(
             mimeMessageHelper.setTo(member.email)
             mimeMessageHelper.setSubject("[노아티] ${today} 아티클 목록")
 
+            val today = LocalDate.now()
+            val dayOfWeekShort = getDayOfWeekShort(today)
+
             // HTML 본문
             val content = """
                 <!DOCTYPE html>
@@ -201,7 +204,7 @@ class MailService(
                     <div class="container">
                         <div class="header">
                             <h1>오늘의 아티클</h1>
-                            <p>${today} | 총 ${articles.size}개의 아티클</p>
+                            <p>${today} (${dayOfWeekShort}) | 총 ${articles.size}개의 아티클</p>
                         </div>
 
                         <div class="content">
@@ -308,4 +311,17 @@ class MailService(
             .trim()
             .take(200)
     }
+
+    private fun getDayOfWeekShort(date: LocalDate): String {
+        return when (date.dayOfWeek) {
+            java.time.DayOfWeek.MONDAY -> "월"
+            java.time.DayOfWeek.TUESDAY -> "화"
+            java.time.DayOfWeek.WEDNESDAY -> "수"
+            java.time.DayOfWeek.THURSDAY -> "목"
+            java.time.DayOfWeek.FRIDAY -> "금"
+            java.time.DayOfWeek.SATURDAY -> "토"
+            java.time.DayOfWeek.SUNDAY -> "일"
+        }
+    }
+
 }
