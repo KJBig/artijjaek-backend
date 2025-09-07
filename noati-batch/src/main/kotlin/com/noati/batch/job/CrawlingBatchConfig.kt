@@ -68,7 +68,6 @@ class CrawlingBatchConfig(
             val existingUrls = articleDomainService.findByCompanyRecent(company, 10)
                 .map { it.link }
                 .toList()
-
             val newArticles = crawledArticles.filter { it.link !in existingUrls }
 
             // 카테고리 분류
