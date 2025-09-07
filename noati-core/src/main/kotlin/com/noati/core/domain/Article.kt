@@ -2,7 +2,6 @@ package com.noati.core.domain
 
 import com.noati.core.enums.CategoryType
 import jakarta.persistence.*
-import java.time.LocalDate
 
 @Entity
 class Article(
@@ -17,20 +16,20 @@ class Article(
     var company: Company,
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = true)
     var category: CategoryType?,
 
     @Column(nullable = false)
     var title: String,
 
     @Column(nullable = false)
-    var summery: String,
-
-    @Column(nullable = false)
-    var postedDate: LocalDate,
+    var description: String,
 
     @Column(columnDefinition = "TEXT", nullable = false)
-    var articleUrl: String,
+    var image: String,
+
+    @Column(columnDefinition = "TEXT", nullable = false)
+    var link: String,
 
     ) : BaseEntity() {
 

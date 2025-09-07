@@ -1,4 +1,4 @@
-package com.noati.batch.crawler
+package com.noati.batch.crawler.blog
 
 import com.noati.core.domain.Article
 import com.noati.core.domain.Company

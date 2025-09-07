@@ -4,8 +4,9 @@ import com.noati.batch.crawler.CrawlerFactory
 import com.noati.core.ai.GeminiClient
 import com.noati.core.domain.Article
 import com.noati.core.domain.Company
-import com.noati.core.repository.ArticleRepository
+import com.noati.core.service.ArticleDomainService
 import jakarta.persistence.EntityManagerFactory
+import org.slf4j.LoggerFactory
 import org.springframework.batch.core.Job
 import org.springframework.batch.core.Step
 import org.springframework.batch.core.job.builder.JobBuilder
@@ -24,11 +25,12 @@ class CrawlingBatchConfig(
     private val jobRepository: JobRepository,
     private val transactionManager: PlatformTransactionManager,
     private val entityManagerFactory: EntityManagerFactory,
-    private val articleRepository: ArticleRepository,
+    private val articleDomainService: ArticleDomainService,
     private val crawlerFactory: CrawlerFactory,
     private val geminiClient: GeminiClient,
+) {
 
-    ) {
+    private val log = LoggerFactory.getLogger(CrawlingBatchConfig::class.java)
 
     @Bean
     fun crawlingJob(): Job {
@@ -64,27 +66,35 @@ class CrawlingBatchConfig(
             val crawledArticles = crawler.crawl(company)
 
             // Article 중복 제거
-            val existingUrls = articleRepository.findByCompanyRecent(company, 10)
-                .map { it.articleUrl }
+            val existingUrls = articleDomainService.findByCompanyRecent(company, 10)
+                .map { it.link }
                 .toList()
+            val newArticles = crawledArticles.filter { it.link !in existingUrls }
 
-            val newArticles = crawledArticles.filter { it.articleUrl !in existingUrls }
+            printDetectLog(newArticles)
 
             // 카테고리 분류
 //            newArticles.forEach {
 //                val articleCategory = geminiClient.analyzeArticleCategory(it.title, it.articleUrl)
 //                it.changeCategory(articleCategory)
-//            }
+//            } 
 
             newArticles.reversed()
         }
 
     }
 
+    private fun printDetectLog(newArticles: List<Article>) {
+        log.info("새로 발견된 글의 수 : ${newArticles.size}")
+        for (article in newArticles) {
+            log.info("NEW ARTICLE [company: ${article.company.nameKr}, title: ${article.title}, url: ${article.link}]")
+        }
+    }
+
     @Bean
     fun articleWriter(): ItemWriter<List<Article>> {
         return ItemWriter { items ->
-            items.flatten().forEach { articleRepository.save(it) }
+            items.flatten().forEach { articleDomainService.save(it) }
         }
     }
 

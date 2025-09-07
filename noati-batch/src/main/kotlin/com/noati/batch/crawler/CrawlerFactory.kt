@@ -1,5 +1,6 @@
 package com.noati.batch.crawler
 
+import com.noati.batch.crawler.blog.BlogCrawler
 import org.springframework.stereotype.Component
 
 @Component
