@@ -36,9 +36,6 @@ class OliveYoungBlogCrawler(
                 return articles
             }
 
-            log.info("발견된 글 개수: ${articleElements.size}")
-
-
             articleElements.stream()
                 .forEach {
                     val articleUrl = findArticleUrl(it, url)

@@ -6,6 +6,7 @@ import com.noati.core.domain.Article
 import com.noati.core.domain.Company
 import com.noati.core.service.ArticleDomainService
 import jakarta.persistence.EntityManagerFactory
+import org.slf4j.LoggerFactory
 import org.springframework.batch.core.Job
 import org.springframework.batch.core.Step
 import org.springframework.batch.core.job.builder.JobBuilder
@@ -24,12 +25,12 @@ class CrawlingBatchConfig(
     private val jobRepository: JobRepository,
     private val transactionManager: PlatformTransactionManager,
     private val entityManagerFactory: EntityManagerFactory,
-//    private val articleRepository: ArticleRepository,
     private val articleDomainService: ArticleDomainService,
     private val crawlerFactory: CrawlerFactory,
     private val geminiClient: GeminiClient,
+) {
 
-    ) {
+    private val log = LoggerFactory.getLogger(CrawlingBatchConfig::class.java)
 
     @Bean
     fun crawlingJob(): Job {
@@ -70,15 +71,24 @@ class CrawlingBatchConfig(
                 .toList()
             val newArticles = crawledArticles.filter { it.link !in existingUrls }
 
+            printDetectLog(newArticles)
+
             // 카테고리 분류
 //            newArticles.forEach {
 //                val articleCategory = geminiClient.analyzeArticleCategory(it.title, it.articleUrl)
 //                it.changeCategory(articleCategory)
-//            }
+//            } 
 
             newArticles.reversed()
         }
 
+    }
+
+    private fun printDetectLog(newArticles: List<Article>) {
+        log.info("새로 발견된 글의 수 : ${newArticles.size}")
+        for (article in newArticles) {
+            log.info("NEW ARTICLE [company: ${article.company.nameKr}, title: ${article.title}, url: ${article.link}]")
+        }
     }
 
     @Bean

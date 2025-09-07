@@ -320,6 +320,7 @@ class MailService(
             java.time.DayOfWeek.FRIDAY -> "금"
             java.time.DayOfWeek.SATURDAY -> "토"
             java.time.DayOfWeek.SUNDAY -> "일"
+            else -> ""
         }
     }
 
