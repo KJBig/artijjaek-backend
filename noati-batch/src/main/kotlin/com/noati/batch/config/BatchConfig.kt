@@ -14,7 +14,7 @@ import javax.sql.DataSource
 @Configuration
 class BatchConfig(
     @Qualifier("batchDataSource") private val batchDataSource: DataSource,
-    @Qualifier("jpaTransactionManager") private val transactionManager: PlatformTransactionManager
+    @Qualifier("transactionManager") private val transactionManager: PlatformTransactionManager
 ) : DefaultBatchConfiguration() {
 
     override fun getDataSource(): DataSource = batchDataSource
