@@ -13,7 +13,8 @@ class MailJobScheduler(
     private val mailJob: Job
 ) {
 
-    @Scheduled(cron = "0 0 7 * * ?")
+    //    @Scheduled(cron = "0 0 7 * * ?")
+    @Scheduled(fixedRate = 60_000)
     fun runMailJob() {
         val jobParameters = JobParametersBuilder()
             .addString("runTime", LocalDateTime.now().toString())

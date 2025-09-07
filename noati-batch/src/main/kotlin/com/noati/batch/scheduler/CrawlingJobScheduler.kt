@@ -10,7 +10,7 @@ import java.time.LocalDateTime
 @Component
 class CrawlingJobScheduler(
     private val jobLauncher: JobLauncher,
-    private val crawlingJob: Job
+    private val crawlingJob: Job,
 ) {
 
     @Scheduled(fixedRate = 60_000)

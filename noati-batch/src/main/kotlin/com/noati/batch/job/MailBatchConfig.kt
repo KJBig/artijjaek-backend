@@ -2,7 +2,10 @@ package com.noati.batch.job
 
 import com.noati.batch.service.MailService
 import com.noati.core.domain.Member
+import com.noati.core.domain.MemberArticle
 import com.noati.core.service.ArticleDomainService
+import com.noati.core.service.MemberArticleDomainService
+import com.noati.core.service.SubscribeDomainService
 import jakarta.persistence.EntityManagerFactory
 import org.springframework.batch.core.Job
 import org.springframework.batch.core.Step
@@ -10,6 +13,7 @@ import org.springframework.batch.core.job.builder.JobBuilder
 import org.springframework.batch.core.repository.JobRepository
 import org.springframework.batch.core.step.builder.StepBuilder
 import org.springframework.batch.item.ItemProcessor
+import org.springframework.batch.item.ItemWriter
 import org.springframework.batch.item.database.JpaPagingItemReader
 import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilder
 import org.springframework.context.annotation.Bean
@@ -21,6 +25,8 @@ class MailBatchConfig(
     private val jobRepository: JobRepository,
     private val transactionManager: PlatformTransactionManager,
     private val entityManagerFactory: EntityManagerFactory,
+    private val memberArticleDomainService: MemberArticleDomainService,
+    private val subscribeDomainService: SubscribeDomainService,
     private val articleDomainService: ArticleDomainService,
     private val mailService: MailService,
 
@@ -36,9 +42,10 @@ class MailBatchConfig(
     @Bean
     fun mailStep(): Step {
         return StepBuilder("mailStep", jobRepository)
-            .chunk<Member, Unit>(10, transactionManager)
+            .chunk<Member, List<MemberArticle>>(10, transactionManager)
             .reader(memberReader())
             .processor(sendMailProcessor())
+            .writer(mailWriter())
             .build()
     }
 
@@ -53,12 +60,25 @@ class MailBatchConfig(
     }
 
     @Bean
-    fun sendMailProcessor(): ItemProcessor<Member, Unit> {
-        val yesterdayArticles = articleDomainService.findYesterdayArticle()
+    fun sendMailProcessor(): ItemProcessor<Member, List<MemberArticle>> {
         return ItemProcessor { member ->
+            val memberSubscribeCompanies = subscribeDomainService.findAllByMember(member).stream()
+                .map { it.company }
+                .toList()
+            val yesterdayArticles = articleDomainService.findYesterdayByCompanies(memberSubscribeCompanies)
+
             mailService.sendMail(member, yesterdayArticles)
+
+            yesterdayArticles.stream().map { MemberArticle(member = member, article = it) }.toList()
         }
 
+    }
+
+    @Bean
+    fun mailWriter(): ItemWriter<List<MemberArticle>> {
+        return ItemWriter { items ->
+            items.flatten().forEach { memberArticleDomainService.save(it) }
+        }
     }
 
 }
