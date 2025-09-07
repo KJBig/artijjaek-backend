@@ -21,12 +21,11 @@ class MailService(
         try {
             val mimeMessageHelper = MimeMessageHelper(mimeMessage, false, "UTF-8")
 
-            // 메일을 받을 수신자 설정
+            // 수신자/제목
             mimeMessageHelper.setTo(member.email)
-            // 메일의 제목 설정
-            mimeMessageHelper.setSubject("[${today}] 아티클 목록")
+            mimeMessageHelper.setSubject("[노아티] ${today} 아티클 목록")
 
-            // html 문법 적용한 메일의 내용
+            // HTML 본문
             val content = """
                 <!DOCTYPE html>
                 <html lang="ko">
@@ -42,7 +41,7 @@ class MailService(
                             padding: 20px;
                         }
                         .container {
-                            max-width: 600px;
+                            max-width: 800px;
                             margin: 0 auto;
                             background: white;
                             border-radius: 12px;
@@ -90,10 +89,10 @@ class MailService(
                             margin-bottom: 16px;
                             color: rgb(55, 53, 47);
                             font-size: 16px;
-                            font-weight: 600;
+                            font-weight: 800;
                         }
-                        
-                        /* 북마크 카드 스타일 */
+
+                        /* 카드 */
                         .bookmark-card {
                             display: block;
                             text-decoration: none;
@@ -107,10 +106,12 @@ class MailService(
                         }
                         .bookmark-content {
                             display: flex;
+                            align-items: stretch;
                             min-height: 120px;
                         }
                         .bookmark-text {
-                            flex: 1;
+                            flex: 1 1 auto;
+                            min-width: 0; /* ellipsis 필수 */
                             padding: 16px;
                             display: flex;
                             flex-direction: column;
@@ -118,24 +119,16 @@ class MailService(
                         }
                         .bookmark-title {
                             font-size: 16px;
-                            font-weight: 600;
+                            font-weight: 800;
                             color: rgb(55, 53, 47);
                             line-height: 1.3;
                             margin-bottom: 8px;
-                            display: -webkit-box;
-                            -webkit-line-clamp: 2;
-                            -webkit-box-orient: vertical;
-                            overflow: hidden;
                         }
                         .bookmark-description {
                             font-size: 14px;
                             color: rgb(120, 119, 116);
                             line-height: 1.4;
                             margin-bottom: 12px;
-                            display: -webkit-box;
-                            -webkit-line-clamp: 2;
-                            -webkit-box-orient: vertical;
-                            overflow: hidden;
                         }
                         .bookmark-link {
                             display: flex;
@@ -155,80 +148,79 @@ class MailService(
                             text-overflow: ellipsis;
                             white-space: nowrap;
                         }
+
+                        /* 이미지: 항상 오른쪽 끝 고정 */
+                        .bookmark-media {
+                            margin-left: auto;     /* 가장 오른쪽으로 밀기 */
+                            flex: 0 0 180px;       /* 고정 폭 */
+                            display: block;
+                        }
                         .bookmark-image {
                             width: 180px;
                             height: 120px;
                             object-fit: cover;
-                            flex-shrink: 0;
                             background: #f1f1ef;
+                            display: block;
                         }
-                        
-                        .footer {
-                            padding: 24px;
-                            text-align: center;
-                            background: white;
-                            border-top: 1px solid #e1e5e9;
+
+                        /* 멀티라인 말줄임 (…): -webkit-line-clamp + 폴백 */
+                        .clamp-2 {
+                            display: -webkit-box;
+                            -webkit-line-clamp: 2;
+                            -webkit-box-orient: vertical;
+                            overflow: hidden;
+
+                            line-height: 1.3;
+                            max-height: calc(1.3em * 2); /* 폴백 */
                         }
-                        .footer p {
-                            margin: 0;
-                            color: rgb(120, 119, 116);
-                            font-size: 12px;
+                        .clamp-2.body {
                             line-height: 1.4;
+                            max-height: calc(1.4em * 2);
                         }
-                        .footer a {
-                            color: #667eea;
-                            text-decoration: none;
-                        }
-                        
-                        /* 반응형 디자인 */
-                        @media (max-width: 850px) {  /* 800px + 여유공간 50px */
+
+                        /* 반응형 */
+                        @media (max-width: 850px) {
                             body { padding: 10px; }
                             .content { padding: 16px; }
                             .header { padding: 20px 16px; }
                             .greeting { padding: 16px; }
-                            .bookmark-content { 
-                                flex-direction: column !important; 
+                            .bookmark-content { flex-direction: column !important; }
+                            .bookmark-media {
+                                margin-left: 0;
+                                width: 100% !important;
+                                flex: 0 0 auto;
                             }
-                            .bookmark-image { 
-                                width: 100% !important; 
-                                height: 200px !important; 
+                            .bookmark-image {
+                                width: 100% !important;
+                                height: 200px !important;
                             }
                         }
                     </style>
                 </head>
                 <body>
                     <div class="container">
-                        <!-- 헤더 섹션 -->
                         <div class="header">
-                            <h1>📚 오늘의 아티클</h1>
-                            <p>${today} • 총 ${articles.size}개의 아티클</p>
+                            <h1>오늘의 아티클</h1>
+                            <p>${today} | 총 ${articles.size}개의 아티클</p>
                         </div>
-                        
-                        <!-- 콘텐츠 섹션 -->
+
                         <div class="content">
-                            <!-- 인사말 -->
                             <div class="greeting">
-                                <h2>안녕하세요, ${member.email}님! 👋</h2>
-                                <p>오늘 선별된 흥미로운 아티클들을 준비했습니다. 각 아티클을 클릭하면 원문으로 이동합니다.</p>
+                                <h2>안녕하세요, ${member.email}님!</h2>
+                                <p>어제 하루 동안 게시된 아티클입니다. 각 아티클을 클릭하면 원문으로 이동합니다.</p>
                             </div>
-                            
-                            <!-- 아티클 목록 헤더 -->
+
                             <div class="articles-header">
-                                📖 추천 아티클 목록
+                                아티클 목록
                             </div>
-                            
-                            <!-- 북마크 카드들 -->
+
                             ${generateBookmarkCards(articles)}
                         </div>
-                        
-                        <!-- 푸터 섹션 -->
-                        <div class="footer">
-                            <p>
+
+                        <div class="footer" style="padding:24px;text-align:center;background:white;border-top:1px solid #e1e5e9;">
+                            <p style="margin:0;color:rgb(120,119,116);font-size:12px;line-height:1.4;">
                                 이 메일은 자동으로 발송되었습니다.<br>
-                                문의사항이 있으시면 <a href="mailto:support@example.com">support@example.com</a>으로 연락주세요.
-                            </p>
-                            <p style="margin-top: 12px; font-size: 11px;">
-                                © 2024 Your Company Name. All rights reserved.
+                                문의사항이 있으시면 <a href="mailto:noati.dev@gmail.com" style="color:#667eea;text-decoration:none;">noati.dev@gmail.com</a>으로 연락주세요.
                             </p>
                         </div>
                     </div>
@@ -236,14 +228,11 @@ class MailService(
                 </html>
             """.trimIndent()
 
-            // 메일의 내용 설정
             mimeMessageHelper.setText(content, true)
-
             javaMailSender.send(mimeMessage)
-
             log.info("메일 발송 성공!")
         } catch (e: Exception) {
-            log.error("메일 발송 실패!", e) // log.equals -> log.error로 수정
+            log.error("메일 발송 실패!", e)
             throw RuntimeException(e)
         }
     }
@@ -251,71 +240,64 @@ class MailService(
     fun generateBookmarkCards(articles: List<Article>): String {
         if (articles.isEmpty()) {
             return """
-                <div style="padding: 40px; text-align: center; background: white; border-radius: 8px; 
-                           border: 2px dashed #e1e5e9;">
+                <div style="padding: 40px; text-align: center; background: white; border-radius: 8px; border: 2px dashed #e1e5e9;">
                     <div style="font-size: 48px; margin-bottom: 16px;">📭</div>
                     <div style="font-size: 16px; color: rgb(120, 119, 116);">
-                        오늘은 추천할 아티클이 없습니다.
+                        어제 발행된 아티클이 없습니다.
                     </div>
                 </div>
             """.trimIndent()
         }
 
-        return articles.mapIndexed { index, article ->
-            // URL 안전하게 처리
-            val safeLink = article.link?.takeIf { it.isNotBlank() } ?: "#"
+        return articles.joinToString("\n") { article ->
+            val safeLink = article.link.takeIf { it.isNotBlank() } ?: "#"
+            val safeTitle = cleanText(article.title)
+            val safeDescription = cleanText(article.description)
 
-            // 텍스트 안전하게 처리 (HTML 이스케이핑)
-            val safeTitle = cleanText(article.title ?: "제목 없음")
-            val safeDescription = cleanText(article.description ?: "설명이 없습니다.")
-
-            // 이미지 처리
             val imageHtml = if (!article.image.isNullOrBlank()) {
-                """<img src="${article.image}" alt="썸네일" class="bookmark-image" style="width: 180px; height: 120px; object-fit: cover; background: #f1f1ef;">"""
+                """
+                <div class="bookmark-media">
+                  <img src="${article.image}" alt="썸네일" class="bookmark-image">
+                </div>
+                """.trimIndent()
             } else {
-                """<div style="width: 180px; height: 120px; background: linear-gradient(135deg, #f0f2f5 0%, #e1e5e9 100%); display: flex; align-items: center; justify-content: center;">
-                       <div style="font-size: 24px; color: rgb(120, 119, 116);">📄</div>
-                   </div>"""
+                """
+                <div class="bookmark-media">
+                  <div class="bookmark-image" style="display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#f0f2f5 0%,#e1e5e9 100%);">
+                    <div style="font-size:24px;color:rgb(120,119,116);">📄</div>
+                  </div>
+                </div>
+                """.trimIndent()
             }
 
-            // 회사 로고 처리
-            val logoHtml = if (!article.company?.logo.isNullOrBlank()) {
-                """<img src="${article.company?.logo}" alt="favicon" class="bookmark-favicon" style="width: 16px; height: 16px; margin-right: 6px; border-radius: 2px;">"""
+            val logoHtml = if (article.company.logo.isNotBlank()) {
+                """<img src="${article.company.logo}" alt="favicon" class="bookmark-favicon">"""
             } else {
-                """<div style="width: 16px; height: 16px; margin-right: 6px; background: #e1e5e9; border-radius: 2px;"></div>"""
+                """<div class="bookmark-favicon" style="background:#e1e5e9;"></div>"""
             }
 
             """
-            <a href="${safeLink}" class="bookmark-card" style="display: block; text-decoration: none; color: inherit; 
-               background: white; border-radius: 8px; overflow: hidden; 
-               box-shadow: rgba(15, 15, 15, 0.1) 0px 0px 0px 1px, rgba(15, 15, 15, 0.1) 0px 2px 4px;
-               margin-bottom: 16px;">
-                
-                <div class="bookmark-content" style="display: flex; min-height: 120px; position: relative;">
-                    <div class="bookmark-text" style="flex: 1; padding: 16px; padding-right: 200px; display: flex; flex-direction: column; justify-content: flex-start;">
-                        <div class="bookmark-title" style="font-size: 16px; font-weight: 600; color: rgb(55, 53, 47); 
-                             line-height: 1.3; margin-bottom: 8px;">
-                            ${safeTitle}
-                        </div>
-                        <div class="bookmark-description" style="font-size: 14px; color: rgb(120, 119, 116); 
-                             line-height: 1.4; margin-bottom: 12px;">
-                            ${safeDescription}
-                        </div>
-                        <div class="bookmark-link" style="display: flex; align-items: center; font-size: 12px; color: rgb(120, 119, 116); margin-top: auto;">
-                            ${logoHtml}
-                            <span class="bookmark-url" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                ${article.company?.nameKr ?: "알 수 없는 사이트"}
-                            </span>
+            <a href="${safeLink}" class="bookmark-card">
+                <div class="bookmark-content">
+                    <div class="bookmark-text">
+                        <div>
+                            <div class="bookmark-title clamp-2">${safeTitle}</div>
+                            <div class="bookmark-description clamp-2 body">${safeDescription}</div>
+                            <div class="bookmark-link">
+                                ${logoHtml}
+                                <span class="bookmark-url">${article.company.nameKr}</span>
+                                &nbsp;| ${article.link}
+                            </div>
                         </div>
                     </div>
-                    ${imageHtml}
+                    ${imageHtml} <!-- 항상 오른쪽 끝 -->
                 </div>
             </a>
             """.trimIndent()
-        }.joinToString("\n")
+        }
     }
 
-    // HTML 텍스트를 안전하게 처리하는 함수
+    // HTML 텍스트를 안전하게 처리
     private fun cleanText(text: String): String {
         return text
             .replace("&", "&amp;")
@@ -324,6 +306,6 @@ class MailService(
             .replace("\"", "&quot;")
             .replace("'", "&#39;")
             .trim()
-            .take(200) // 최대 200자로 제한
+            .take(200)
     }
 }
