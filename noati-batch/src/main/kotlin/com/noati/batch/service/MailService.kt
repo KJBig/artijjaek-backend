@@ -25,8 +25,7 @@ class MailService(
             mimeMessageHelper.setTo(member.email)
             mimeMessageHelper.setSubject("[노아티] ${today} 아티클 목록")
 
-            val today = LocalDate.now()
-            val dayOfWeekShort = getDayOfWeekShort(today)
+            val dayOfWeekShort = getDayOfWeekShort(LocalDate.now())
 
             // HTML 본문
             val content = """
@@ -257,7 +256,7 @@ class MailService(
             val safeTitle = cleanText(article.title)
             val safeDescription = cleanText(article.description)
 
-            val imageHtml = if (!article.image.isNullOrBlank()) {
+            val imageHtml = if (article.image.isNotBlank()) {
                 """
                 <div class="bookmark-media">
                   <img src="${article.image}" alt="썸네일" class="bookmark-image">
