@@ -7,6 +7,7 @@ import com.noati.core.service.ArticleDomainService
 import com.noati.core.service.MemberArticleDomainService
 import com.noati.core.service.SubscribeDomainService
 import jakarta.persistence.EntityManagerFactory
+import org.slf4j.LoggerFactory
 import org.springframework.batch.core.Job
 import org.springframework.batch.core.Step
 import org.springframework.batch.core.job.builder.JobBuilder
@@ -31,6 +32,8 @@ class MailBatchConfig(
     private val mailService: MailService,
 
     ) {
+
+    private val log = LoggerFactory.getLogger(MailBatchConfig::class.java)
 
     @Bean
     fun mailJob(): Job {
@@ -67,6 +70,7 @@ class MailBatchConfig(
                 .toList()
             val yesterdayArticles = articleDomainService.findYesterdayByCompanies(memberSubscribeCompanies)
 
+            log.info("Send Email to ${member.email}")
             mailService.sendMail(member, yesterdayArticles)
 
             yesterdayArticles.stream().map { MemberArticle(member = member, article = it) }.toList()
