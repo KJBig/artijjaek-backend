@@ -71,7 +71,7 @@ class CrawlingBatchConfig(
                 .toList()
             val newArticles = crawledArticles.filter { it.link !in existingUrls }
 
-            printDetectLog(newArticles)
+            printDetectLog(company, newArticles)
 
             // 카테고리 분류
 //            newArticles.forEach {
@@ -84,10 +84,10 @@ class CrawlingBatchConfig(
 
     }
 
-    private fun printDetectLog(newArticles: List<Article>) {
-        log.info("새로 발견된 글의 수 : ${newArticles.size}")
+    private fun printDetectLog(company: Company, newArticles: List<Article>) {
+        log.info("[${company.nameKr}] 새로 발견된 글의 수 : ${newArticles.size}")
         for (article in newArticles) {
-            log.info("NEW ARTICLE [company: ${article.company.nameKr}, title: ${article.title}, url: ${article.link}]")
+            log.info("[NEW ARTICLE] (company: ${article.company.nameKr}, title: ${article.title}, url: ${article.link})")
         }
     }
 
