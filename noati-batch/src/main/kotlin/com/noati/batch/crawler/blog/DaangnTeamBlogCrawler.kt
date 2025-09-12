@@ -6,18 +6,20 @@ import com.noati.core.domain.Company
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
+import org.jsoup.select.Elements
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
+import java.net.URLDecoder
 
 @Component
-class OliveYoungBlogCrawler(
-    val urlDataCrawler: UrlDataCrawler,
+class DaangnTeamBlogCrawler(
+    private val urlDataCrawler: UrlDataCrawler,
 ) : BlogCrawler {
 
-    private val log = LoggerFactory.getLogger(OliveYoungBlogCrawler::class.java)
+    private val log = LoggerFactory.getLogger(DaangnTeamBlogCrawler::class.java)
 
     override val getBlogName: String
-        get() = "OLIVE YOUNG"
+        get() = "DAANGN"
 
     override fun crawl(company: Company): List<Article> {
         val url: String = company.blogUrl
@@ -25,7 +27,8 @@ class OliveYoungBlogCrawler(
 
         try {
             val doc: Document = Jsoup.connect(url)
-                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+                .referrer("https://medium.com/")
                 .timeout(10000)
                 .get()
 
@@ -66,62 +69,67 @@ class OliveYoungBlogCrawler(
     }
 
     private fun findArticleElements(doc: Document): List<Element> {
-        var elements = doc.select("ul[class*='PostList-module--container'] li")
+        // 1) div[data-href] 요소 찾기 (새로운 구조)
+        var elements = doc.select("div[href]")
         if (elements.isNotEmpty()) {
-            log.debug("기존 셀렉터로 발견: ${elements.size}개")
-            return elements.toList()
+            log.debug("div[href]로 발견: ${elements.size}개")
+            return filterValidUrl(elements)
         }
 
-        elements = doc.select("ul li:has(h1), ul li:has(h2), ul li:has(h3)")
+        // 2) 기존의 a[data-href]
+        elements = doc.select("a[href]")
         if (elements.isNotEmpty()) {
-            log.debug("제목이 있는 li 요소로 발견: ${elements.size}개")
-            return elements.toList()
+            log.debug("a[href]로 발견: ${elements.size}개")
+            return filterValidUrl(elements)
         }
 
-        elements = doc.select("article")
+        // 3) 모든 data-href 속성을 가진 요소 (포괄적)
+        elements = doc.select("[href]")
         if (elements.isNotEmpty()) {
-            log.debug("article 태그로 발견: ${elements.size}개")
-            return elements.toList()
+            log.debug("[href]로 발견: ${elements.size}개")
+            return filterValidUrl(elements)
         }
 
-        elements = doc.select("div:has(a):has(h1), div:has(a):has(h2), div:has(a):has(h3)")
+        // 4) article 태그 내의 data-href 링크
+        elements = doc.select("article [href]")
         if (elements.isNotEmpty()) {
-            log.debug("링크와 제목이 있는 div로 발견: ${elements.size}개")
-            return elements.toList()
+            log.debug("article [href]로 발견: ${elements.size}개")
+            return filterValidUrl(elements)
         }
 
-        elements = doc.select("li:has(a[href])")
+        // 5) 제목 태그를 가진 컨테이너 내 data-href 링크
+        elements = doc.select("div[href][role=link]")
         if (elements.isNotEmpty()) {
-            log.debug("링크가 있는 li 요소로 발견: ${elements.size}개")
-            return elements.toList().filter { isValidArticleElement(it) }
+            log.debug("제목 포함 div [href]로 발견: ${elements.size}개")
+            return filterValidUrl(elements)
         }
 
         return emptyList()
     }
 
-    private fun isValidArticleElement(element: Element): Boolean {
-        // 유효한 글 요소인지 확인
-        val hasTitle = element.select("h1, h2, h3, h4, h5, h6").isNotEmpty()
-        val hasLink = element.select("a[href]").isNotEmpty()
-        val hasContent = element.text().length > 10
-
-        return hasTitle && hasLink && hasContent
+    private fun filterValidUrl(elements: Elements): List<Element> {
+        return elements.stream().filter { element ->
+            val href = element.attr("href")
+            href.contains("/blog/archive/")
+        }.distinct().limit(10).toList()
     }
 
     private fun findArticleUrl(element: Element, baseUrl: String): String {
         try {
-            val linkElement = element.selectFirst("a[href]")
-            val href = linkElement.attr("href")
+            val href = element.attr("abs:href").ifBlank { element.attr("href") }
+            var decode = URLDecoder.decode(href, "UTF-8")
+            if (decode.contains("�")) {
+                decode = href.replace("�", "")
+            }
 
             return when {
-                href.startsWith("http") -> href
-                href.startsWith("/") -> baseUrl + href
-                else -> "$baseUrl/$href"
+                decode.startsWith("http") -> decode
+                decode.startsWith("/") -> baseUrl.removeSuffix("/") + decode
+                else -> "$baseUrl/${decode.removePrefix("/")}"
             }
         } catch (e: Exception) {
             log.error("url 찾기 실패 with Base Url : $baseUrl")
             throw e
         }
     }
-
 }

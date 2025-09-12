@@ -13,9 +13,9 @@ class ArticleRepositoryImpl(
 
     override fun findByCompanyRecent(company: Company, limit: Long): List<Article> {
         return jpaQueryFactory.selectFrom(article)
-            .where(article.company.eq(company))
-            .orderBy(article.createdAt.desc())
+            .where(article.company.id.eq(company.id))
             .limit(limit)
+            .orderBy(article.createdAt.desc())
             .fetch()
     }
 
