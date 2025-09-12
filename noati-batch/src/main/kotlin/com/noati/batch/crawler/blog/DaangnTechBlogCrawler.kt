@@ -10,11 +10,11 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 @Component
-class DaangnMediumBlogCrawler(
+class DaangnTechBlogCrawler(
     private val urlDataCrawler: UrlDataCrawler,
 ) : BlogCrawler {
 
-    private val log = LoggerFactory.getLogger(DaangnMediumBlogCrawler::class.java)
+    private val log = LoggerFactory.getLogger(DaangnTechBlogCrawler::class.java)
 
     override val getBlogName: String
         get() = "DAANGN TECH"
@@ -27,7 +27,7 @@ class DaangnMediumBlogCrawler(
             val doc: Document = Jsoup.connect(url)
                 .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
                 .referrer("https://medium.com/")
-                .timeout(15000)
+                .timeout(10000)
                 .get()
 
             val articleElements = findArticleElements(doc)
