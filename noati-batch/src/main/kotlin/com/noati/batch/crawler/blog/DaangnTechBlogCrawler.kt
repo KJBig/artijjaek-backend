@@ -57,13 +57,13 @@ class DaangnTechBlogCrawler(
                     }
                 }
 
-            return articles
+            return articles.distinctBy { it.link }
 
         } catch (e: Exception) {
             log.error("크롤링 실패: ${e.message}", e)
         }
 
-        return articles.distinctBy { it.link }
+        return articles
     }
 
     private fun findArticleElements(doc: Document): List<Element> {
