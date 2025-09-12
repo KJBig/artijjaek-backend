@@ -41,18 +41,22 @@ class DaangnTeamBlogCrawler(
 
             articleElements.stream()
                 .forEach {
-                    val articleUrl = findArticleUrl(it, url)
-                    val crawlingUrlData = urlDataCrawler.crawlingUrlData(articleUrl)
-                    articles.add(
-                        Article(
-                            company = company,
-                            title = crawlingUrlData.title,
-                            description = crawlingUrlData.description,
-                            link = articleUrl,
-                            image = crawlingUrlData.imageUrl,
-                            category = null
+                    try {
+                        val articleUrl = findArticleUrl(it, url)
+                        val crawlingUrlData = urlDataCrawler.crawlingUrlData(articleUrl)
+                        articles.add(
+                            Article(
+                                company = company,
+                                title = crawlingUrlData.title,
+                                description = crawlingUrlData.description,
+                                link = articleUrl,
+                                image = crawlingUrlData.imageUrl,
+                                category = null
+                            )
                         )
-                    )
+                    } catch (e: Exception) {
+                        log.error("아티클 처리 실패: ${e.message}", e)
+                    }
                 }
 
             return articles.distinctBy { it.link }
@@ -69,41 +73,41 @@ class DaangnTeamBlogCrawler(
         var elements = doc.select("div[href]")
         if (elements.isNotEmpty()) {
             log.debug("div[href]로 발견: ${elements.size}개")
-            return filterNotValidUrl(elements)
+            return filterValidUrl(elements)
         }
 
         // 2) 기존의 a[data-href]
         elements = doc.select("a[href]")
         if (elements.isNotEmpty()) {
-            log.debug("a[data-href]로 발견: ${elements.size}개")
-            return filterNotValidUrl(elements)
+            log.debug("a[href]로 발견: ${elements.size}개")
+            return filterValidUrl(elements)
         }
 
         // 3) 모든 data-href 속성을 가진 요소 (포괄적)
         elements = doc.select("[href]")
         if (elements.isNotEmpty()) {
-            log.debug("[data-href]로 발견: ${elements.size}개")
-            return filterNotValidUrl(elements)
+            log.debug("[href]로 발견: ${elements.size}개")
+            return filterValidUrl(elements)
         }
 
         // 4) article 태그 내의 data-href 링크
         elements = doc.select("article [href]")
         if (elements.isNotEmpty()) {
-            log.debug("article [data-href]로 발견: ${elements.size}개")
-            return filterNotValidUrl(elements)
+            log.debug("article [href]로 발견: ${elements.size}개")
+            return filterValidUrl(elements)
         }
 
         // 5) 제목 태그를 가진 컨테이너 내 data-href 링크
         elements = doc.select("div[href][role=link]")
         if (elements.isNotEmpty()) {
-            log.debug("제목 포함 div [data-href]로 발견: ${elements.size}개")
-            return filterNotValidUrl(elements)
+            log.debug("제목 포함 div [href]로 발견: ${elements.size}개")
+            return filterValidUrl(elements)
         }
 
         return emptyList()
     }
 
-    private fun filterNotValidUrl(elements: Elements): List<Element> {
+    private fun filterValidUrl(elements: Elements): List<Element> {
         return elements.stream().filter { element ->
             val href = element.attr("href")
             href.contains("/blog/archive/")

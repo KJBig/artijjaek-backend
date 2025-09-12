@@ -39,18 +39,22 @@ class DaangnTechBlogCrawler(
 
             articleElements.stream()
                 .forEach {
-                    val articleUrl = findArticleUrl(it, url)
-                    val crawlingUrlData = urlDataCrawler.crawlingUrlData(articleUrl)
-                    articles.add(
-                        Article(
-                            company = company,
-                            title = crawlingUrlData.title,
-                            description = crawlingUrlData.description,
-                            link = articleUrl,
-                            image = crawlingUrlData.imageUrl,
-                            category = null
+                    try {
+                        val articleUrl = findArticleUrl(it, url)
+                        val crawlingUrlData = urlDataCrawler.crawlingUrlData(articleUrl)
+                        articles.add(
+                            Article(
+                                company = company,
+                                title = crawlingUrlData.title,
+                                description = crawlingUrlData.description,
+                                link = articleUrl,
+                                image = crawlingUrlData.imageUrl,
+                                category = null
+                            )
                         )
-                    )
+                    } catch (e: Exception) {
+                        log.error("아티클 처리 실패: ${e.message}", e)
+                    }
                 }
 
             return articles
@@ -59,7 +63,7 @@ class DaangnTechBlogCrawler(
             log.error("크롤링 실패: ${e.message}", e)
         }
 
-        return articles
+        return articles.distinctBy { it.link }
     }
 
     private fun findArticleElements(doc: Document): List<Element> {
