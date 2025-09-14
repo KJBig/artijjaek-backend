@@ -2,19 +2,28 @@ package com.noati.batch.service
 
 import com.noati.core.domain.Company
 import org.springframework.stereotype.Service
+import java.io.IOException
 import java.net.URL
 
 @Service
 class RobotsTxtCheckService {
 
     fun isCrawlAllowed(company: Company): Boolean {
-        val disallowPaths = URL("${company.baseUrl}/robots.txt").readText()
+        val robotsTxtContent = try {
+            URL("${company.baseUrl}/robots.txt").readText()
+        } catch (e: IOException) {
+            return true
+        }
+
+        val disallowPaths = robotsTxtContent
             .lines()
-            .filter { it.contains("Disallow") }
-            .map { it.replace(" ", "").replace("Disallow:", "") }
+            .map { it.trim() }
+            .filter { it.startsWith("Disallow:", ignoreCase = true) }
+            .map { it.substringAfter(":").trim() }
+
         return when (company.crawlUrl) {
             "/" -> !disallowPaths.contains("/")
-            else -> disallowPaths.none { it.contains(company.crawlUrl.split("/")[1]) }
+            else -> disallowPaths.none { it.isNotEmpty() && company.crawlUrl.startsWith(it) }
         }
     }
 }

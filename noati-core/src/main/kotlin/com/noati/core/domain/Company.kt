@@ -30,7 +30,7 @@ class Company(
 
     ) : BaseEntity() {
 
-    fun chaneCanCrawl(crawlAvailability: Boolean) {
+    fun chaneCrawlAvailability(crawlAvailability: Boolean) {
         this.crawlAvailability = crawlAvailability
     }
 

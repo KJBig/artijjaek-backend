@@ -27,7 +27,7 @@ class RobotTxtBatchConfig(
     private val robotsTxtCheckService: RobotsTxtCheckService,
 ) {
 
-    private val log = LoggerFactory.getLogger(CrawlingBatchConfig::class.java)
+    private val log = LoggerFactory.getLogger(RobotTxtBatchConfig::class.java)
 
     @Bean
     fun robotTxtJob(): Job {
@@ -63,7 +63,7 @@ class RobotTxtBatchConfig(
             if (!crawlAllowed) {
                 printDetectLog(company)
             }
-            company.chaneCanCrawl(crawlAllowed)
+            company.chaneCrawlAvailability(crawlAllowed)
             company
         }
 
