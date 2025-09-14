@@ -20,7 +20,7 @@ class DaangnTechBlogCrawler(
         get() = "DAANGN TECH"
 
     override fun crawl(company: Company): List<Article> {
-        val url: String = company.blogUrl
+        val url: String = company.baseUrl + company.crawlUrl
         val articles = mutableListOf<Article>()
 
         try {

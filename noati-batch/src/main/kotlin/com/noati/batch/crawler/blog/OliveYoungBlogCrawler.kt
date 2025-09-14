@@ -20,7 +20,7 @@ class OliveYoungBlogCrawler(
         get() = "OLIVE YOUNG"
 
     override fun crawl(company: Company): List<Article> {
-        val url: String = company.blogUrl
+        val url: String = company.baseUrl + company.crawlUrl
         val articles = mutableListOf<Article>()
 
         try {
@@ -115,7 +115,7 @@ class OliveYoungBlogCrawler(
 
             return when {
                 href.startsWith("http") -> href
-                href.startsWith("/") -> baseUrl + href
+                href.startsWith("/") -> baseUrl.removeSuffix("/") + href
                 else -> "$baseUrl/$href"
             }
         } catch (e: Exception) {

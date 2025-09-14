@@ -22,13 +22,12 @@ class DaangnTeamBlogCrawler(
         get() = "DAANGN"
 
     override fun crawl(company: Company): List<Article> {
-        val url: String = company.blogUrl
+        val url: String = company.baseUrl + company.crawlUrl
         val articles = mutableListOf<Article>()
 
         try {
             val doc: Document = Jsoup.connect(url)
                 .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
-                .referrer("https://medium.com/")
                 .timeout(10000)
                 .get()
 
