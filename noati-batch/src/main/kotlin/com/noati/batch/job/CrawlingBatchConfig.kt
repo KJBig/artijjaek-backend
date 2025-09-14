@@ -43,18 +43,18 @@ class CrawlingBatchConfig(
     fun crawlingStep(): Step {
         return StepBuilder("crawlingStep", jobRepository)
             .chunk<Company, List<Article>>(10, transactionManager)
-            .reader(companyReader())
+            .reader(crawlCompanyReader())
             .processor(crawlingProcessor())
             .writer(articleWriter())
             .build()
     }
 
     @Bean
-    fun companyReader(): JpaPagingItemReader<Company> {
+    fun crawlCompanyReader(): JpaPagingItemReader<Company> {
         return JpaPagingItemReaderBuilder<Company>()
-            .name("companyReader")
+            .name("crawlCompanyReader")
             .entityManagerFactory(entityManagerFactory)
-            .queryString("SELECT c FROM Company c")
+            .queryString("SELECT c FROM Company c WHERE c.crawlAvailability = true")
             .pageSize(10)
             .build()
     }
