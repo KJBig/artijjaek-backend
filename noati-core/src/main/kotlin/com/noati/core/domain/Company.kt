@@ -20,8 +20,18 @@ class Company(
     var logo: String,
 
     @Column(columnDefinition = "TEXT", nullable = false)
-    var blogUrl: String,
+    var baseUrl: String,
+
+    @Column(columnDefinition = "TEXT", nullable = false)
+    var crawlUrl: String,
+
+    @Column(nullable = false)
+    var crawlAvailability: Boolean,
 
     ) : BaseEntity() {
+
+    fun chaneCrawlAvailability(crawlAvailability: Boolean) {
+        this.crawlAvailability = crawlAvailability
+    }
 
 }

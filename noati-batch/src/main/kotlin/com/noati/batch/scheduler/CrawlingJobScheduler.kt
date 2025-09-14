@@ -11,6 +11,7 @@ import java.time.LocalDateTime
 class CrawlingJobScheduler(
     private val jobLauncher: JobLauncher,
     private val crawlingJob: Job,
+    private val robotTxtJob: Job,
 ) {
 
     @Scheduled(fixedRate = 60_000)
@@ -19,6 +20,7 @@ class CrawlingJobScheduler(
             .addString("runTime", LocalDateTime.now().toString()) // 매 실행마다 다른 값
             .toJobParameters()
 
+        jobLauncher.run(robotTxtJob, jobParameters)
         jobLauncher.run(crawlingJob, jobParameters)
     }
 }
