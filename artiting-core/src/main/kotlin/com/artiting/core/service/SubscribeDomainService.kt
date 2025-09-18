@@ -12,4 +12,8 @@ class SubscribeDomainService(
     fun findAllByMember(member: Member): List<Subscribe> {
         return subscribeRepository.findAllByMember(member)
     }
+
+    fun saveAll(subscribes: List<Subscribe>) {
+        subscribeRepository.saveAll(subscribes)
+    }
 }

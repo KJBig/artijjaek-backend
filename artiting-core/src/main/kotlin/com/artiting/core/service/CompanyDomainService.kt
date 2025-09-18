@@ -12,4 +12,11 @@ class CompanyDomainService(
     fun save(company: Company) {
         companyRepository.save(company)
     }
+
+    fun findByIdsOrAll(companyIds: List<Long>): List<Company> {
+        if (companyIds.isEmpty()) {
+            return companyRepository.findAll()
+        }
+        return companyRepository.findAllByIs(companyIds)
+    }
 }

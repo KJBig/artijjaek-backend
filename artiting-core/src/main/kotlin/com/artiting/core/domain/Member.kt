@@ -15,6 +15,10 @@ class Member(
     @Column(nullable = false)
     var email: String,
 
+    @Email
+    @Column(nullable = false)
+    var nickname: String,
+
     ) : BaseEntity() {
 
 }
