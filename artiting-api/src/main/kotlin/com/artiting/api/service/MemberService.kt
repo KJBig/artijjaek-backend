@@ -19,12 +19,13 @@ class MemberService(
 
     @Transactional
     fun register(request: RegisterMemberRequest) {
+        memberDomainService.findByEmail(request.email)
+            ?.let { throw IllegalStateException("This email already exists.") }
+
         val newMember = memberDomainService.save(Member(email = request.email, nickname = request.nickname))
         val companies: List<Company> = companyDomainService.findByIdsOrAll(request.companyIds)
 
-        val subscribes = companies.stream()
-            .map { Subscribe(member = newMember, company = it) }
-            .toList()
+        val subscribes = companies.map { Subscribe(member = newMember, company = it) }
         subscribeDomainService.saveAll(subscribes)
     }
 

@@ -13,4 +13,8 @@ class MemberDomainService(
         return memberRepository.save(member)
     }
 
+    fun findByEmail(email: String): Member? {
+        return memberRepository.findByEmail(email)
+    }
+
 }
