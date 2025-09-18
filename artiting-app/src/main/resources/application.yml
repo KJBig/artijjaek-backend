@@ -2,7 +2,6 @@ spring:
   config:
     import:
       - db-main.yml
-      - db-batch.yml
       - ai-main.yml
   batch:
     job:

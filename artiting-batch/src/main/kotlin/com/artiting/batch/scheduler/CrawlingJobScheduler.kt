@@ -3,11 +3,13 @@ package com.artiting.batch.scheduler
 import org.springframework.batch.core.Job
 import org.springframework.batch.core.JobParametersBuilder
 import org.springframework.batch.core.launch.JobLauncher
+import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
 
 @Component
+@EnableScheduling
 class CrawlingJobScheduler(
     private val jobLauncher: JobLauncher,
     private val crawlingJob: Job,
