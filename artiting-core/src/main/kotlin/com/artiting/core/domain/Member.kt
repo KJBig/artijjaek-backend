@@ -1,7 +1,6 @@
 package com.artiting.core.domain
 
 import jakarta.persistence.*
-import jakarta.validation.constraints.Email
 
 @Entity
 class Member(
@@ -11,7 +10,6 @@ class Member(
     @Column(name = "member_id")
     var id: Long? = null,
 
-    @Email
     @Column(nullable = false)
     var email: String,
 
