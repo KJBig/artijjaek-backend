@@ -1,8 +1,9 @@
-rootProject.name = "noati"
+rootProject.name = "artiting"
 
 include(
-    "noati-admin",
-    "noati-api",
-    "noati-batch",
-    "noati-core"
+    "artiting-admin",
+    "artiting-api",
+    "artiting-app",
+    "artiting-batch",
+    "artiting-core"
 )
