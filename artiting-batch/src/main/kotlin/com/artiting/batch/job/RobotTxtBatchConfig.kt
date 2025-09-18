@@ -62,8 +62,8 @@ class RobotTxtBatchConfig(
             val crawlAllowed = robotsTxtCheckService.isCrawlAllowed(company)
             if (!crawlAllowed) {
                 printDetectLog(company)
+                company.chaneCrawlAvailability(false)
             }
-            company.chaneCrawlAvailability(crawlAllowed)
             company
         }
 
