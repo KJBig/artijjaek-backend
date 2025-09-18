@@ -23,7 +23,7 @@ class RobotsTxtCheckService {
 
         return when (company.crawlUrl) {
             "/" -> !disallowPaths.contains("/")
-            else -> disallowPaths.none { it.isNotEmpty() && company.crawlUrl.startsWith(it) }
+            else -> disallowPaths.filter { it != "/" }.none { it.isNotEmpty() && company.crawlUrl.startsWith(it) }
         }
     }
 }
