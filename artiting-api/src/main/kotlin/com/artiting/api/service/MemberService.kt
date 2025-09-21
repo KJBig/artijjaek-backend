@@ -1,9 +1,11 @@
 package com.artiting.api.service
 
+import com.artiting.api.common.UuidTokenGenerator
 import com.artiting.api.dto.request.RegisterMemberRequest
 import com.artiting.core.domain.Company
 import com.artiting.core.domain.Member
 import com.artiting.core.domain.Subscribe
+import com.artiting.core.enums.MemberStatus
 import com.artiting.core.service.CompanyDomainService
 import com.artiting.core.service.MemberDomainService
 import com.artiting.core.service.SubscribeDomainService
@@ -19,10 +21,19 @@ class MemberService(
 
     @Transactional
     fun register(request: RegisterMemberRequest) {
-        memberDomainService.findByEmail(request.email)
+        memberDomainService.findByEmailAndMemberStatus(request.email, MemberStatus.ACTIVE)
             ?.let { throw IllegalStateException("This email already exists.") }
 
-        val newMember = memberDomainService.save(Member(email = request.email, nickname = request.nickname))
+        val memberToken = UuidTokenGenerator.generatorUuidToken()
+
+        val newMember = memberDomainService.save(
+            Member(
+                email = request.email,
+                nickname = request.nickname,
+                uuidToken = memberToken,
+                memberStatus = MemberStatus.ACTIVE
+            )
+        )
         val companies: List<Company> = companyDomainService.findByIdsOrAll(request.companyIds)
 
         val subscribes = companies.map { Subscribe(member = newMember, company = it) }

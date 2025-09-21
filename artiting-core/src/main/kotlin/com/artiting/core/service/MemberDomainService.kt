@@ -1,6 +1,7 @@
 package com.artiting.core.service
 
 import com.artiting.core.domain.Member
+import com.artiting.core.enums.MemberStatus
 import com.artiting.core.repository.MemberRepository
 import org.springframework.stereotype.Service
 
@@ -15,6 +16,10 @@ class MemberDomainService(
 
     fun findByEmail(email: String): Member? {
         return memberRepository.findByEmail(email)
+    }
+
+    fun findByEmailAndMemberStatus(email: String, memberStatus: MemberStatus): Member? {
+        return memberRepository.findByEmailAndMemberStatus(email, memberStatus)
     }
 
 }

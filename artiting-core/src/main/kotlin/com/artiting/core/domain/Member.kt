@@ -1,5 +1,6 @@
 package com.artiting.core.domain
 
+import com.artiting.core.enums.MemberStatus
 import jakarta.persistence.*
 
 @Entity
@@ -15,6 +16,13 @@ class Member(
 
     @Column(nullable = false)
     var nickname: String,
+
+    @Column(nullable = true)
+    var uuidToken: String,
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = true)
+    var memberStatus: MemberStatus,
 
     ) : BaseEntity() {
 

@@ -16,4 +16,8 @@ class SubscribeDomainService(
     fun saveAll(subscribes: List<Subscribe>) {
         subscribeRepository.saveAll(subscribes)
     }
+
+    fun deleteAllByMemberId(memberId: Long) {
+        subscribeRepository.deleteAllByMemberId(memberId)
+    }
 }
