@@ -21,7 +21,7 @@ class MemberService(
 
     @Transactional
     fun register(request: RegisterMemberRequest) {
-        memberDomainService.findByEmail(request.email)
+        memberDomainService.findByEmailAndMemberStatus(request.email, MemberStatus.ACTIVE)
             ?.let { throw IllegalStateException("This email already exists.") }
 
         val memberToken = UuidTokenGenerator.generatorUuidToken()

@@ -17,4 +17,8 @@ class MemberDomainService(
         return memberRepository.findByEmail(email)
     }
 
+    fun findByEmailAndMemberStatus(email: String, memberStatus: MemberStatus): Member? {
+        return memberRepository.findByEmailAndMemberStatus(email, memberStatus)
+    }
+
 }
