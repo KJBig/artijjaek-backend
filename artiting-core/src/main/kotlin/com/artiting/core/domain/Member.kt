@@ -26,4 +26,8 @@ class Member(
 
     ) : BaseEntity() {
 
+    fun changeMemberStatus(memberStatus: MemberStatus) {
+        this.memberStatus = memberStatus
+    }
+
 }
