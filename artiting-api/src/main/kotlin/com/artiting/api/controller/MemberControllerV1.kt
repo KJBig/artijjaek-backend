@@ -1,7 +1,10 @@
 package com.artiting.api.controller
 
+import com.artiting.api.dto.common.SuccessDataResponse
 import com.artiting.api.dto.common.SuccessResponse
+import com.artiting.api.dto.request.CheckMemberTokenAvailabilityRequest
 import com.artiting.api.dto.request.RegisterMemberRequest
+import com.artiting.api.dto.response.MemberTokenAvailabilityResponse
 import com.artiting.api.service.MemberService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
@@ -19,6 +22,12 @@ class MemberControllerV1(
     fun registerMember(@RequestBody request: RegisterMemberRequest): ResponseEntity<SuccessResponse> {
         memberService.register(request)
         return ResponseEntity.ok(SuccessResponse())
+    }
+
+    @PostMapping("/token-availability")
+    fun checkMemberTokenAvailability(@RequestBody request: CheckMemberTokenAvailabilityRequest): ResponseEntity<SuccessDataResponse<MemberTokenAvailabilityResponse>?> {
+        val response = memberService.checkTokenAvailability(request)
+        return ResponseEntity.ok(SuccessDataResponse(response))
     }
 
 }

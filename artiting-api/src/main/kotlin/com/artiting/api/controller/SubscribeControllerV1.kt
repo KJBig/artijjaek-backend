@@ -19,7 +19,7 @@ class SubscribeControllerV1(
     }
 
     @DeleteMapping("")
-    fun changeSubscribe(
+    fun cancelSubscribe(
         @RequestParam("email") email: String,
         @RequestParam("token") token: String
     ): ResponseEntity<SuccessResponse> {

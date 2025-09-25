@@ -1,7 +1,9 @@
 package com.artiting.api.dto.common
 
 data class SuccessDataResponse<T>(
-    val isSuccess: Boolean = true,
-    val message: String = "요청성공",
+    val isSuccess: Boolean,
+    val message: String,
     val data: T,
-)
+) {
+    constructor(data: T) : this(true, "요청성공", data)
+}
