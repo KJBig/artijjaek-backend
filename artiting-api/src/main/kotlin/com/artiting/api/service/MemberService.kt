@@ -1,6 +1,7 @@
 package com.artiting.api.service
 
 import com.artiting.api.common.UuidTokenGenerator
+import com.artiting.api.dto.request.CheckMemberTokenAvailabilityRequest
 import com.artiting.api.dto.request.RegisterMemberRequest
 import com.artiting.api.dto.response.MemberTokenAvailabilityResponse
 import com.artiting.core.domain.Company
@@ -42,10 +43,10 @@ class MemberService(
     }
 
     @Transactional(readOnly = true)
-    fun checkTokenAvailability(email: String, token: String): MemberTokenAvailabilityResponse {
-        val member = memberDomainService.findByEmailAndMemberStatus(email, MemberStatus.ACTIVE)
+    fun checkTokenAvailability(request: CheckMemberTokenAvailabilityRequest): MemberTokenAvailabilityResponse {
+        val member = memberDomainService.findByEmailAndMemberStatus(request.email, MemberStatus.ACTIVE)
             ?: throw IllegalStateException("Member Not Found.")
-        val isAvailable = member.uuidToken == token
+        val isAvailable = member.uuidToken == request.token
         return MemberTokenAvailabilityResponse(isAvailable)
     }
 
