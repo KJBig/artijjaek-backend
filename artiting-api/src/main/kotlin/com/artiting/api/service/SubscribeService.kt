@@ -34,4 +34,16 @@ class SubscribeService(
         subscribeDomainService.saveAll(subscribes)
     }
 
+    @Transactional
+    fun chancelSubscribe(email: String, token: String) {
+        val member = memberDomainService.findByEmailAndMemberStatus(email, MemberStatus.ACTIVE)
+            ?: throw IllegalStateException("Member Not Found.")
+
+        if (member.uuidToken != token) {
+            throw IllegalArgumentException("Token is not matched.")
+        }
+
+        member.changeMemberStatus(MemberStatus.DELETED)
+    }
+
 }
