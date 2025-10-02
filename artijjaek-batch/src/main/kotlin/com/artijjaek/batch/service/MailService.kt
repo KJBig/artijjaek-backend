@@ -23,7 +23,7 @@ class MailService(
 
             // 수신자/제목
             mimeMessageHelper.setTo(member.email)
-            mimeMessageHelper.setSubject("[노아티] ${today} 아티클 목록")
+            mimeMessageHelper.setSubject("[아티짹] ${today} 아티클 목록")
 
             val dayOfWeekShort = getDayOfWeekShort(LocalDate.now())
 
@@ -208,7 +208,7 @@ class MailService(
 
                         <div class="content">
                             <div class="greeting">
-                                <h2>안녕하세요, ${member.email}님!</h2>
+                                <h2>안녕하세요, ${member.nickname}님!</h2>
                                 <p>어제 하루 동안 게시된 아티클입니다. 각 아티클을 클릭하면 원문으로 이동합니다.</p>
                             </div>
 
