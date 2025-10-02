@@ -1,9 +1,9 @@
-rootProject.name = "artiting"
+rootProject.name = "artijjaek"
 
 include(
-    "artiting-admin",
-    "artiting-api",
-    "artiting-app",
-    "artiting-batch",
-    "artiting-core"
+    "artijjaek-admin",
+    "artijjaek-api",
+    "artijjaek-app",
+    "artijjaek-batch",
+    "artijjaek-core"
 )
