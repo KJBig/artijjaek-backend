@@ -3,6 +3,9 @@ package com.artiting.core.repository
 import com.artiting.core.domain.Company
 import com.artiting.core.domain.QCompany.company
 import com.querydsl.jpa.impl.JPAQueryFactory
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
+import org.springframework.data.support.PageableExecutionUtils
 
 
 class CompanyRepositoryImpl(
@@ -13,6 +16,21 @@ class CompanyRepositoryImpl(
         return jpaQueryFactory.selectFrom(company)
             .where(company.id.`in`(companyIds))
             .fetch()
+    }
+
+    override fun findWithPageable(pageable: Pageable): Page<Company> {
+        val content = jpaQueryFactory.selectFrom(company)
+            .offset(pageable.offset)
+            .limit(pageable.pageSize.toLong())
+            .orderBy(company.id.asc())
+            .fetch()
+
+        val countQuery = jpaQueryFactory.selectFrom(company)
+            .orderBy(company.id.asc())
+
+        return PageableExecutionUtils.getPage(content, pageable) {
+            countQuery.fetch().size.toLong()
+        }
     }
 
 }

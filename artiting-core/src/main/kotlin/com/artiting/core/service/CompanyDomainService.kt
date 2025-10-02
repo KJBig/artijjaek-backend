@@ -2,6 +2,8 @@ package com.artiting.core.service
 
 import com.artiting.core.domain.Company
 import com.artiting.core.repository.CompanyRepository
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 
 @Service
@@ -18,5 +20,9 @@ class CompanyDomainService(
             return companyRepository.findAll()
         }
         return companyRepository.findAllByIs(companyIds)
+    }
+
+    fun findWithPageable(pageable: Pageable): Page<Company> {
+        return companyRepository.findWithPageable(pageable)
     }
 }
