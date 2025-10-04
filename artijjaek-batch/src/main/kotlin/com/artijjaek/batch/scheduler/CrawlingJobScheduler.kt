@@ -16,7 +16,7 @@ class CrawlingJobScheduler(
     private val robotTxtJob: Job,
 ) {
 
-    @Scheduled(fixedRate = 60_000)
+    @Scheduled(cron = "0 0 0 * * *")
     fun runCrawlingJob() {
         val jobParameters = JobParametersBuilder()
             .addString("runTime", LocalDateTime.now().toString()) // 매 실행마다 다른 값
