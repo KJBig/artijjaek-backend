@@ -1,7 +1,6 @@
 package com.artijjaek.batch.job
 
 import com.artijjaek.batch.crawler.CrawlerFactory
-import com.artijjaek.core.ai.GeminiClient
 import com.artijjaek.core.domain.Article
 import com.artijjaek.core.domain.Company
 import com.artijjaek.core.service.ArticleDomainService
@@ -27,7 +26,6 @@ class CrawlingBatchConfig(
     private val entityManagerFactory: EntityManagerFactory,
     private val articleDomainService: ArticleDomainService,
     private val crawlerFactory: CrawlerFactory,
-    private val geminiClient: GeminiClient,
 ) {
 
     private val log = LoggerFactory.getLogger(CrawlingBatchConfig::class.java)
@@ -72,12 +70,6 @@ class CrawlingBatchConfig(
             val newArticles = crawledArticles.filter { it.link !in existingUrls }
 
             printDetectLog(company, newArticles)
-
-            // 카테고리 분류
-//            newArticles.forEach {
-//                val articleCategory = geminiClient.analyzeArticleCategory(it.title, it.articleUrl)
-//                it.changeCategory(articleCategory)
-//            } 
 
             newArticles.reversed()
         }
