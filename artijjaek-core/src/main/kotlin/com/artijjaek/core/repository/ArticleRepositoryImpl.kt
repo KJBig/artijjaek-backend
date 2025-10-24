@@ -15,7 +15,7 @@ class ArticleRepositoryImpl(
         return jpaQueryFactory.selectFrom(article)
             .where(article.company.id.eq(company.id))
             .limit(limit)
-            .orderBy(article.createdAt.desc())
+            .orderBy(article.id.desc())
             .fetch()
     }
 
