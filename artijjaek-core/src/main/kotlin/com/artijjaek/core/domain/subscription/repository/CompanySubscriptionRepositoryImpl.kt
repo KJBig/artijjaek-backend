@@ -1,9 +1,9 @@
 package com.artijjaek.core.domain.subscription.repository
 
-import com.artijjaek.core.domain.QCompany.company
-import com.artijjaek.core.domain.QSubscribe.subscribe
+import com.artijjaek.core.domain.company.entity.QCompany.company
 import com.artijjaek.core.domain.member.entity.Member
 import com.artijjaek.core.domain.subscription.entity.CompanySubscription
+import com.artijjaek.core.domain.subscription.entity.QCompanySubscription.companySubscription
 import com.querydsl.jpa.impl.JPAQueryFactory
 
 
@@ -12,9 +12,9 @@ class CompanySubscriptionRepositoryImpl(
 ) : CompanySubscriptionRepositoryCustom {
 
     override fun findAllByMember(member: Member): List<CompanySubscription> {
-        return jpaQueryFactory.selectFrom(subscribe)
-            .leftJoin(subscribe.company, company).fetchJoin()
-            .where(subscribe.member.eq(member))
+        return jpaQueryFactory.selectFrom(companySubscription)
+            .leftJoin(companySubscription.company, company).fetchJoin()
+            .where(companySubscription.member.eq(member))
             .fetch()
     }
 

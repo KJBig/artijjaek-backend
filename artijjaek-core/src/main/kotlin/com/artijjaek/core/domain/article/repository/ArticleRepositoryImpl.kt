@@ -1,7 +1,7 @@
 package com.artijjaek.core.domain.article.repository
 
-import com.artijjaek.core.domain.QArticle.article
 import com.artijjaek.core.domain.article.entity.Article
+import com.artijjaek.core.domain.article.entity.QArticle.article
 import com.artijjaek.core.domain.category.entity.Category
 import com.artijjaek.core.domain.company.entity.Company
 import com.querydsl.jpa.impl.JPAQueryFactory

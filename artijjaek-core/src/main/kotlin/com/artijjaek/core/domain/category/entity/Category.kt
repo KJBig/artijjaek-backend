@@ -1,6 +1,7 @@
 package com.artijjaek.core.domain.category.entity
 
 import com.artijjaek.core.common.entity.BaseEntity
+import com.artijjaek.core.domain.category.enums.CategoryType
 import jakarta.persistence.*
 
 @Entity
@@ -13,6 +14,10 @@ class Category(
 
     @Column(nullable = false)
     var name: String,
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    var categoryType: CategoryType,
 
     ) : BaseEntity() {
 

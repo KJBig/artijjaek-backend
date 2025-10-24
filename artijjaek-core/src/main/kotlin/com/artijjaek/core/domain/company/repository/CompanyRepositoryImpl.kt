@@ -1,7 +1,7 @@
 package com.artijjaek.core.domain.company.repository
 
-import com.artijjaek.core.domain.QCompany.company
 import com.artijjaek.core.domain.company.entity.Company
+import com.artijjaek.core.domain.company.entity.QCompany.company
 import com.querydsl.jpa.impl.JPAQueryFactory
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable

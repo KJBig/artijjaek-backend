@@ -14,7 +14,7 @@ class CategoryService(
 
     @Transactional(readOnly = true)
     fun searchCategoryList(pageable: Pageable): PageResponse<CategorySimpleDataResponse> {
-        val categoryPage = categoryDomainService.findWithPageable(pageable)
+        val categoryPage = categoryDomainService.findPublishCategoryWithPageable(pageable)
         val content = categoryPage.content.stream().map { CategorySimpleDataResponse.from(it) }.toList()
         return PageResponse(categoryPage.pageable.pageNumber, categoryPage.hasNext(), content)
     }
