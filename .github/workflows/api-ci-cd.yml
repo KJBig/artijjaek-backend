@@ -1,0 +1,57 @@
+name: Api-Module CI/CD
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  api-ci-cd:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Latest Repo
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.TOKEN_OF_GITHUB }}
+          submodules: true
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build with Gradle
+        run: ./gradlew :artijjaek-app:clean :artijjaek-app:build
+
+      - name: Docker build
+        run: |
+          docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
+          docker build -t ${{ secrets.DOCKER_IMAGE_TAG }} artijjaek-app/.
+          docker tag ${{ secrets.DOCKER_IMAGE_TAG }} ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGE_TAG }}:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGE_TAG }}:latest
+
+      - name: Deploy to Local Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.LOCAL_SERVER_HOST }}
+          username: ${{ secrets.LOCAL_SERVER_USER }}
+          key: ${{ secrets.LOCAL_SERVER_SSH_KEY }}
+          script: |
+            echo ${{ secrets.LOCAL_SERVER_SUDO_PASSWORD }} | sudo -S chmod +x ${{ secrets.LOCAL_SERVER_ROOT_PATH }}/${{ secrets.LOCAL_SERVER_DEPLOY_SCRIPT_PATH }}
+            echo "chmod Clear"
+            echo ${{ secrets.LOCAL_SERVER_SUDO_PASSWORD }} | sudo -S ${{ secrets.LOCAL_SERVER_ROOT_PATH }}/${{ secrets.LOCAL_SERVER_DEPLOY_SCRIPT_PATH }}
+            echo "Script run"
+
+  ## discord
+  action-discord:
+    needs: api-ci-cd
+    runs-on: ubuntu-latest
+    steps:
+      - name: Discord Alarm
+        uses: tsickert/discord-webhook@v5.3.0
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          content: "Main Branch Deploy ${{ job.status }}"
