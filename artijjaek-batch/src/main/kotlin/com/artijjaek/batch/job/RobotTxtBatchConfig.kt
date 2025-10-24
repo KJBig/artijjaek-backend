@@ -1,8 +1,8 @@
 package com.artijjaek.batch.job
 
 import com.artijjaek.batch.service.RobotsTxtCheckService
-import com.artijjaek.core.domain.Company
-import com.artijjaek.core.service.CompanyDomainService
+import com.artijjaek.core.domain.company.entity.Company
+import com.artijjaek.core.domain.company.service.CompanyDomainService
 import jakarta.persistence.EntityManagerFactory
 import org.slf4j.LoggerFactory
 import org.springframework.batch.core.Job

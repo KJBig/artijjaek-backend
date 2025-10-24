@@ -1,7 +1,7 @@
 package com.artijjaek.batch.service
 
-import com.artijjaek.core.domain.Article
-import com.artijjaek.core.domain.Member
+import com.artijjaek.core.domain.article.entity.Article
+import com.artijjaek.core.domain.member.entity.Member
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mail.javamail.MimeMessageHelper
 import org.springframework.stereotype.Service

@@ -1,6 +1,6 @@
 package com.artijjaek.api.dto.response
 
-import com.artijjaek.core.domain.Company
+import com.artijjaek.core.domain.company.entity.Company
 
 data class CompanySimpleDataResponse(
     val companyId: Long,

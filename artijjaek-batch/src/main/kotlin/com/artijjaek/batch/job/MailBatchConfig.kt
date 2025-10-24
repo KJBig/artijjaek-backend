@@ -1,11 +1,11 @@
 package com.artijjaek.batch.job
 
 import com.artijjaek.batch.service.MailService
-import com.artijjaek.core.domain.Member
-import com.artijjaek.core.domain.MemberArticle
-import com.artijjaek.core.service.ArticleDomainService
-import com.artijjaek.core.service.CompanySubscriptionDomainService
-import com.artijjaek.core.service.MemberArticleDomainService
+import com.artijjaek.core.domain.article.service.ArticleDomainService
+import com.artijjaek.core.domain.member.entity.Member
+import com.artijjaek.core.domain.member.entity.MemberArticle
+import com.artijjaek.core.domain.member.service.MemberArticleDomainService
+import com.artijjaek.core.domain.subscription.service.CompanySubscriptionDomainService
 import jakarta.persistence.EntityManagerFactory
 import org.slf4j.LoggerFactory
 import org.springframework.batch.core.Job

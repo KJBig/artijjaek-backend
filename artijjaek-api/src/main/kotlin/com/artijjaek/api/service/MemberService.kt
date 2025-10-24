@@ -4,13 +4,13 @@ import com.artijjaek.api.common.UuidTokenGenerator
 import com.artijjaek.api.dto.request.CheckMemberTokenAvailabilityRequest
 import com.artijjaek.api.dto.request.RegisterMemberRequest
 import com.artijjaek.api.dto.response.MemberTokenAvailabilityResponse
-import com.artijjaek.core.domain.Company
-import com.artijjaek.core.domain.CompanySubscription
-import com.artijjaek.core.domain.Member
-import com.artijjaek.core.enums.MemberStatus
-import com.artijjaek.core.service.CompanyDomainService
-import com.artijjaek.core.service.CompanySubscriptionDomainService
-import com.artijjaek.core.service.MemberDomainService
+import com.artijjaek.core.domain.company.entity.Company
+import com.artijjaek.core.domain.company.service.CompanyDomainService
+import com.artijjaek.core.domain.member.entity.Member
+import com.artijjaek.core.domain.member.enums.MemberStatus
+import com.artijjaek.core.domain.member.service.MemberDomainService
+import com.artijjaek.core.domain.subscription.entity.CompanySubscription
+import com.artijjaek.core.domain.subscription.service.CompanySubscriptionDomainService
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 

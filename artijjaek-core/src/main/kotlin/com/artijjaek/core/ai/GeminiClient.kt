@@ -1,7 +1,7 @@
 package com.artijjaek.core.ai
 
-import com.artijjaek.core.domain.Article
-import com.artijjaek.core.domain.Category
+import com.artijjaek.core.domain.article.entity.Article
+import com.artijjaek.core.domain.category.entity.Category
 import com.google.genai.Client
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component

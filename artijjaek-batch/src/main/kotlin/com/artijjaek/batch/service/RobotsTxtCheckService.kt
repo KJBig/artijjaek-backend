@@ -1,6 +1,6 @@
 package com.artijjaek.batch.service
 
-import com.artijjaek.core.domain.Company
+import com.artijjaek.core.domain.company.entity.Company
 import org.springframework.stereotype.Service
 import java.io.IOException
 import java.net.URL

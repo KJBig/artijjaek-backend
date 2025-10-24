@@ -2,9 +2,9 @@ package com.artijjaek.batch.job
 
 import com.artijjaek.batch.dto.ArticleCategory
 import com.artijjaek.core.ai.GeminiClient
-import com.artijjaek.core.domain.Article
-import com.artijjaek.core.service.ArticleDomainService
-import com.artijjaek.core.service.CategoryDomainService
+import com.artijjaek.core.domain.article.entity.Article
+import com.artijjaek.core.domain.article.service.ArticleDomainService
+import com.artijjaek.core.domain.category.service.CategoryDomainService
 import jakarta.persistence.EntityManagerFactory
 import org.slf4j.LoggerFactory
 import org.springframework.batch.core.Job
