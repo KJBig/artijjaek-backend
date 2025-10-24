@@ -1,9 +1,9 @@
 package com.artijjaek.batch.job
 
 import com.artijjaek.batch.crawler.CrawlerFactory
-import com.artijjaek.core.domain.Article
-import com.artijjaek.core.domain.Company
-import com.artijjaek.core.service.ArticleDomainService
+import com.artijjaek.core.domain.article.entity.Article
+import com.artijjaek.core.domain.article.service.ArticleDomainService
+import com.artijjaek.core.domain.company.entity.Company
 import jakarta.persistence.EntityManagerFactory
 import org.slf4j.LoggerFactory
 import org.springframework.batch.core.Job

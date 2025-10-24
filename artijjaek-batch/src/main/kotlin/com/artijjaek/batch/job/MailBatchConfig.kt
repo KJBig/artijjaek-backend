@@ -1,11 +1,11 @@
 package com.artijjaek.batch.job
 
 import com.artijjaek.batch.service.MailService
-import com.artijjaek.core.domain.Member
-import com.artijjaek.core.domain.MemberArticle
-import com.artijjaek.core.service.ArticleDomainService
-import com.artijjaek.core.service.MemberArticleDomainService
-import com.artijjaek.core.service.SubscribeDomainService
+import com.artijjaek.core.domain.article.service.ArticleDomainService
+import com.artijjaek.core.domain.member.entity.Member
+import com.artijjaek.core.domain.member.entity.MemberArticle
+import com.artijjaek.core.domain.member.service.MemberArticleDomainService
+import com.artijjaek.core.domain.subscription.service.CompanySubscriptionDomainService
 import jakarta.persistence.EntityManagerFactory
 import org.slf4j.LoggerFactory
 import org.springframework.batch.core.Job
@@ -27,7 +27,7 @@ class MailBatchConfig(
     private val transactionManager: PlatformTransactionManager,
     private val entityManagerFactory: EntityManagerFactory,
     private val memberArticleDomainService: MemberArticleDomainService,
-    private val subscribeDomainService: SubscribeDomainService,
+    private val companySubscriptionDomainService: CompanySubscriptionDomainService,
     private val articleDomainService: ArticleDomainService,
     private val mailService: MailService,
 
@@ -65,7 +65,7 @@ class MailBatchConfig(
     @Bean
     fun sendMailProcessor(): ItemProcessor<Member, List<MemberArticle>> {
         return ItemProcessor { member ->
-            val memberSubscribeCompanies = subscribeDomainService.findAllByMember(member).stream()
+            val memberSubscribeCompanies = companySubscriptionDomainService.findAllByMember(member).stream()
                 .map { it.company }
                 .toList()
             val yesterdayArticles = articleDomainService.findYesterdayByCompanies(memberSubscribeCompanies)

@@ -14,7 +14,6 @@ class CrawlingJobScheduler(
     private val jobLauncher: JobLauncher,
     private val crawlingJob: Job,
     private val robotTxtJob: Job,
-    private val allocateCategoryJob: Job,
 ) {
 
     @Scheduled(cron = "0 0 0 * * *")
@@ -25,6 +24,5 @@ class CrawlingJobScheduler(
 
         jobLauncher.run(robotTxtJob, jobParameters)
         jobLauncher.run(crawlingJob, jobParameters)
-        jobLauncher.run(allocateCategoryJob, jobParameters)
     }
 }
