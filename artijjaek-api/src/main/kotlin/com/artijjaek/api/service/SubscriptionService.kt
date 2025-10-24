@@ -1,24 +1,24 @@
 package com.artijjaek.api.service
 
-import com.artijjaek.api.dto.request.ChangeSubscribeRequest
+import com.artijjaek.api.dto.request.SubscriptionChangeRequest
 import com.artijjaek.core.domain.Company
-import com.artijjaek.core.domain.Subscribe
+import com.artijjaek.core.domain.CompanySubscription
 import com.artijjaek.core.enums.MemberStatus
 import com.artijjaek.core.service.CompanyDomainService
+import com.artijjaek.core.service.CompanySubscriptionDomainService
 import com.artijjaek.core.service.MemberDomainService
-import com.artijjaek.core.service.SubscribeDomainService
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
-class SubscribeService(
+class SubscriptionService(
     private val memberDomainService: MemberDomainService,
     private val companyDomainService: CompanyDomainService,
-    private val subscribeDomainService: SubscribeDomainService,
+    private val companySubscriptionDomainService: CompanySubscriptionDomainService,
 ) {
 
     @Transactional
-    fun changeSubscribe(request: ChangeSubscribeRequest) {
+    fun changeSubscription(request: SubscriptionChangeRequest) {
         val member = memberDomainService.findByEmailAndMemberStatus(request.email, MemberStatus.ACTIVE)
             ?: throw IllegalStateException("Member Not Found.")
 
@@ -26,16 +26,16 @@ class SubscribeService(
             throw IllegalArgumentException("Token is not matched.")
         }
 
-        subscribeDomainService.deleteAllByMemberId(member.id!!)
+        companySubscriptionDomainService.deleteAllByMemberId(member.id!!)
 
         val companies: List<Company> = companyDomainService.findByIdsOrAll(request.companyIds)
 
-        val subscribes = companies.map { Subscribe(member = member, company = it) }
-        subscribeDomainService.saveAll(subscribes)
+        val companySubscriptions = companies.map { CompanySubscription(member = member, company = it) }
+        companySubscriptionDomainService.saveAll(companySubscriptions)
     }
 
     @Transactional
-    fun chancelSubscribe(email: String, token: String) {
+    fun chancelSubscription(email: String, token: String) {
         val member = memberDomainService.findByEmailAndMemberStatus(email, MemberStatus.ACTIVE)
             ?: throw IllegalStateException("Member Not Found.")
 

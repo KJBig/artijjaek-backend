@@ -1,29 +1,29 @@
 package com.artijjaek.api.controller
 
 import com.artijjaek.api.dto.common.SuccessResponse
-import com.artijjaek.api.dto.request.ChangeSubscribeRequest
-import com.artijjaek.api.service.SubscribeService
+import com.artijjaek.api.dto.request.SubscriptionChangeRequest
+import com.artijjaek.api.service.SubscriptionService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
-@RequestMapping("/api/v1/subscribe")
+@RequestMapping("/api/v1/subscription")
 @RestController
-class SubscribeControllerV1(
-    private val subscribeService: SubscribeService,
+class SubscriptionControllerV1(
+    private val subscriptionService: SubscriptionService,
 ) {
 
     @PutMapping("/change")
-    fun changeSubscribe(@RequestBody request: ChangeSubscribeRequest): ResponseEntity<SuccessResponse> {
-        subscribeService.changeSubscribe(request)
+    fun changeSubscription(@RequestBody request: SubscriptionChangeRequest): ResponseEntity<SuccessResponse> {
+        subscriptionService.changeSubscription(request)
         return ResponseEntity.ok(SuccessResponse())
     }
 
     @DeleteMapping("")
-    fun cancelSubscribe(
+    fun cancelSubscription(
         @RequestParam("email") email: String,
         @RequestParam("token") token: String
     ): ResponseEntity<SuccessResponse> {
-        subscribeService.chancelSubscribe(email, token)
+        subscriptionService.chancelSubscription(email, token)
         return ResponseEntity.ok(SuccessResponse())
     }
 

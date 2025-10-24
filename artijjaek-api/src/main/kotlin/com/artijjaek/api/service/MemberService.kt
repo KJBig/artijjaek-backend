@@ -5,12 +5,12 @@ import com.artijjaek.api.dto.request.CheckMemberTokenAvailabilityRequest
 import com.artijjaek.api.dto.request.RegisterMemberRequest
 import com.artijjaek.api.dto.response.MemberTokenAvailabilityResponse
 import com.artijjaek.core.domain.Company
+import com.artijjaek.core.domain.CompanySubscription
 import com.artijjaek.core.domain.Member
-import com.artijjaek.core.domain.Subscribe
 import com.artijjaek.core.enums.MemberStatus
 import com.artijjaek.core.service.CompanyDomainService
+import com.artijjaek.core.service.CompanySubscriptionDomainService
 import com.artijjaek.core.service.MemberDomainService
-import com.artijjaek.core.service.SubscribeDomainService
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional
 class MemberService(
     private val memberDomainService: MemberDomainService,
     private val companyDomainService: CompanyDomainService,
-    private val subscribeDomainService: SubscribeDomainService,
+    private val companySubscriptionDomainService: CompanySubscriptionDomainService,
 ) {
 
     @Transactional
@@ -38,8 +38,8 @@ class MemberService(
         )
         val companies: List<Company> = companyDomainService.findByIdsOrAll(request.companyIds)
 
-        val subscribes = companies.map { Subscribe(member = newMember, company = it) }
-        subscribeDomainService.saveAll(subscribes)
+        val companySubscriptions = companies.map { CompanySubscription(member = newMember, company = it) }
+        companySubscriptionDomainService.saveAll(companySubscriptions)
     }
 
     @Transactional(readOnly = true)

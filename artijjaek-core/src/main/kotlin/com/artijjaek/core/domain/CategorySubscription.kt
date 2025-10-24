@@ -3,11 +3,11 @@ package com.artijjaek.core.domain
 import jakarta.persistence.*
 
 @Entity
-class Subscribe(
+class CategorySubscription(
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "subscribe_id")
+    @Column(name = "category_subscription_id")
     var id: Long? = null,
 
     @ManyToOne
@@ -15,8 +15,8 @@ class Subscribe(
     var member: Member,
 
     @ManyToOne
-    @JoinColumn(name = "company_id", nullable = false)
-    var company: Company,
+    @JoinColumn(name = "category_id", nullable = false)
+    var category: Category,
 
     ) : BaseEntity() {
 
