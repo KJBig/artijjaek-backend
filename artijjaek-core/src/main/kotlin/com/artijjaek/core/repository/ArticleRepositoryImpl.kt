@@ -1,6 +1,7 @@
 package com.artijjaek.core.repository
 
 import com.artijjaek.core.domain.Article
+import com.artijjaek.core.domain.Category
 import com.artijjaek.core.domain.Company
 import com.artijjaek.core.domain.QArticle.article
 import com.querydsl.jpa.impl.JPAQueryFactory
@@ -47,5 +48,12 @@ class ArticleRepositoryImpl(
             )
             .orderBy(article.id.desc())
             .fetch()
+    }
+
+    override fun allocateCategory(targetArticle: Article, category: Category) {
+        jpaQueryFactory.update(article)
+            .set(article.category, category)
+            .where(article.id.eq(targetArticle.id))
+            .execute()
     }
 }

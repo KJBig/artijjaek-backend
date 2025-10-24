@@ -1,8 +1,10 @@
 package com.artijjaek.batch.job
 
+import com.artijjaek.batch.dto.ArticleCategory
 import com.artijjaek.core.ai.GeminiClient
 import com.artijjaek.core.domain.Article
 import com.artijjaek.core.service.ArticleDomainService
+import com.artijjaek.core.service.CategoryDomainService
 import jakarta.persistence.EntityManagerFactory
 import org.slf4j.LoggerFactory
 import org.springframework.batch.core.Job
@@ -23,6 +25,7 @@ class CategoryBatchConfig(
     private val transactionManager: PlatformTransactionManager,
     private val entityManagerFactory: EntityManagerFactory,
     private val articleDomainService: ArticleDomainService,
+    private val categoryDomainService: CategoryDomainService,
     private val geminiClient: GeminiClient,
 ) {
 
@@ -38,7 +41,7 @@ class CategoryBatchConfig(
     @Bean
     fun allocateCategoryStep(): Step {
         return StepBuilder("allocateCategoryStep", jobRepository)
-            .chunk<List<Article>, List<Article>>(10, transactionManager)
+            .chunk<List<Article>, List<ArticleCategory>>(10, transactionManager)
             .reader(articleReaderForAllocateCategory())
             .processor(allocateCategoryProcessor())
             .writer(articleWriterForAllocateCategory())
@@ -54,7 +57,10 @@ class CategoryBatchConfig(
             @Synchronized
             override fun read(): List<Article>? {
                 val query = entityManagerFactory.createEntityManager().use { em ->
-                    em.createQuery("SELECT a FROM Article a WHERE a.category is null", Article::class.java)
+                    em.createQuery(
+                        "SELECT a FROM Article a WHERE a.category is null ORDER BY a.id DESC",
+                        Article::class.java
+                    )
                         .setFirstResult(currentPage * pageSize)
                         .setMaxResults(pageSize)
                         .resultList
@@ -71,25 +77,28 @@ class CategoryBatchConfig(
     }
 
     @Bean
-    fun allocateCategoryProcessor(): ItemProcessor<List<Article>, List<Article>> {
+    fun allocateCategoryProcessor(): ItemProcessor<List<Article>, List<ArticleCategory>> {
         return ItemProcessor { articles ->
-            val categories = geminiClient.analyzeArticleCategory(articles)
+            val articleCategories = ArrayList<ArticleCategory>()
+            val categories = categoryDomainService.findAll()
+            val categoryMap = geminiClient.analyzeArticleCategory(articles, categories)
 
             for (i in articles.indices) {
                 val nowArticle = articles.get(i)
-                val nowCategory = categories.get(i)
-                nowArticle.changeCategory(nowCategory)
+                val nowCategory = categoryMap.get(i)
+                nowCategory?.let { articleCategories.add(ArticleCategory(nowArticle, it)) }
             }
 
-            articles
+            articleCategories
+
         }
 
     }
 
     @Bean
-    fun articleWriterForAllocateCategory(): ItemWriter<List<Article>> {
+    fun articleWriterForAllocateCategory(): ItemWriter<List<ArticleCategory>> {
         return ItemWriter { items ->
-            items.flatten().forEach { articleDomainService.save(it) }
+            items.flatten().forEach { articleDomainService.allocateCategory(it.article, it.category) }
         }
     }
 

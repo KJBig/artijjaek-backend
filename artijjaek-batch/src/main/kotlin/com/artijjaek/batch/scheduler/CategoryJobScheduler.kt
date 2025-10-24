@@ -10,19 +10,17 @@ import java.time.LocalDateTime
 
 @Component
 @EnableScheduling
-class CrawlingJobScheduler(
+class CategoryJobScheduler(
     private val jobLauncher: JobLauncher,
-    private val crawlingJob: Job,
-    private val robotTxtJob: Job,
+    private val allocateCategoryJob: Job,
 ) {
 
-    @Scheduled(cron = "0 0 0 * * *")
-    fun runCrawlingJob() {
+    @Scheduled(cron = "0 0 3 * * *")
+    fun runCategoryJob() {
         val jobParameters = JobParametersBuilder()
             .addString("runTime", LocalDateTime.now().toString()) // 매 실행마다 다른 값
             .toJobParameters()
 
-        jobLauncher.run(robotTxtJob, jobParameters)
-        jobLauncher.run(crawlingJob, jobParameters)
+        jobLauncher.run(allocateCategoryJob, jobParameters)
     }
 }

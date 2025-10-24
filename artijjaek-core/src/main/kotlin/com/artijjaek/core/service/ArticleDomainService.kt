@@ -1,6 +1,7 @@
 package com.artijjaek.core.service
 
 import com.artijjaek.core.domain.Article
+import com.artijjaek.core.domain.Category
 import com.artijjaek.core.domain.Company
 import com.artijjaek.core.repository.ArticleRepository
 import org.springframework.stereotype.Service
@@ -23,5 +24,9 @@ class ArticleDomainService(
 
     fun findYesterdayByCompanies(memberSubscribeCompanies: List<Company>): List<Article> {
         return articleRepository.findYesterdayByCompanies(memberSubscribeCompanies)
+    }
+
+    fun allocateCategory(article: Article, category: Category) {
+        articleRepository.allocateCategory(article, category);
     }
 }

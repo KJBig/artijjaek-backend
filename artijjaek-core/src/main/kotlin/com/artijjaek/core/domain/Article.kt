@@ -1,6 +1,5 @@
 package com.artijjaek.core.domain
 
-import com.artijjaek.core.enums.CategoryType
 import jakarta.persistence.*
 
 @Entity
@@ -15,9 +14,9 @@ class Article(
     @JoinColumn(name = "company_id", nullable = false)
     var company: Company,
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = true)
-    var category: CategoryType?,
+    @ManyToOne
+    @JoinColumn(name = "category_id", nullable = false)
+    var category: Category?,
 
     @Column(nullable = false)
     var title: String,
@@ -33,7 +32,7 @@ class Article(
 
     ) : BaseEntity() {
 
-    fun changeCategory(category: CategoryType?) {
+    fun changeCategory(category: Category?) {
         this.category = category
     }
 
