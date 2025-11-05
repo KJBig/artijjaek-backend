@@ -9,8 +9,8 @@ class InquiryDomainService(
     private val inquiryRepository: InquiryRepository,
 ) {
 
-    fun saveInquiry(unsubscription: Inquiry): Inquiry {
-        return inquiryRepository.save(unsubscription)
+    fun saveInquiry(inquiry: Inquiry): Inquiry {
+        return inquiryRepository.save(inquiry)
     }
 
 }
