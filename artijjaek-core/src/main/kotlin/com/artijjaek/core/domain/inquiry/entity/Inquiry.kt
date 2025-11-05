@@ -11,6 +11,7 @@ class Inquiry(
     @Column(name = "inquiry_id")
     var id: Long? = null,
 
+    @Column(columnDefinition = "TEXT")
     var content: String,
 
     ) : BaseEntity() {

@@ -13,7 +13,7 @@ class Unsubscription(
     @Column(name = "unsubscription_id")
     var id: Long? = null,
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     var member: Member,
 
@@ -21,6 +21,7 @@ class Unsubscription(
     @Column(nullable = true)
     var reason: UnSubscriptionReason,
 
+    @Column(columnDefinition = "TEXT")
     var detail: String,
 
     ) : BaseEntity() {
