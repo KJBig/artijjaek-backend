@@ -15,6 +15,7 @@ class CorsConfig {
         configuration.setAllowedOrigins(
             mutableListOf<String?>(
                 "http://localhost:5173",
+                "https://www.artijjaek.kr"
             )
         )
         configuration.addAllowedHeader("Content-Type")
