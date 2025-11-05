@@ -1,6 +1,6 @@
 package com.artijjaek.api.dto.request
 
-import com.artijjaek.api.enums.UnSubscriptionReason
+import com.artijjaek.core.domain.unsubscription.enums.UnSubscriptionReason
 
 data class UnsubscriptionRequest(
     val email: String,

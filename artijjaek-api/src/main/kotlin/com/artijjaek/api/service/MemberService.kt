@@ -16,6 +16,8 @@ import com.artijjaek.core.domain.subscription.entity.CategorySubscription
 import com.artijjaek.core.domain.subscription.entity.CompanySubscription
 import com.artijjaek.core.domain.subscription.service.CategorySubscriptionDomainService
 import com.artijjaek.core.domain.subscription.service.CompanySubscriptionDomainService
+import com.artijjaek.core.domain.unsubscription.entity.Unsubscription
+import com.artijjaek.core.domain.unsubscription.service.UnsubscriptionDomainService
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -26,6 +28,7 @@ class MemberService(
     private val companySubscriptionDomainService: CompanySubscriptionDomainService,
     private val categoryDomainService: CategoryDomainService,
     private val categorySubscriptionDomainService: CategorySubscriptionDomainService,
+    private val unsubscriptionDomainService: UnsubscriptionDomainService,
 ) {
 
     @Transactional
@@ -105,6 +108,10 @@ class MemberService(
         }
 
         member.changeMemberStatus(MemberStatus.DELETED)
+
+        val unsubscription = Unsubscription(member = member, reason = request.reason, detail = request.detail)
+        unsubscriptionDomainService.saveUnsubscription(unsubscription)
     }
+
 
 }

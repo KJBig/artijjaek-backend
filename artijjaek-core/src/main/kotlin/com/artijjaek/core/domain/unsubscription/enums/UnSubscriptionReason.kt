@@ -1,4 +1,4 @@
-package com.artijjaek.api.enums
+package com.artijjaek.core.domain.unsubscription.enums
 
 enum class UnSubscriptionReason {
     NO_COMPANY,
