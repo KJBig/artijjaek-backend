@@ -1,10 +1,10 @@
 package com.artijjaek.api.service
 
 import com.artijjaek.api.common.UuidTokenGenerator
-import com.artijjaek.api.dto.request.CheckMemberTokenAvailabilityRequest
 import com.artijjaek.api.dto.request.RegisterMemberRequest
 import com.artijjaek.api.dto.request.SubscriptionChangeRequest
-import com.artijjaek.api.dto.response.MemberTokenAvailabilityResponse
+import com.artijjaek.api.dto.request.UnsubscriptionRequest
+import com.artijjaek.api.dto.response.MemberDataResponse
 import com.artijjaek.core.domain.category.entity.Category
 import com.artijjaek.core.domain.category.service.CategoryDomainService
 import com.artijjaek.core.domain.company.entity.Company
@@ -16,6 +16,8 @@ import com.artijjaek.core.domain.subscription.entity.CategorySubscription
 import com.artijjaek.core.domain.subscription.entity.CompanySubscription
 import com.artijjaek.core.domain.subscription.service.CategorySubscriptionDomainService
 import com.artijjaek.core.domain.subscription.service.CompanySubscriptionDomainService
+import com.artijjaek.core.domain.unsubscription.entity.Unsubscription
+import com.artijjaek.core.domain.unsubscription.service.UnsubscriptionDomainService
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -26,6 +28,7 @@ class MemberService(
     private val companySubscriptionDomainService: CompanySubscriptionDomainService,
     private val categoryDomainService: CategoryDomainService,
     private val categorySubscriptionDomainService: CategorySubscriptionDomainService,
+    private val unsubscriptionDomainService: UnsubscriptionDomainService,
 ) {
 
     @Transactional
@@ -57,11 +60,20 @@ class MemberService(
     }
 
     @Transactional(readOnly = true)
-    fun checkTokenAvailability(request: CheckMemberTokenAvailabilityRequest): MemberTokenAvailabilityResponse {
-        val member = memberDomainService.findByEmailAndMemberStatus(request.email, MemberStatus.ACTIVE)
+    fun getMemberDataWithToken(email: String, token: String): MemberDataResponse {
+        val member = memberDomainService.findByEmailAndMemberStatus(email, MemberStatus.ACTIVE)
             ?: throw IllegalStateException("Member Not Found.")
-        val isAvailable = member.uuidToken == request.token
-        return MemberTokenAvailabilityResponse(isAvailable)
+
+        if (member.uuidToken != token) {
+            throw IllegalArgumentException("Token Not Matched")
+        }
+
+        val companyIds = companySubscriptionDomainService.findAllByMember(member)
+            .mapNotNull { companySubscription -> companySubscription.company.id }
+        val categoryIds: List<Long> = categorySubscriptionDomainService.findAllByMember(member)
+            .mapNotNull { categorySubscription -> categorySubscription.category.id }
+
+        return MemberDataResponse.of(member, companyIds, categoryIds)
     }
 
     @Transactional
@@ -87,15 +99,19 @@ class MemberService(
     }
 
     @Transactional
-    fun cancelSubscription(email: String, token: String) {
-        val member = memberDomainService.findByEmailAndMemberStatus(email, MemberStatus.ACTIVE)
+    fun cancelSubscription(request: UnsubscriptionRequest) {
+        val member = memberDomainService.findByEmailAndMemberStatus(request.email, MemberStatus.ACTIVE)
             ?: throw IllegalStateException("Member Not Found.")
 
-        if (member.uuidToken != token) {
+        if (member.uuidToken != request.token) {
             throw IllegalArgumentException("Token is not matched.")
         }
 
         member.changeMemberStatus(MemberStatus.DELETED)
+
+        val unsubscription = Unsubscription(member = member, reason = request.reason, detail = request.detail)
+        unsubscriptionDomainService.saveUnsubscription(unsubscription)
     }
+
 
 }

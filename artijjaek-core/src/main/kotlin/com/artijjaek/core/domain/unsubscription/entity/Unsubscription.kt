@@ -1,25 +1,28 @@
-package com.artijjaek.core.domain.subscription.entity
+package com.artijjaek.core.domain.unsubscription.entity
 
 import com.artijjaek.core.common.entity.BaseEntity
-import com.artijjaek.core.domain.category.entity.Category
 import com.artijjaek.core.domain.member.entity.Member
+import com.artijjaek.core.domain.unsubscription.enums.UnSubscriptionReason
 import jakarta.persistence.*
 
 @Entity
-class CategorySubscription(
+class Unsubscription(
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "category_subscription_id")
+    @Column(name = "unsubscription_id")
     var id: Long? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     var member: Member,
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
-    var category: Category,
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = true)
+    var reason: UnSubscriptionReason,
+
+    @Column(columnDefinition = "TEXT")
+    var detail: String,
 
     ) : BaseEntity() {
 
