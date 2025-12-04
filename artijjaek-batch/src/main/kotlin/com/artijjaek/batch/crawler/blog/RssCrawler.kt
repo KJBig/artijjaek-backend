@@ -3,6 +3,7 @@ package com.artijjaek.batch.crawler.blog
 import com.artijjaek.core.domain.article.entity.Article
 import com.artijjaek.core.domain.company.entity.Company
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.parser.Parser
 import org.slf4j.LoggerFactory
@@ -31,7 +32,7 @@ abstract class RssCrawler(
 
             val htmlDoc = Jsoup.parse(contentHtml ?: "")
             val firstText = findFirstTextElement(htmlDoc.body())
-            val firstImg = htmlDoc.select("img").firstOrNull()?.attr("src")
+            val firstImg = findFirstImageElement(htmlDoc, company)
 
             log.info("[${company.nameKr}] : Title->$title, Link->$link, Img->$firstImg, Description->$firstText")
 
@@ -61,5 +62,13 @@ abstract class RssCrawler(
             }
         }
         return null
+    }
+
+    private fun findFirstImageElement(htmlDoc: Document, company: Company): String? {
+        val rawImg = htmlDoc.select("img").firstOrNull()?.attr("src")
+        return rawImg?.let { img ->
+            if (img.startsWith("http")) img
+            else company.baseUrl + img
+        }
     }
 }
