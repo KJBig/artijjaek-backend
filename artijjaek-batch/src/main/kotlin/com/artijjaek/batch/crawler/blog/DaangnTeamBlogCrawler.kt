@@ -18,14 +18,14 @@ class DaangnTeamBlogCrawler(
 
     private val log = LoggerFactory.getLogger(DaangnTeamBlogCrawler::class.java)
 
-    override val getBlogName: String
-        get() = "DAANGN"
+    override val blogName: String = "DAANGN"
 
     override fun crawl(company: Company): List<Article> {
         val url: String = company.baseUrl + company.crawlUrl
         val articles = mutableListOf<Article>()
 
         try {
+            log.info("==== Crawling Jsoup: ${company.nameKr} ====")
             val doc: Document = Jsoup.connect(url)
                 .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
                 .timeout(10000)
@@ -43,6 +43,12 @@ class DaangnTeamBlogCrawler(
                     try {
                         val articleUrl = findArticleUrl(it, url)
                         val crawlingUrlData = urlDataCrawler.crawlingUrlData(articleUrl)
+
+                        log.info(
+                            "[${company.nameKr}] : Title->${crawlingUrlData.title}, Link->$articleUrl, " +
+                                    "Img->${crawlingUrlData.imageUrl}, Description->${crawlingUrlData.description}"
+                        )
+
                         articles.add(
                             Article(
                                 company = company,
