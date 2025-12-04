@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component
 @Component
 class CrawlerFactory(crawlers: List<BlogCrawler>) {
 
-    private val crawlerMap: Map<String, BlogCrawler> = crawlers.associateBy { it.getBlogName.uppercase() }
+    private val crawlerMap: Map<String, BlogCrawler> = crawlers.associateBy { it.blogName.uppercase() }
 
     fun getCrawler(companyName: String): BlogCrawler {
         return crawlerMap[companyName.uppercase()]

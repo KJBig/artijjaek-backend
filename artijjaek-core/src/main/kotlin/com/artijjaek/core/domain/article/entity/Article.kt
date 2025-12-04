@@ -25,10 +25,10 @@ class Article(
     var title: String,
 
     @Column(nullable = true)
-    var description: String,
+    var description: String?,
 
     @Column(columnDefinition = "TEXT", nullable = true)
-    var image: String,
+    var image: String?,
 
     @Column(columnDefinition = "TEXT", nullable = false)
     var link: String,

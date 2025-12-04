@@ -4,6 +4,6 @@ import com.artijjaek.core.domain.article.entity.Article
 import com.artijjaek.core.domain.company.entity.Company
 
 interface BlogCrawler {
-    val getBlogName: String
+    val blogName: String
     fun crawl(company: Company): List<Article>
 }
