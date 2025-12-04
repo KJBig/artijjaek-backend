@@ -24,10 +24,10 @@ class Article(
     @Column(nullable = false)
     var title: String,
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     var description: String,
 
-    @Column(columnDefinition = "TEXT", nullable = false)
+    @Column(columnDefinition = "TEXT", nullable = true)
     var image: String,
 
     @Column(columnDefinition = "TEXT", nullable = false)
