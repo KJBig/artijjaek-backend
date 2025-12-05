@@ -8,6 +8,7 @@ import org.jsoup.nodes.Element
 import org.jsoup.parser.Parser
 import org.slf4j.LoggerFactory
 import java.net.URL
+import java.util.*
 
 abstract class RssCrawler(
 ) : BlogCrawler {
@@ -69,19 +70,18 @@ abstract class RssCrawler(
     }
 
     protected open fun findFirstTextElement(element: Element): String? {
-        for (child in element.children()) {
-            val text = child.text().trim()
+        val queue: Queue<Element> = LinkedList(element.children())
+        while (queue.isNotEmpty()) {
+            val current = queue.poll()
+            val text = current.text().trim()
             if (text.isNotEmpty()) {
                 return text
             }
-
-            val nested = findFirstTextElement(child)
-            if (nested != null) {
-                return nested
-            }
+            queue.addAll(current.children())
         }
         return null
     }
+
 
     protected open fun findFirstImageElement(htmlDoc: Document, company: Company): String? {
         val rawImg = htmlDoc.select("img").firstOrNull()?.attr("src")
