@@ -1,5 +1,6 @@
 package com.artijjaek.batch.crawler.blog
 
+import com.artijjaek.batch.dto.CrawledArticleDto
 import com.artijjaek.core.domain.article.entity.Article
 import com.artijjaek.core.domain.company.entity.Company
 import org.jsoup.Jsoup
@@ -26,16 +27,24 @@ abstract class RssCrawler(
         val items = getItems(doc)
 
         return items.map { item ->
-            val article = mapItemToArticle(item, company)
+            val crawledArticleData = mapItemToDto(item, company)
 
             log.info(
-                "[${company.nameKr}] : Title->${article.title}, " +
-                        "Link->${article.link}, " +
-                        "Img->${article.image}, " +
-                        "Description->${article.description}"
+                "[${company.nameKr}] : " +
+                        "Title->${crawledArticleData.title}, " +
+                        "Link->${crawledArticleData.link}, " +
+                        "Img->${crawledArticleData.firstImg}, " +
+                        "Description->${crawledArticleData.firstText}"
             )
 
-            article
+            Article(
+                company = company,
+                title = crawledArticleData.title,
+                description = crawledArticleData.firstText,
+                link = crawledArticleData.link,
+                image = crawledArticleData.firstImg,
+                category = null
+            )
         }
 
     }
@@ -45,10 +54,10 @@ abstract class RssCrawler(
         return items
     }
 
-    protected open fun mapItemToArticle(
+    protected open fun mapItemToDto(
         item: Element,
         company: Company
-    ): Article {
+    ): CrawledArticleDto {
         val title = item.selectFirst("title")?.text()
         val link = item.selectFirst("link")?.text()
 
@@ -58,14 +67,11 @@ abstract class RssCrawler(
         val firstText = findFirstTextElement(htmlDoc.body())
         val firstImg = findFirstImageElement(htmlDoc, company)
 
-
-        return Article(
-            company = company,
+        return CrawledArticleDto(
             title = title ?: "",
-            description = firstText,
             link = link ?: "",
-            image = firstImg,
-            category = null
+            firstText = firstText ?: "",
+            firstImg = firstImg ?: ""
         )
     }
 
