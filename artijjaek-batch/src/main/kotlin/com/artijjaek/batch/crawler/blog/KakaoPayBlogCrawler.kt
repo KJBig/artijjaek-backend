@@ -11,8 +11,7 @@ class KakaoPayBlogCrawler(
     override val blogName: String = "KAKAO PAY TECH"
 
     override fun getItems(doc: Document): List<Element> {
-        val items = doc.select("item").reversed().take(10)
-        return items
+        return doc.select("item").takeLast(10)
     }
 
 }
