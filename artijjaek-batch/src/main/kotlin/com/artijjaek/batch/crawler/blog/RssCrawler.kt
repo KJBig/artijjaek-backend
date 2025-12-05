@@ -50,8 +50,7 @@ abstract class RssCrawler(
     }
 
     protected open fun getItems(doc: Document): List<Element> {
-        val items = doc.select("item").take(10)
-        return items
+        return doc.select("item").take(10)
     }
 
     protected open fun mapItemToDto(
