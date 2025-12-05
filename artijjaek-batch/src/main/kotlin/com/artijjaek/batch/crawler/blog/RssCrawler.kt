@@ -70,8 +70,8 @@ abstract class RssCrawler(
         return CrawledArticleDto(
             title = title ?: "",
             link = link ?: "",
-            firstText = firstText ?: "",
-            firstImg = firstImg ?: ""
+            firstText = firstText,
+            firstImg = firstImg
         )
     }
 
