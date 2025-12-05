@@ -12,7 +12,7 @@ import java.net.URL
 abstract class RssCrawler(
 ) : BlogCrawler {
 
-    private val log = LoggerFactory.getLogger(OliveYoungBlogCrawler::class.java)
+    private val log = LoggerFactory.getLogger(RssCrawler::class.java)
 
     abstract override val blogName: String
 
@@ -22,34 +22,53 @@ abstract class RssCrawler(
         val xml = url.readText()
 
         val doc = Jsoup.parse(xml, "", Parser.xmlParser())
-        val items = doc.select("item").take(10)
+        val items = getItems(doc)
 
         return items.map { item ->
-            val title = item.selectFirst("title")?.text()
-            val link = item.selectFirst("link")?.text()
+            val article = mapItemToArticle(item, company)
 
-            val contentHtml = item.selectFirst("content|encoded")?.wholeText()
-
-            val htmlDoc = Jsoup.parse(contentHtml ?: "")
-            val firstText = findFirstTextElement(htmlDoc.body())
-            val firstImg = findFirstImageElement(htmlDoc, company)
-
-            log.info("[${company.nameKr}] : Title->$title, Link->$link, Img->$firstImg, Description->$firstText")
-
-            Article(
-                company = company,
-                title = title ?: "",
-                description = firstText,
-                link = link ?: "",
-                image = firstImg,
-                category = null
+            log.info(
+                "[${company.nameKr}] : Title->${article.title}, " +
+                        "Link->${article.link}, " +
+                        "Img->${article.image}, " +
+                        "Description->${article.description}"
             )
 
+            article
         }
 
     }
 
-    fun findFirstTextElement(element: Element): String? {
+    protected open fun getItems(doc: Document): List<Element> {
+        val items = doc.select("item").take(10)
+        return items
+    }
+
+    protected open fun mapItemToArticle(
+        item: Element,
+        company: Company
+    ): Article {
+        val title = item.selectFirst("title")?.text()
+        val link = item.selectFirst("link")?.text()
+
+        val contentHtml = item.selectFirst("content|encoded")?.wholeText()
+
+        val htmlDoc = Jsoup.parse(contentHtml ?: "")
+        val firstText = findFirstTextElement(htmlDoc.body())
+        val firstImg = findFirstImageElement(htmlDoc, company)
+
+
+        return Article(
+            company = company,
+            title = title ?: "",
+            description = firstText,
+            link = link ?: "",
+            image = firstImg,
+            category = null
+        )
+    }
+
+    protected open fun findFirstTextElement(element: Element): String? {
         for (child in element.children()) {
             val text = child.text().trim()
             if (text.isNotEmpty()) {
@@ -64,7 +83,7 @@ abstract class RssCrawler(
         return null
     }
 
-    private fun findFirstImageElement(htmlDoc: Document, company: Company): String? {
+    protected open fun findFirstImageElement(htmlDoc: Document, company: Company): String? {
         val rawImg = htmlDoc.select("img").firstOrNull()?.attr("src")
         return rawImg?.let { img ->
             if (img.startsWith("http")) img
