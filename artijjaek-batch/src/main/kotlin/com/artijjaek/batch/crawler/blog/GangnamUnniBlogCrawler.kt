@@ -5,10 +5,10 @@ import org.jsoup.nodes.Element
 import org.springframework.stereotype.Component
 
 @Component
-class GangnamUnniTechBlogCrawler(
+class GangnamUnniBlogCrawler(
 ) : RssCrawler() {
 
-    override val blogName: String = "GANGNAM UNNI TECH"
+    override val blogName: String = "GANGNAM UNNI"
 
     override fun getItems(doc: Document): List<Element> {
         return doc.select("item").reversed().take(10)
