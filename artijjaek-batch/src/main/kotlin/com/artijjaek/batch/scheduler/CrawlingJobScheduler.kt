@@ -22,7 +22,7 @@ class CrawlingJobScheduler(
             .addString("runTime", LocalDateTime.now().toString()) // 매 실행마다 다른 값
             .toJobParameters()
 
-        jobLauncher.run(robotTxtJob, jobParameters)
+//        jobLauncher.run(robotTxtJob, jobParameters) // 로봇텍스트 크롤링 비활성화
         jobLauncher.run(crawlingJob, jobParameters)
     }
 }

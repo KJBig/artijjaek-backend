@@ -24,11 +24,11 @@ class Article(
     @Column(nullable = false)
     var title: String,
 
-    @Column(nullable = false)
-    var description: String,
+    @Column(nullable = true)
+    var description: String?,
 
-    @Column(columnDefinition = "TEXT", nullable = false)
-    var image: String,
+    @Column(columnDefinition = "TEXT", nullable = true)
+    var image: String?,
 
     @Column(columnDefinition = "TEXT", nullable = false)
     var link: String,

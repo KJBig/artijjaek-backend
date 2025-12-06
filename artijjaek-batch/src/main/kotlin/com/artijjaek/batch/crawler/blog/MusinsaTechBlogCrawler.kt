@@ -3,9 +3,9 @@ package com.artijjaek.batch.crawler.blog
 import org.springframework.stereotype.Component
 
 @Component
-class DaangnTechBlogCrawler(
+class MusinsaTechBlogCrawler(
 ) : RssCrawler() {
 
-    override val blogName: String = "DAANGN TECH"
+    override val blogName: String = "MUSINSA TECH"
 
 }

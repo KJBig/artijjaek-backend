@@ -254,9 +254,9 @@ class MailService(
         return articles.joinToString("\n") { article ->
             val safeLink = article.link.takeIf { it.isNotBlank() } ?: "#"
             val safeTitle = cleanText(article.title)
-            val safeDescription = cleanText(article.description)
+            val safeDescription = cleanText(article.description!!)
 
-            val imageHtml = if (article.image.isNotBlank()) {
+            val imageHtml = if (article.image!!.isNotBlank()) {
                 """
                 <div class="bookmark-media">
                   <img src="${article.image}" alt="썸네일" class="bookmark-image">
