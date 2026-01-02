@@ -22,7 +22,7 @@ class NewArticleAlertBatchConfig(
     private val webHookService: WebHookService,
 ) {
 
-    private val log = LoggerFactory.getLogger(CategoryBatchConfig::class.java)
+    private val log = LoggerFactory.getLogger(NewArticleAlertBatchConfig::class.java)
 
     @Bean
     fun newArticleAlertJob(): Job {
@@ -41,7 +41,7 @@ class NewArticleAlertBatchConfig(
             .tasklet({ contribution, chunkContext ->
                 try {
                     // 최근 24시간 이내 새 게시글 조회
-                    val newArticles = articleDomainService.findYesterdayArticle()
+                    val newArticles = articleDomainService.findTodayArticle()
 
                     if (newArticles.isEmpty()) {
                         log.info("새로운 게시글이 없습니다.")
