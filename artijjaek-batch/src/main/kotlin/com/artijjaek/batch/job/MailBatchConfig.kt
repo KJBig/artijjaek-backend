@@ -54,10 +54,17 @@ class MailBatchConfig(
 
     @Bean
     fun memberReader(): JpaPagingItemReader<Member> {
+        val query = """
+            SELECT DISTINCT m 
+            FROM Member m 
+            LEFT JOIN MemberArticle ma ON ma.member = m
+            WHERE ma.createdAt BETWEEN CURRENT_DATE AND CURRENT_TIMESTAMP
+        """.trimIndent()
+        
         return JpaPagingItemReaderBuilder<Member>()
             .name("memberReader")
             .entityManagerFactory(entityManagerFactory)
-            .queryString("SELECT m FROM Member m")
+            .queryString(query)
             .pageSize(10)
             .build()
     }
