@@ -54,10 +54,17 @@ class MailBatchConfig(
 
     @Bean
     fun memberReader(): JpaPagingItemReader<Member> {
+        val query = """
+            SELECT DISTINCT m 
+            FROM Member m 
+            JOIN MemberArticle ma ON ma.member = m
+            WHERE ma.createdAt BETWEEN CURRENT_DATE AND CURRENT_TIMESTAMP
+        """.trimIndent()
+
         return JpaPagingItemReaderBuilder<Member>()
             .name("memberReader")
             .entityManagerFactory(entityManagerFactory)
-            .queryString("SELECT m FROM Member m")
+            .queryString(query)
             .pageSize(10)
             .build()
     }
@@ -68,12 +75,12 @@ class MailBatchConfig(
             val memberSubscribeCompanies = companySubscriptionDomainService.findAllByMember(member).stream()
                 .map { it.company }
                 .toList()
-            val yesterdayArticles = articleDomainService.findYesterdayByCompanies(memberSubscribeCompanies)
+            val todayArticles = articleDomainService.findTodayByCompanies(memberSubscribeCompanies)
 
             log.info("Send Email to ${member.email}")
-            mailService.sendMail(member, yesterdayArticles)
+            mailService.sendMail(member, todayArticles)
 
-            yesterdayArticles.stream().map { MemberArticle(member = member, article = it) }.toList()
+            todayArticles.stream().map { MemberArticle(member = member, article = it) }.toList()
         }
 
     }

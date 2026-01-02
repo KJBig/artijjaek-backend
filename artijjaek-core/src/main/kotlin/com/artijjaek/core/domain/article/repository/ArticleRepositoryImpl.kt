@@ -6,6 +6,7 @@ import com.artijjaek.core.domain.category.entity.Category
 import com.artijjaek.core.domain.company.entity.Company
 import com.querydsl.jpa.impl.JPAQueryFactory
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 
 class ArticleRepositoryImpl(
@@ -20,21 +21,19 @@ class ArticleRepositoryImpl(
             .fetch()
     }
 
-    override fun findYesterdayArticle(): List<Article> {
-        val startOfYesterday = LocalDate.now().minusDays(1).atStartOfDay()
+    override fun findTodayArticle(): List<Article> {
         val startOfToday = LocalDate.now().atStartOfDay()
 
         return jpaQueryFactory.selectFrom(article)
             .where(
-                article.createdAt.goe(startOfYesterday)
-                    .and(article.createdAt.lt(startOfToday))
+                article.createdAt.goe(startOfToday)
+                    .and(article.createdAt.lt(LocalDateTime.now()))
             )
             .orderBy(article.createdAt.desc())
             .fetch()
     }
 
-    override fun findYesterdayByCompanies(memberSubscribeCompanies: List<Company>): List<Article> {
-        val startOfYesterday = LocalDate.now().minusDays(1).atStartOfDay()
+    override fun findTodayByCompanies(memberSubscribeCompanies: List<Company>): List<Article> {
         val startOfToday = LocalDate.now().atStartOfDay()
         val companyIds = memberSubscribeCompanies.stream().map { it.id }.toList()
 
@@ -42,8 +41,8 @@ class ArticleRepositoryImpl(
             .where(
                 article.company.id.`in`(companyIds)
                     .and(
-                        article.createdAt.goe(startOfYesterday)
-                            .and(article.createdAt.lt(startOfToday))
+                        article.createdAt.goe(startOfToday)
+                            .and(article.createdAt.lt(LocalDateTime.now()))
                     )
             )
             .orderBy(article.id.desc())
