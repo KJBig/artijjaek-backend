@@ -13,6 +13,7 @@ import java.time.LocalDateTime
 class CrawlingJobScheduler(
     private val jobLauncher: JobLauncher,
     private val crawlingJob: Job,
+    private val newArticleAlertJob: Job,
     private val robotTxtJob: Job,
 ) {
 
@@ -24,5 +25,6 @@ class CrawlingJobScheduler(
 
 //        jobLauncher.run(robotTxtJob, jobParameters) // 로봇텍스트 크롤링 비활성화
         jobLauncher.run(crawlingJob, jobParameters)
+        jobLauncher.run(newArticleAlertJob, jobParameters)
     }
 }

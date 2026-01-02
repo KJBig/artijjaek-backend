@@ -3,6 +3,7 @@ spring:
     import:
       - db-main.yml
       - ai-main.yml
+      - webhook-main.yml
   batch:
     job:
       enabled: false

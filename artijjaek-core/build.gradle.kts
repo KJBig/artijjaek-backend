@@ -19,6 +19,9 @@ dependencies {
 
     // AI
     implementation("com.google.genai:google-genai:1.0.0")
+
+    // Http
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 }
 
 allOpen {
