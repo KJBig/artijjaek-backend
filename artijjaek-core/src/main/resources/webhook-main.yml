@@ -1,0 +1,3 @@
+discord:
+  webhook:
+    new-article: ${DISCORD_NEW_ARTICLE_URL}
