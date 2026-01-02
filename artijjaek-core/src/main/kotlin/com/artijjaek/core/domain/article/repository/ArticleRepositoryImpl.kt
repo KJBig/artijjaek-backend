@@ -22,7 +22,6 @@ class ArticleRepositoryImpl(
     }
 
     override fun findYesterdayArticle(): List<Article> {
-//        val startOfYesterday = LocalDate.now().minusDays(1).atStartOfDay()
         val startOfToday = LocalDate.now().atStartOfDay()
 
         return jpaQueryFactory.selectFrom(article)
@@ -35,7 +34,6 @@ class ArticleRepositoryImpl(
     }
 
     override fun findYesterdayByCompanies(memberSubscribeCompanies: List<Company>): List<Article> {
-        val startOfYesterday = LocalDate.now().minusDays(1).atStartOfDay()
         val startOfToday = LocalDate.now().atStartOfDay()
         val companyIds = memberSubscribeCompanies.stream().map { it.id }.toList()
 
@@ -43,8 +41,8 @@ class ArticleRepositoryImpl(
             .where(
                 article.company.id.`in`(companyIds)
                     .and(
-                        article.createdAt.goe(startOfYesterday)
-                            .and(article.createdAt.lt(startOfToday))
+                        article.createdAt.goe(startOfToday)
+                            .and(article.createdAt.lt(LocalDateTime.now()))
                     )
             )
             .orderBy(article.id.desc())
