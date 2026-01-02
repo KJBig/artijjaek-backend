@@ -15,6 +15,10 @@ class DiscordWebHookService(
     @Value("\${discord.webhook.new-article}")
     lateinit var DISCORD_NEW_ARTICLE_URL: String;
 
+    @Value("\${discord.webhook.new-inquiry}")
+    lateinit var DISCORD_NEW_INQUIRY_URL: String;
+
+
     @Async("asyncThreadPoolExecutor")
     override fun sendNewArticleMessage(newArticles: List<Article>) {
         val message = WebHookMessage(buildNewArticleMessage(newArticles))
@@ -44,7 +48,7 @@ class DiscordWebHookService(
     @Async("asyncThreadPoolExecutor")
     override fun sendNewInquiryMessage(newInquiry: Inquiry) {
         val message = WebHookMessage(buildNewInquiryMessage(newInquiry))
-        discordWebHookConnector.sendMessageForDiscord(message, DISCORD_NEW_ARTICLE_URL)
+        discordWebHookConnector.sendMessageForDiscord(message, DISCORD_NEW_INQUIRY_URL)
     }
 
     private fun buildNewInquiryMessage(newInquiry: Inquiry): String {
