@@ -23,6 +23,8 @@ class MailService(
 
             // 수신자/제목
             mimeMessageHelper.setTo(member.email)
+            mimeMessageHelper.setFrom("noreply@artijjaek.kr", "아티짹")
+            mimeMessageHelper.setReplyTo("noreply@artijjaek.kr")
             mimeMessageHelper.setSubject("[아티짹] ${today} 아티클 목록")
 
             val dayOfWeekShort = getDayOfWeekShort(LocalDate.now())
@@ -179,6 +181,22 @@ class MailService(
                             line-height: 1.4;
                             max-height: calc(1.4em * 2);
                         }
+                        
+                        .settings-btn {
+                            display: inline-block;
+                            padding: 12px 24px;
+                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                            color: white !important;
+                            text-decoration: none;
+                            border-radius: 6px;
+                            font-weight: 600;
+                            font-size: 14px;
+                            margin-bottom: 16px;
+                            transition: opacity 0.2s;
+                        }
+                        .settings-btn:hover {
+                            opacity: 0.9;
+                        }
 
                         /* 반응형 */
                         @media (max-width: 850px) {
@@ -220,9 +238,11 @@ class MailService(
                         </div>
 
                         <div class="footer" style="padding:24px;text-align:center;background:white;border-top:1px solid #e1e5e9;">
+                            <a href="https://www.artijjaek.kr/setting?email=${member.email}&token=${member.uuidToken}" class="settings-btn">
+                                ⚙️ 설정 페이지
+                            </a>
                             <p style="margin:0;color:rgb(120,119,116);font-size:12px;line-height:1.4;">
                                 이 메일은 자동으로 발송되었습니다.<br>
-                                문의사항이 있으시면 <a href="mailto:noati.dev@gmail.com" style="color:#667eea;text-decoration:none;">noati.dev@gmail.com</a>으로 연락주세요.
                             </p>
                         </div>
                     </div>
