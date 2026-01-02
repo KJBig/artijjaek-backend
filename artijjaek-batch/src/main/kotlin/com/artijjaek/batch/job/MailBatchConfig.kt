@@ -57,10 +57,10 @@ class MailBatchConfig(
         val query = """
             SELECT DISTINCT m 
             FROM Member m 
-            LEFT JOIN MemberArticle ma ON ma.member = m
+            JOIN MemberArticle ma ON ma.member = m
             WHERE ma.createdAt BETWEEN CURRENT_DATE AND CURRENT_TIMESTAMP
         """.trimIndent()
-        
+
         return JpaPagingItemReaderBuilder<Member>()
             .name("memberReader")
             .entityManagerFactory(entityManagerFactory)
