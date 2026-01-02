@@ -274,9 +274,9 @@ class MailService(
         return articles.joinToString("\n") { article ->
             val safeLink = article.link.takeIf { it.isNotBlank() } ?: "#"
             val safeTitle = cleanText(article.title)
-            val safeDescription = cleanText(article.description!!)
+            val safeDescription = cleanText(article.description ?: "")
 
-            val imageHtml = if (article.image!!.isNotBlank()) {
+            val imageHtml = if (article.image?.isNotBlank() ?: false) {
                 """
                 <div class="bookmark-media">
                   <img src="${article.image}" alt="썸네일" class="bookmark-image">
@@ -284,11 +284,6 @@ class MailService(
                 """.trimIndent()
             } else {
                 """
-                <div class="bookmark-media">
-                  <div class="bookmark-image" style="display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#f0f2f5 0%,#e1e5e9 100%);">
-                    <div style="font-size:24px;color:rgb(120,119,116);">📄</div>
-                  </div>
-                </div>
                 """.trimIndent()
             }
 
