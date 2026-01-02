@@ -22,7 +22,7 @@ class NewArticleAlertBatchConfig(
     private val webHookService: WebHookService,
 ) {
 
-    private val log = LoggerFactory.getLogger(CategoryBatchConfig::class.java)
+    private val log = LoggerFactory.getLogger(NewArticleAlertBatchConfig::class.java)
 
     @Bean
     fun newArticleAlertJob(): Job {
