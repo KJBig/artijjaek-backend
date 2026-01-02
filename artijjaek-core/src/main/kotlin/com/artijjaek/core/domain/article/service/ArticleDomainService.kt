@@ -10,8 +10,8 @@ import org.springframework.stereotype.Service
 class ArticleDomainService(
     private val articleRepository: ArticleRepository,
 ) {
-    fun findYesterdayArticle(): List<Article> {
-        return articleRepository.findYesterdayArticle()
+    fun findTodayArticle(): List<Article> {
+        return articleRepository.findTodayArticle()
     }
 
     fun save(article: Article) {
@@ -22,8 +22,8 @@ class ArticleDomainService(
         return articleRepository.findByCompanyRecent(company, size)
     }
 
-    fun findYesterdayByCompanies(memberSubscribeCompanies: List<Company>): List<Article> {
-        return articleRepository.findYesterdayByCompanies(memberSubscribeCompanies)
+    fun findTodayByCompanies(memberSubscribeCompanies: List<Company>): List<Article> {
+        return articleRepository.findTodayByCompanies(memberSubscribeCompanies)
     }
 
     fun allocateCategory(article: Article, category: Category) {
