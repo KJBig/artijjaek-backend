@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController("/api/v1")
-class HealthCheckV1Controller {
+class HealthCheckControllerV1 {
 
     @GetMapping("/health")
     fun checkHealth(): ResponseEntity<SuccessResponse> {
