@@ -5,6 +5,7 @@ import com.artijjaek.core.ai.GeminiClient
 import com.artijjaek.core.domain.article.entity.Article
 import com.artijjaek.core.domain.article.service.ArticleDomainService
 import com.artijjaek.core.domain.category.service.CategoryDomainService
+import com.artijjaek.core.webhook.WebHookService
 import jakarta.persistence.EntityManagerFactory
 import org.slf4j.LoggerFactory
 import org.springframework.batch.core.Job
@@ -27,6 +28,7 @@ class CategoryBatchConfig(
     private val articleDomainService: ArticleDomainService,
     private val categoryDomainService: CategoryDomainService,
     private val geminiClient: GeminiClient,
+    private val webHookService: WebHookService,
 ) {
 
     private val log = LoggerFactory.getLogger(CategoryBatchConfig::class.java)
@@ -58,7 +60,7 @@ class CategoryBatchConfig(
             override fun read(): List<Article>? {
                 val query = entityManagerFactory.createEntityManager().use { em ->
                     em.createQuery(
-                        "SELECT a FROM Article a WHERE a.category is null ORDER BY a.id DESC",
+                        "SELECT a FROM Article a LEFT JOIN FETCH a.company WHERE a.category IS NULL ORDER BY a.id DESC",
                         Article::class.java
                     )
                         .setFirstResult(currentPage * pageSize)
@@ -83,11 +85,18 @@ class CategoryBatchConfig(
             val categories = categoryDomainService.findAll()
             val categoryMap = geminiClient.analyzeArticleCategory(articles, categories)
 
+            if (articles.isEmpty()) {
+                log.info("No Article")
+            }
+
             for (i in articles.indices) {
                 val nowArticle = articles.get(i)
                 val nowCategory = categoryMap.get(i)
+                log.info("${nowArticle.title} : ${nowCategory!!.name}")
                 nowCategory?.let { articleCategories.add(ArticleCategory(nowArticle, it)) }
             }
+
+            webHookService.sendCategoryAllocateMessage(articles, categoryMap)
 
             articleCategories
 

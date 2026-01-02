@@ -6,6 +6,7 @@ import com.artijjaek.core.domain.category.entity.Category
 import com.artijjaek.core.domain.company.entity.Company
 import com.querydsl.jpa.impl.JPAQueryFactory
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 
 class ArticleRepositoryImpl(
@@ -21,13 +22,13 @@ class ArticleRepositoryImpl(
     }
 
     override fun findYesterdayArticle(): List<Article> {
-        val startOfYesterday = LocalDate.now().minusDays(1).atStartOfDay()
+//        val startOfYesterday = LocalDate.now().minusDays(1).atStartOfDay()
         val startOfToday = LocalDate.now().atStartOfDay()
 
         return jpaQueryFactory.selectFrom(article)
             .where(
-                article.createdAt.goe(startOfYesterday)
-                    .and(article.createdAt.lt(startOfToday))
+                article.createdAt.goe(startOfToday)
+                    .and(article.createdAt.lt(LocalDateTime.now()))
             )
             .orderBy(article.createdAt.desc())
             .fetch()
