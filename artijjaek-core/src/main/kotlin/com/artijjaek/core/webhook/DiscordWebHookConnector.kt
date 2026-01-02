@@ -13,9 +13,9 @@ class DiscordWebHookConnector {
 
     private val log = LoggerFactory.getLogger(DiscordWebHookConnector::class.java)
     private val objectMapper = jacksonObjectMapper()
+    private val client = OkHttpClient()
 
     fun sendMessageForDiscord(message: WebHookMessage, url: String) {
-        val client = OkHttpClient()
         val jsonMessage = objectMapper.writeValueAsString(message)
         val requestBody = jsonMessage.toRequestBody("application/json".toMediaType())
 
