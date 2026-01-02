@@ -1,7 +1,9 @@
 package com.artijjaek.core.webhook
 
 import com.artijjaek.core.domain.article.entity.Article
+import com.artijjaek.core.domain.inquiry.entity.Inquiry
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
@@ -13,12 +15,13 @@ class DiscordWebHookService(
     @Value("\${discord.webhook.new-article}")
     lateinit var DISCORD_NEW_ARTICLE_URL: String;
 
+    @Async("asyncThreadPoolExecutor")
     override fun sendNewArticleMessage(newArticles: List<Article>) {
-        val message = WebHookMessage(buildNotificationMessage(newArticles))
+        val message = WebHookMessage(buildNewArticleMessage(newArticles))
         discordWebHookConnector.sendMessageForDiscord(message, DISCORD_NEW_ARTICLE_URL)
     }
 
-    private fun buildNotificationMessage(newArticles: List<Article>): String {
+    private fun buildNewArticleMessage(newArticles: List<Article>): String {
         val stringBuilder = StringBuilder()
         val prefix = """
             🔔 **새 게시글 알림**
@@ -37,4 +40,24 @@ class DiscordWebHookService(
 
         return stringBuilder.toString()
     }
+
+    @Async("asyncThreadPoolExecutor")
+    override fun sendNewInquiryMessage(newInquiry: Inquiry) {
+        val message = WebHookMessage(buildNewInquiryMessage(newInquiry))
+        discordWebHookConnector.sendMessageForDiscord(message, DISCORD_NEW_ARTICLE_URL)
+    }
+
+    private fun buildNewInquiryMessage(newInquiry: Inquiry): String {
+        val stringBuilder = StringBuilder()
+        val prefix = """
+            🔔 **새 문의하기 알림**
+            📅 ${LocalDateTime.now()}
+
+
+        """.trimIndent()
+        stringBuilder.append(prefix)
+        stringBuilder.append(newInquiry.content)
+        return stringBuilder.toString()
+    }
+
 }
