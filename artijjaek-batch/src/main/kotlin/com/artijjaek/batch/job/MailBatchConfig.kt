@@ -75,12 +75,12 @@ class MailBatchConfig(
             val memberSubscribeCompanies = companySubscriptionDomainService.findAllByMember(member).stream()
                 .map { it.company }
                 .toList()
-            val yesterdayArticles = articleDomainService.findYesterdayByCompanies(memberSubscribeCompanies)
+            val todayArticles = articleDomainService.findTodayByCompanies(memberSubscribeCompanies)
 
             log.info("Send Email to ${member.email}")
-            mailService.sendMail(member, yesterdayArticles)
+            mailService.sendMail(member, todayArticles)
 
-            yesterdayArticles.stream().map { MemberArticle(member = member, article = it) }.toList()
+            todayArticles.stream().map { MemberArticle(member = member, article = it) }.toList()
         }
 
     }

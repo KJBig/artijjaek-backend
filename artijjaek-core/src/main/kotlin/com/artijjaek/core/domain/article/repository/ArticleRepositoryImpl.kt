@@ -21,7 +21,7 @@ class ArticleRepositoryImpl(
             .fetch()
     }
 
-    override fun findYesterdayArticle(): List<Article> {
+    override fun findTodayArticle(): List<Article> {
         val startOfToday = LocalDate.now().atStartOfDay()
 
         return jpaQueryFactory.selectFrom(article)
@@ -33,7 +33,7 @@ class ArticleRepositoryImpl(
             .fetch()
     }
 
-    override fun findYesterdayByCompanies(memberSubscribeCompanies: List<Company>): List<Article> {
+    override fun findTodayByCompanies(memberSubscribeCompanies: List<Company>): List<Article> {
         val startOfToday = LocalDate.now().atStartOfDay()
         val companyIds = memberSubscribeCompanies.stream().map { it.id }.toList()
 
