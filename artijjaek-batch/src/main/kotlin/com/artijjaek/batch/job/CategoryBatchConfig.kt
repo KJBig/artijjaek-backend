@@ -83,9 +83,14 @@ class CategoryBatchConfig(
             val categories = categoryDomainService.findAll()
             val categoryMap = geminiClient.analyzeArticleCategory(articles, categories)
 
+            if (articles.isEmpty()) {
+                log.info("No Article")
+            }
+
             for (i in articles.indices) {
                 val nowArticle = articles.get(i)
                 val nowCategory = categoryMap.get(i)
+                log.info("${nowArticle.title} : ${nowCategory!!.name}")
                 nowCategory?.let { articleCategories.add(ArticleCategory(nowArticle, it)) }
             }
 
