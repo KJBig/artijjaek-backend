@@ -1,6 +1,7 @@
 package com.artijjaek.core.webhook
 
 import com.artijjaek.core.domain.article.entity.Article
+import com.artijjaek.core.domain.category.entity.Category
 import com.artijjaek.core.domain.inquiry.entity.Inquiry
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.scheduling.annotation.Async
@@ -18,6 +19,8 @@ class DiscordWebHookService(
     @Value("\${discord.webhook.new-inquiry}")
     lateinit var DISCORD_NEW_INQUIRY_URL: String;
 
+    @Value("\${discord.webhook.category-allocation}")
+    lateinit var DISCORD_CATEGORY_ALLOCATION_URL: String;
 
     @Async("asyncThreadPoolExecutor")
     override fun sendNewArticleMessage(newArticles: List<Article>) {
@@ -55,6 +58,7 @@ class DiscordWebHookService(
         val stringBuilder = StringBuilder()
         val prefix = """
             🔔 **새 문의하기 알림**
+            
             📅 ${LocalDateTime.now()}
 
 
@@ -64,4 +68,35 @@ class DiscordWebHookService(
         return stringBuilder.toString()
     }
 
+
+    @Async("asyncThreadPoolExecutor")
+    override fun sendCategoryAllocateMessage(
+        articles: List<Article>,
+        categories: Map<Int, Category>
+    ) {
+        val message = WebHookMessage(buildCategoryAllocateMessage(articles, categories))
+        discordWebHookConnector.sendMessageForDiscord(message, DISCORD_CATEGORY_ALLOCATION_URL)
+    }
+
+    private fun buildCategoryAllocateMessage(
+        articles: List<Article>,
+        categories: Map<Int, Category>
+    ): String {
+        val stringBuilder = StringBuilder()
+        val prefix = """
+            🔔 **카테고리 할당 알림**
+            
+            📅 ${LocalDateTime.now()}
+
+
+        """.trimIndent()
+        stringBuilder.append(prefix)
+        for (i in articles.indices) {
+            val nowArticle = articles.get(i)
+            val nowCategory = categories.get(i)
+            stringBuilder.append("- [${nowArticle.company.nameKr}] ${nowArticle.title} -> ${nowCategory!!.name}")
+                .append("\n")
+        }
+        return stringBuilder.toString()
+    }
 }
