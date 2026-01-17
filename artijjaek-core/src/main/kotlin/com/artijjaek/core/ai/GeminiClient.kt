@@ -23,28 +23,56 @@ class GeminiClient(
 
     fun analyzeArticleCategory(articles: List<Article>, categories: List<Category>): Map<Int, Category> {
 
+        log.info("[시작!!!] analyzeArticleCategory() in GeminiClient.class")
         val client = Client.builder().apiKey(GEMINI_API_KEY).build()
 
-        val categoryString = getCategoryString(categories)
-        var promptHeader = GEMINI_API_PROMPT.replace("{{categories}}", categoryString)
-        val prompt = StringBuilder(promptHeader)
+        return try {
+            val categoryString = getCategoryString(categories)
+            log.info("getCategoryString() 성공 in GeminiClient.class")
 
-        for (index in articles.indices) {
-            val nowArticle = articles[index]
-            prompt.append(buildArticleData(index, nowArticle.title, nowArticle.link))
+            val promptHeader = GEMINI_API_PROMPT.replace("{{categories}}", categoryString)
+            val prompt = StringBuilder(promptHeader)
+
+            for (index in articles.indices) {
+                val nowArticle = articles[index]
+                prompt.append(buildArticleData(index, nowArticle.title, nowArticle.link))
+            }
+            log.info("프롬프트 생성 성공 in GeminiClient.class")
+
+            val finalPrompt = prompt.toString()
+
+            val response = client.models.generateContent(
+                GEMINI_API_MODEL,
+                finalPrompt,
+                null
+            )
+
+            log.info("제미나이 클라이언트 만들기 생성 성공 in GeminiClient.class")
+
+            log.info("Gemini response text: ${response.text()}")
+
+            response.text()
+                .lines()
+                .filter { it.isNotBlank() }
+                .map { it.trim().split(":") }
+                .associate { (num, category) ->
+                    num.toInt() to getCategory(category, categories)
+                }
+
+        } catch (e: Exception) {
+            log.error(
+                """
+            [Gemini Analyze Error]
+            articleCount=${articles.size}
+            categoryCount=${categories.size}
+            errorMessage=${e.message}
+            """.trimIndent(),
+                e
+            )
+
+            throw IllegalStateException()
+
         }
-
-        promptHeader = prompt.toString()
-        val response = client.models.generateContent(
-            GEMINI_API_MODEL,
-            promptHeader,
-            null
-        )
-        log.info("Response: $response.text()")
-        return response.text().lines()
-            .filter { it.isNotBlank() }
-            .map { it.trim().split(":") }
-            .associate { (num, category) -> num.toInt() to getCategory(category, categories) }
     }
 
     private fun getCategory(category: String, categories: List<Category>): Category {
