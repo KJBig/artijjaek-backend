@@ -64,7 +64,7 @@ class CrawlingBatchConfig(
             val crawledArticles = crawler.crawl(company)
 
             // Article 중복 제거
-            val existingUrls = articleDomainService.findByCompanyRecent(company, 10)
+            val existingUrls = articleDomainService.findByCompanyRecent(company, crawledArticles.size.toLong())
                 .map { it.link }
                 .toList()
             val newArticles = crawledArticles.filter { it.link !in existingUrls }
