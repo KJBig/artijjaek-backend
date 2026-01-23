@@ -11,6 +11,9 @@ class Inquiry(
     @Column(name = "inquiry_id")
     var id: Long? = null,
 
+    @Column(nullable = false)
+    var email: String,
+
     @Column(columnDefinition = "TEXT")
     var content: String,
 

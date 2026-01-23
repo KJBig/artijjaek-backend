@@ -15,7 +15,7 @@ class InquiryService(
 
     @Transactional
     fun saveInquiry(request: InquiryRequest) {
-        val inquiry = Inquiry(content = request.content)
+        val inquiry = Inquiry(email = request.email, content = request.content)
         val newInquiry = inquiryDomainService.saveInquiry(inquiry)
         webHookService.sendNewInquiryMessage(newInquiry)
     }
