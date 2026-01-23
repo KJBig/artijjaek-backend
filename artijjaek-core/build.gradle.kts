@@ -22,6 +22,9 @@ dependencies {
 
     // Http
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
+
+    // Mail
+    implementation("org.springframework.boot:spring-boot-starter-mail")
 }
 
 allOpen {

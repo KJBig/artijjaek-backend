@@ -12,7 +12,4 @@ dependencies {
     //  크롤링
     implementation("org.jsoup:jsoup:1.17.2")
 
-    // Mail
-    implementation("org.springframework.boot:spring-boot-starter-mail")
-
 }
