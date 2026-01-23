@@ -5,6 +5,7 @@ import com.artijjaek.api.dto.request.RegisterMemberRequest
 import com.artijjaek.api.dto.request.SubscriptionChangeRequest
 import com.artijjaek.api.dto.request.UnsubscriptionRequest
 import com.artijjaek.api.dto.response.MemberDataResponse
+import com.artijjaek.core.common.mail.service.MailService
 import com.artijjaek.core.domain.category.entity.Category
 import com.artijjaek.core.domain.category.service.CategoryDomainService
 import com.artijjaek.core.domain.company.entity.Company
@@ -29,6 +30,7 @@ class MemberService(
     private val categoryDomainService: CategoryDomainService,
     private val categorySubscriptionDomainService: CategorySubscriptionDomainService,
     private val unsubscriptionDomainService: UnsubscriptionDomainService,
+    private val mailService: MailService,
 ) {
 
     @Transactional
@@ -57,6 +59,7 @@ class MemberService(
         val categorySubscriptions = categories.map { CategorySubscription(member = newMember, category = it) }
         categorySubscriptionDomainService.saveAll(categorySubscriptions)
 
+        mailService.sendSubscribeMail(newMember)
     }
 
     @Transactional(readOnly = true)
