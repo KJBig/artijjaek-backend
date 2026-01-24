@@ -2,10 +2,12 @@ package com.artijjaek.core.config
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.scheduling.annotation.EnableAsync
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import java.util.concurrent.Executor
 
 @Configuration
+@EnableAsync
 class AsyncConfig {
 
     @Bean(name = ["asyncThreadPoolExecutor"])
@@ -15,6 +17,17 @@ class AsyncConfig {
         executor.setMaxPoolSize(60)
         executor.setQueueCapacity(600)
         executor.setThreadNamePrefix("Artijjaek-Async-Thread-")
+        executor.initialize()
+        return executor
+    }
+
+    @Bean(name = ["asyncEmailThreadPoolExecutor"])
+    fun getEmailExecutor(): Executor {
+        val executor = ThreadPoolTaskExecutor()
+        executor.setCorePoolSize(30)
+        executor.setMaxPoolSize(60)
+        executor.setQueueCapacity(600)
+        executor.setThreadNamePrefix("Artijjaek-Email-Thread-")
         executor.initialize()
         return executor
     }
