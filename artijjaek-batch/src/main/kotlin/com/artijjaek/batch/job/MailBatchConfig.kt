@@ -1,6 +1,6 @@
 package com.artijjaek.batch.job
 
-import com.artijjaek.batch.service.MailService
+import com.artijjaek.core.common.mail.service.MailService
 import com.artijjaek.core.domain.article.service.ArticleDomainService
 import com.artijjaek.core.domain.member.entity.Member
 import com.artijjaek.core.domain.member.entity.MemberArticle
@@ -78,7 +78,7 @@ class MailBatchConfig(
             val todayArticles = articleDomainService.findTodayByCompanies(memberSubscribeCompanies)
 
             log.info("Send Email to ${member.email}")
-            mailService.sendMail(member, todayArticles)
+            mailService.sendArticleMail(member, todayArticles)
 
             todayArticles.stream().map { MemberArticle(member = member, article = it) }.toList()
         }
