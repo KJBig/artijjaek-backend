@@ -24,7 +24,7 @@ class GlobalExceptionHandler {
      * @throws ApplicationException
      */
     @ExceptionHandler(ApplicationException::class)
-    fun applicationException(exception: ApplicationException): ResponseEntity<ErrorResponse> {
+    fun handleApplicationException(exception: ApplicationException): ResponseEntity<ErrorResponse> {
         log.error(
             LOG_CODE_FORMAT,
             "ApplicationException",
@@ -48,19 +48,19 @@ class GlobalExceptionHandler {
      * @throws RuntimeException
      */
     @ExceptionHandler(NoResourceFoundException::class)
-    fun runtimeException(exception: NoResourceFoundException): ResponseEntity<ErrorResponse> {
+    fun handleNoResourceFoundException(exception: NoResourceFoundException): ResponseEntity<ErrorResponse> {
         log.error(
             LOG_FORMAT,
             "NoResourceFoundException",
-            exception.javaClass.getSimpleName(),
+            exception.javaClass.simpleName,
             exception.message,
-            exception.getStackTrace()
+            exception.stackTrace
         )
 
         val errorCode = ErrorCode.API_NOT_FOUND_ERROR
 
         return ResponseEntity
-            .internalServerError()
+            .status(errorCode.httpStatus)
             .body(ErrorResponse(code = errorCode.code, errorCode.message))
     }
 
@@ -71,13 +71,13 @@ class GlobalExceptionHandler {
      * @throws RuntimeException
      */
     @ExceptionHandler(RuntimeException::class)
-    fun runtimeException(exception: RuntimeException): ResponseEntity<ErrorResponse> {
+    fun handleRuntimeException(exception: RuntimeException): ResponseEntity<ErrorResponse> {
         log.error(
             LOG_FORMAT,
             "RuntimeException",
-            exception.javaClass.getSimpleName(),
+            exception.javaClass.simpleName,
             exception.message,
-            exception.getStackTrace()
+            exception.stackTrace
         )
 
         val errorCode = ErrorCode.INTERNAL_SERVER_ERROR
@@ -98,9 +98,9 @@ class GlobalExceptionHandler {
         log.error(
             LOG_FORMAT,
             "Exception",
-            exception.javaClass.getSimpleName(),
+            exception.javaClass.simpleName,
             exception.message,
-            exception.getStackTrace()
+            exception.stackTrace
         )
 
         val errorCode = ErrorCode.INTERNAL_SERVER_ERROR
