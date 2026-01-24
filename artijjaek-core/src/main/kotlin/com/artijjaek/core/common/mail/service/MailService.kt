@@ -5,6 +5,7 @@ import com.artijjaek.core.domain.member.entity.Member
 import org.slf4j.LoggerFactory
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mail.javamail.MimeMessageHelper
+import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -16,6 +17,7 @@ class MailService(
 
     private val log = LoggerFactory.getLogger(MailService::class.java)
 
+    @Async("asyncEmailThreadPoolExecutor")
     fun sendArticleMail(member: Member, articles: List<Article>) {
         val mimeMessage = javaMailSender.createMimeMessage()
         val today = LocalDate.now()
@@ -162,7 +164,7 @@ class MailService(
         }
     }
 
-    fun generateBookmarkCards(articles: List<Article>): String {
+    private fun generateBookmarkCards(articles: List<Article>): String {
         return articles.joinToString("\n") { article ->
             val safeLink = article.link.takeIf { it.isNotBlank() } ?: "#"
             val safeTitle = cleanText(article.title)
@@ -253,6 +255,7 @@ class MailService(
         }
     }
 
+    @Async("asyncEmailThreadPoolExecutor")
     fun sendSubscribeMail(member: Member) {
         val mimeMessage = javaMailSender.createMimeMessage()
         val today = LocalDate.now()
