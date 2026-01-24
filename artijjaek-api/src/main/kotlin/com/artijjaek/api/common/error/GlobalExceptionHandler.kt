@@ -52,9 +52,9 @@ class GlobalExceptionHandler {
         log.error(
             LOG_FORMAT,
             "NoResourceFoundException",
-            exception.javaClass.getSimpleName(),
+            exception.javaClass.simpleName,
             exception.message,
-            exception.getStackTrace()
+            exception.stackTrace
         )
 
         val errorCode = ErrorCode.API_NOT_FOUND_ERROR
@@ -75,9 +75,9 @@ class GlobalExceptionHandler {
         log.error(
             LOG_FORMAT,
             "RuntimeException",
-            exception.javaClass.getSimpleName(),
+            exception.javaClass.simpleName,
             exception.message,
-            exception.getStackTrace()
+            exception.stackTrace
         )
 
         val errorCode = ErrorCode.INTERNAL_SERVER_ERROR
@@ -98,9 +98,9 @@ class GlobalExceptionHandler {
         log.error(
             LOG_FORMAT,
             "Exception",
-            exception.javaClass.getSimpleName(),
+            exception.javaClass.simpleName,
             exception.message,
-            exception.getStackTrace()
+            exception.stackTrace
         )
 
         val errorCode = ErrorCode.INTERNAL_SERVER_ERROR
