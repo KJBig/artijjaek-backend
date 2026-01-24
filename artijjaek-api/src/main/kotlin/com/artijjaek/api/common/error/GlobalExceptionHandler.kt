@@ -60,7 +60,7 @@ class GlobalExceptionHandler {
         val errorCode = ErrorCode.API_NOT_FOUND_ERROR
 
         return ResponseEntity
-            .internalServerError()
+            .status(errorCode.httpStatus)
             .body(ErrorResponse(code = errorCode.code, errorCode.message))
     }
 
