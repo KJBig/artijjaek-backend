@@ -5,6 +5,8 @@ import com.artijjaek.api.dto.request.RegisterMemberRequest
 import com.artijjaek.api.dto.request.SubscriptionChangeRequest
 import com.artijjaek.api.dto.request.UnsubscriptionRequest
 import com.artijjaek.api.dto.response.MemberDataResponse
+import com.artijjaek.core.common.error.ApplicationException
+import com.artijjaek.core.common.error.ErrorCode.*
 import com.artijjaek.core.common.mail.service.MailService
 import com.artijjaek.core.domain.category.entity.Category
 import com.artijjaek.core.domain.category.service.CategoryDomainService
@@ -36,7 +38,7 @@ class MemberService(
     @Transactional
     fun register(request: RegisterMemberRequest) {
         memberDomainService.findByEmailAndMemberStatus(request.email, MemberStatus.ACTIVE)
-            ?.let { throw IllegalStateException("This email already exists.") }
+            ?.let { throw ApplicationException(MEMBER_DUPLICATE_ERROR) }
 
         val memberToken = UuidTokenGenerator.generatorUuidToken()
 
@@ -65,10 +67,10 @@ class MemberService(
     @Transactional(readOnly = true)
     fun getMemberDataWithToken(email: String, token: String): MemberDataResponse {
         val member = memberDomainService.findByEmailAndMemberStatus(email, MemberStatus.ACTIVE)
-            ?: throw IllegalStateException("Member Not Found.")
+            ?: throw ApplicationException(MEMBER_NOT_FOUND_ERROR)
 
         if (member.uuidToken != token) {
-            throw IllegalArgumentException("Token Not Matched")
+            throw ApplicationException(MEMBER_TOKEN_NOT_MATCH_ERROR)
         }
 
         val companyIds = companySubscriptionDomainService.findAllByMember(member)
@@ -82,10 +84,10 @@ class MemberService(
     @Transactional
     fun changeSubscription(request: SubscriptionChangeRequest) {
         val member = memberDomainService.findByEmailAndMemberStatus(request.email, MemberStatus.ACTIVE)
-            ?: throw IllegalStateException("Member Not Found.")
+            ?: throw ApplicationException(MEMBER_NOT_FOUND_ERROR)
 
         if (member.uuidToken != request.token) {
-            throw IllegalArgumentException("Token is not matched.")
+            throw ApplicationException(MEMBER_TOKEN_NOT_MATCH_ERROR)
         }
 
         // 구독 회사 변경
@@ -104,10 +106,10 @@ class MemberService(
     @Transactional
     fun cancelSubscription(request: UnsubscriptionRequest) {
         val member = memberDomainService.findByEmailAndMemberStatus(request.email, MemberStatus.ACTIVE)
-            ?: throw IllegalStateException("Member Not Found.")
+            ?: throw ApplicationException(MEMBER_NOT_FOUND_ERROR)
 
         if (member.uuidToken != request.token) {
-            throw IllegalArgumentException("Token is not matched.")
+            throw ApplicationException(MEMBER_TOKEN_NOT_MATCH_ERROR)
         }
 
         member.changeMemberStatus(MemberStatus.DELETED)

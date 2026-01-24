@@ -1,5 +1,7 @@
 package com.artijjaek.core.ai
 
+import com.artijjaek.core.common.error.ApplicationException
+import com.artijjaek.core.common.error.ErrorCode.CATEGORY_NOT_FOUND_ERROR
 import com.artijjaek.core.domain.article.entity.Article
 import com.artijjaek.core.domain.category.entity.Category
 import com.google.genai.Client
@@ -82,7 +84,7 @@ class GeminiClient(
             }
         }
 
-        throw IllegalStateException("카테고리를 찾을 수 없습니다.")
+        throw ApplicationException(CATEGORY_NOT_FOUND_ERROR)
     }
 
     private fun getCategoryString(categories: List<Category>): String {
