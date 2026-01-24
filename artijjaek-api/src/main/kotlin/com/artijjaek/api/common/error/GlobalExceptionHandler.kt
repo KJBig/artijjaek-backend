@@ -24,7 +24,7 @@ class GlobalExceptionHandler {
      * @throws ApplicationException
      */
     @ExceptionHandler(ApplicationException::class)
-    fun applicationException(exception: ApplicationException): ResponseEntity<ErrorResponse> {
+    fun handleApplicationException(exception: ApplicationException): ResponseEntity<ErrorResponse> {
         log.error(
             LOG_CODE_FORMAT,
             "ApplicationException",
@@ -48,7 +48,7 @@ class GlobalExceptionHandler {
      * @throws RuntimeException
      */
     @ExceptionHandler(NoResourceFoundException::class)
-    fun runtimeException(exception: NoResourceFoundException): ResponseEntity<ErrorResponse> {
+    fun handleNoResourceFoundException(exception: NoResourceFoundException): ResponseEntity<ErrorResponse> {
         log.error(
             LOG_FORMAT,
             "NoResourceFoundException",
@@ -71,7 +71,7 @@ class GlobalExceptionHandler {
      * @throws RuntimeException
      */
     @ExceptionHandler(RuntimeException::class)
-    fun runtimeException(exception: RuntimeException): ResponseEntity<ErrorResponse> {
+    fun handleRuntimeException(exception: RuntimeException): ResponseEntity<ErrorResponse> {
         log.error(
             LOG_FORMAT,
             "RuntimeException",
