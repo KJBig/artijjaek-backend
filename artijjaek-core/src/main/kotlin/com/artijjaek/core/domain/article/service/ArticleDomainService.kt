@@ -29,4 +29,8 @@ class ArticleDomainService(
     fun allocateCategory(article: Article, category: Category) {
         articleRepository.allocateCategory(article, category);
     }
+
+    fun findExistByUrls(company: Company, articleUrls: List<String>): List<Article> {
+        return articleRepository.findExistByUrls(company, articleUrls)
+    }
 }
