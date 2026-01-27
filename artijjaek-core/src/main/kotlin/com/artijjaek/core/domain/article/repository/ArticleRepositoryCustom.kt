@@ -9,4 +9,5 @@ interface ArticleRepositoryCustom {
     fun findTodayArticle(): List<Article>
     fun findTodayByCompanies(memberSubscribeCompanies: List<Company>): List<Article>
     fun allocateCategory(targetArticle: Article, category: Category)
+    fun findExistByUrls(company: Company, articleUrls: List<String>): List<Article>
 }
