@@ -92,9 +92,10 @@ class CategoryBatchConfig(
 
             for (i in articles.indices) {
                 val nowArticle = articles.get(i)
-                val nowCategory = categoryMap.get(i)
-                log.info("${nowArticle.title} : ${nowCategory!!.name}")
-                nowCategory?.let { articleCategories.add(ArticleCategory(nowArticle, it)) }
+                categoryMap[i]?.let { nowCategory ->
+                    log.info("${nowArticle.title} : ${nowCategory.name}")
+                    articleCategories.add(ArticleCategory(nowArticle, nowCategory))
+                }
             }
 
             val articleDatas = articles.map { ArticleMailDto.from(it) }.toList()
