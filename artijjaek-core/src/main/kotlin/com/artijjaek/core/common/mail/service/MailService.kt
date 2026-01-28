@@ -1,7 +1,7 @@
 package com.artijjaek.core.common.mail.service
 
-import com.artijjaek.core.domain.article.entity.Article
-import com.artijjaek.core.domain.member.entity.Member
+import com.artijjaek.core.common.mail.dto.ArticleMailDto
+import com.artijjaek.core.common.mail.dto.MemberMailDto
 import org.slf4j.LoggerFactory
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mail.javamail.MimeMessageHelper
@@ -18,7 +18,7 @@ class MailService(
     private val log = LoggerFactory.getLogger(MailService::class.java)
 
     @Async("asyncEmailThreadPoolExecutor")
-    fun sendArticleMail(member: Member, articles: List<Article>) {
+    fun sendArticleMail(memberData: MemberMailDto, articleDatas: List<ArticleMailDto>) {
         val mimeMessage = javaMailSender.createMimeMessage()
         val today = LocalDate.now()
 
@@ -26,7 +26,7 @@ class MailService(
             val mimeMessageHelper = MimeMessageHelper(mimeMessage, false, "UTF-8")
 
             // 수신자/제목
-            mimeMessageHelper.setTo(member.email)
+            mimeMessageHelper.setTo(memberData.email)
             mimeMessageHelper.setFrom("noreply@artijjaek.kr", "아티짹")
             mimeMessageHelper.setReplyTo("noreply@artijjaek.kr")
             mimeMessageHelper.setSubject("[아티짹] ${today} 아티클 목록")
@@ -60,7 +60,7 @@ class MailService(
                                   <td align="center" style="padding:24px;background:#667eea;background-image:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#ffffff;">
                                     <div style="margin:0;font-size:24px;font-weight:700;line-height:1.3;">오늘의 아티클</div>
                                     <div style="margin-top:8px;opacity:0.9;font-size:14px;line-height:1.4;">
-                                      ${today} (${dayOfWeekShort}) | 총 ${articles.size}개의 아티클
+                                      ${today} (${dayOfWeekShort}) | 총 ${articleDatas.size}개의 아티클
                                     </div>
                                   </td>
                                 </tr>
@@ -92,7 +92,7 @@ class MailService(
                                                   </tr>
                                                 </table>
                                                 <div style="margin:0 0 8px 0;color:rgb(55,53,47);font-size:18px;font-weight:800;line-height:1.3;">
-                                                  안녕하세요, ${member.nickname}님!
+                                                  안녕하세요, ${memberData.nickname}님!
                                                 </div>
                                                 <div style="margin:0;color:rgb(120,119,116);font-size:14px;line-height:1.5;">
                                                   어제 하루 동안 게시된 아티클입니다. 각 아티클을 클릭하면 원문으로 이동합니다.
@@ -115,7 +115,7 @@ class MailService(
                                     </div>
                 
                                     <!-- Cards -->
-                                    ${generateBookmarkCards(articles)}
+                                    ${generateBookmarkCards(articleDatas)}
                 
                                   </td>
                                 </tr>
@@ -129,7 +129,7 @@ class MailService(
                                     <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:0 auto 16px auto;">
                                       <tr>
                                         <td style="border-radius:6px;background:#667eea;background-image:linear-gradient(135deg,#667eea 0%,#764ba2 100%);">
-                                          <a href="https://www.artijjaek.kr/setting?email=${member.email}&token=${member.uuidToken}"
+                                          <a href="https://www.artijjaek.kr/setting?email=${memberData.email}&token=${memberData.uuidToken}"
                                              style="display:inline-block;padding:12px 24px;color:#ffffff !important;text-decoration:none;border-radius:6px;font-weight:600;font-size:14px;">
                                             ⚙️ 구독 설정
                                           </a>
@@ -164,14 +164,14 @@ class MailService(
         }
     }
 
-    private fun generateBookmarkCards(articles: List<Article>): String {
-        return articles.joinToString("\n") { article ->
-            val safeLink = article.link.takeIf { it.isNotBlank() } ?: "#"
-            val safeTitle = cleanText(article.title)
+    private fun generateBookmarkCards(articleDatas: List<ArticleMailDto>): String {
+        return articleDatas.joinToString("\n") { articleData ->
+            val safeLink = articleData.link.takeIf { it.isNotBlank() } ?: "#"
+            val safeTitle = cleanText(articleData.title)
 
-            val logoHtml = if (article.company.logo.isNotBlank()) {
+            val logoHtml = if (articleData.companyLogo.isNotBlank()) {
                 """
-                    <img src="${article.company.logo}" alt="favicon" width="16" height="16"
+                    <img src="${articleData.companyLogo}" alt="favicon" width="16" height="16"
                      style="display:inline-block;border:0;outline:none;text-decoration:none;width:16px;height:16px;border-radius:2px;vertical-align:middle;margin-right:6px;" />
                 """.trimIndent()
             } else {
@@ -180,10 +180,10 @@ class MailService(
                 """.trimIndent()
             }
 
-            val imageTd = if (!article.image.isNullOrBlank()) {
+            val imageTd = if (!articleData.image.isNullOrBlank()) {
                 """
                     <td width="180" valign="top" style="padding:0;">
-                      <img src="${article.image}" alt="썸네일" width="180" height="120"
+                      <img src="${articleData.image}" alt="썸네일" width="180" height="120"
                            style="display:block;border:0;outline:none;text-decoration:none;width:180px;height:120px;background:#f1f1ef;object-fit:cover;" />
                     </td>
                 """.trimIndent()
@@ -212,7 +212,7 @@ class MailService(
         
                               <div style="margin:0;font-size:12px;line-height:1.4;color:rgb(120,119,116);">
                                 $logoHtml
-                                <span style="vertical-align:middle;">${article.company.nameKr}</span>
+                                <span style="vertical-align:middle;">${articleData.companyNameKr}</span>
                               </div>
                             </td>
         
@@ -228,7 +228,6 @@ class MailService(
             """.trimIndent()
         }
     }
-
 
     // HTML 텍스트를 안전하게 처리
     private fun cleanText(text: String): String {
@@ -256,7 +255,7 @@ class MailService(
     }
 
     @Async("asyncEmailThreadPoolExecutor")
-    fun sendSubscribeMail(member: Member) {
+    fun sendSubscribeMail(memberData: MemberMailDto) {
         val mimeMessage = javaMailSender.createMimeMessage()
         val today = LocalDate.now()
 
@@ -264,10 +263,10 @@ class MailService(
             val mimeMessageHelper = MimeMessageHelper(mimeMessage, false, "UTF-8")
 
             // 수신자/제목
-            mimeMessageHelper.setTo(member.email)
+            mimeMessageHelper.setTo(memberData.email)
             mimeMessageHelper.setFrom("noreply@artijjaek.kr", "아티짹")
             mimeMessageHelper.setReplyTo("noreply@artijjaek.kr")
-            mimeMessageHelper.setSubject("[아티짹] 환영합니다 ${member.nickname}님!")
+            mimeMessageHelper.setSubject("[아티짹] 환영합니다 ${memberData.nickname}님!")
 
             val content = """
             <!DOCTYPE html>
@@ -295,7 +294,7 @@ class MailService(
                                   아티짹 구독을 시작했어요 🎉
                                 </div>
                                 <div style="margin-top:8px;opacity:0.92;font-size:14px;line-height:1.4;">
-                                  ${member.nickname}님을 환영합니다!
+                                  ${memberData.nickname}님을 환영합니다!
                                 </div>
                               </td>
                             </tr>
@@ -330,7 +329,7 @@ class MailService(
                                           </td>
                                           <td style="padding:20px;">
                                             <div style="margin:0 0 8px 0;color:rgb(55,53,47);font-size:18px;font-weight:800;line-height:1.3;">
-                                              안녕하세요, ${member.nickname}님!
+                                              안녕하세요, ${memberData.nickname}님!
                                             </div>
                                             <div style="margin:0;color:rgb(120,119,116);font-size:14px;line-height:1.6;">
                                               아티짹 구독을 시작해주셔서 감사합니다.<br />
@@ -358,7 +357,7 @@ class MailService(
                                       </div>
             
                                       <ul style="margin:0;padding:0 0 0 18px;color:rgb(120,119,116);font-size:14px;line-height:1.7;">
-                                        <li style="margin:6px 0;">${member.nickname}님이 설정한 <strong>기업 블로그</strong>에서 <strong>선택한 카테고리</strong> 아티클이 올라오면 수집해요.</li>
+                                        <li style="margin:6px 0;">${memberData.nickname}님이 설정한 <strong>기업 블로그</strong>에서 <strong>선택한 카테고리</strong> 아티클이 올라오면 수집해요.</li>
                                         <li style="margin:6px 0;"><strong>매일 아침 7시</strong>에 아티클 목록을 모아 <strong>이메일로 한 번에</strong> 보내드려요.</li>
                                         <li style="margin:6px 0;">이메일은 마스코트 <strong>티짹이</strong>가 아침마다 전달할 거예요.</li>
                                       </ul>

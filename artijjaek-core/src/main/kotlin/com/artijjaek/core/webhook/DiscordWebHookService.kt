@@ -1,6 +1,6 @@
 package com.artijjaek.core.webhook
 
-import com.artijjaek.core.domain.article.entity.Article
+import com.artijjaek.core.common.mail.dto.ArticleMailDto
 import com.artijjaek.core.domain.category.entity.Category
 import com.artijjaek.core.domain.inquiry.entity.Inquiry
 import org.springframework.beans.factory.annotation.Value
@@ -23,12 +23,12 @@ class DiscordWebHookService(
     lateinit var DISCORD_CATEGORY_ALLOCATION_URL: String;
 
     @Async("asyncThreadPoolExecutor")
-    override fun sendNewArticleMessage(newArticles: List<Article>) {
+    override fun sendNewArticleMessage(newArticles: List<ArticleMailDto>) {
         val message = WebHookMessage(buildNewArticleMessage(newArticles))
         discordWebHookConnector.sendMessageForDiscord(message, DISCORD_NEW_ARTICLE_URL)
     }
 
-    private fun buildNewArticleMessage(newArticles: List<Article>): String {
+    private fun buildNewArticleMessage(newArticles: List<ArticleMailDto>): String {
         val stringBuilder = StringBuilder()
         val prefix = """
             🔔 **새 게시글 알림**
@@ -42,7 +42,7 @@ class DiscordWebHookService(
         stringBuilder.append(prefix)
 
         for (article in newArticles) {
-            stringBuilder.append("- [${article.company.nameKr}] -> ${article.title}").append("\n")
+            stringBuilder.append("- [${article.companyNameKr}] -> ${article.title}").append("\n")
         }
 
         return stringBuilder.toString()
@@ -71,7 +71,7 @@ class DiscordWebHookService(
 
     @Async("asyncThreadPoolExecutor")
     override fun sendCategoryAllocateMessage(
-        articles: List<Article>,
+        articles: List<ArticleMailDto>,
         categories: Map<Int, Category>
     ) {
         val message = WebHookMessage(buildCategoryAllocateMessage(articles, categories))
@@ -79,7 +79,7 @@ class DiscordWebHookService(
     }
 
     private fun buildCategoryAllocateMessage(
-        articles: List<Article>,
+        articles: List<ArticleMailDto>,
         categories: Map<Int, Category>
     ): String {
         val stringBuilder = StringBuilder()
@@ -94,7 +94,7 @@ class DiscordWebHookService(
         for (i in articles.indices) {
             val nowArticle = articles.get(i)
             val nowCategory = categories.get(i)
-            stringBuilder.append("- [${nowArticle.company.nameKr}] ${nowArticle.title} -> ${nowCategory!!.name}")
+            stringBuilder.append("- [${nowArticle.companyNameKr}] ${nowArticle.title} -> ${nowCategory!!.name}")
                 .append("\n")
         }
         return stringBuilder.toString()
