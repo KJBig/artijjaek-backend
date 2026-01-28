@@ -79,11 +79,16 @@ class MailBatchConfig(
                 .toList()
             val todayArticles = articleDomainService.findTodayByCompanies(memberSubscribeCompanies)
 
-            val articelDatas = todayArticles.map { ArticleAlertDto.from(it) }.toList()
+            if (todayArticles.isEmpty()) {
+                log.info("No new articles for ${member.email}, skipping email")
+                return@ItemProcessor emptyList()
+            }
+
+            val articleDatas = todayArticles.map { ArticleAlertDto.from(it) }
 
             log.info("Send Email to ${member.email}")
 
-            mailService.sendArticleMail(MemberAlertDto.from(member), articelDatas)
+            mailService.sendArticleMail(MemberAlertDto.from(member), articleDatas)
 
             todayArticles.stream().map { MemberArticle(member = member, article = it) }.toList()
         }
