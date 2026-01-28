@@ -212,7 +212,7 @@ class MailService(
         
                               <div style="margin:0;font-size:12px;line-height:1.4;color:rgb(120,119,116);">
                                 $logoHtml
-                                <span style="vertical-align:middle;">${articleData.companyNameKr}</span>
+                                <span style="vertical-align:middle;">${cleanText(articleData.companyNameKr)}</span>
                               </div>
                             </td>
         
