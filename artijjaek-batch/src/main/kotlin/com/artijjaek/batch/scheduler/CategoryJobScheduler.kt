@@ -15,8 +15,7 @@ class CategoryJobScheduler(
     private val allocateCategoryJob: Job,
 ) {
 
-    //    @Scheduled(cron = "0 0 3 * * *")
-    @Scheduled(fixedDelay = 10000)
+    @Scheduled(cron = "0 0 3 * * *")
     fun runCategoryJob() {
         val jobParameters = JobParametersBuilder()
             .addString("runTime", LocalDateTime.now().toString()) // 매 실행마다 다른 값
