@@ -55,4 +55,13 @@ class ArticleRepositoryImpl(
             .where(article.id.eq(targetArticle.id))
             .execute()
     }
+
+    override fun findExistByUrls(company: Company, articleUrls: List<String>): List<Article> {
+        return jpaQueryFactory.selectFrom(article)
+            .where(
+                article.company.id.eq(company.id)
+                    .and(article.link.`in`(articleUrls))
+            )
+            .fetch()
+    }
 }

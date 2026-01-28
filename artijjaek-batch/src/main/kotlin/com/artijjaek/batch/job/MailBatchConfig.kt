@@ -1,5 +1,7 @@
 package com.artijjaek.batch.job
 
+import com.artijjaek.core.common.mail.dto.ArticleAlertDto
+import com.artijjaek.core.common.mail.dto.MemberAlertDto
 import com.artijjaek.core.common.mail.service.MailService
 import com.artijjaek.core.domain.article.service.ArticleDomainService
 import com.artijjaek.core.domain.member.entity.Member
@@ -77,8 +79,16 @@ class MailBatchConfig(
                 .toList()
             val todayArticles = articleDomainService.findTodayByCompanies(memberSubscribeCompanies)
 
+            if (todayArticles.isEmpty()) {
+                log.info("No new articles for ${member.email}, skipping email")
+                return@ItemProcessor emptyList()
+            }
+
+            val articleDatas = todayArticles.map { ArticleAlertDto.from(it) }
+
             log.info("Send Email to ${member.email}")
-            mailService.sendArticleMail(member, todayArticles)
+
+            mailService.sendArticleMail(MemberAlertDto.from(member), articleDatas)
 
             todayArticles.stream().map { MemberArticle(member = member, article = it) }.toList()
         }

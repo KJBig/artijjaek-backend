@@ -2,6 +2,7 @@ package com.artijjaek.batch.job
 
 import com.artijjaek.batch.dto.ArticleCategory
 import com.artijjaek.core.ai.GeminiClient
+import com.artijjaek.core.common.mail.dto.ArticleAlertDto
 import com.artijjaek.core.domain.article.entity.Article
 import com.artijjaek.core.domain.article.service.ArticleDomainService
 import com.artijjaek.core.domain.category.service.CategoryDomainService
@@ -91,12 +92,15 @@ class CategoryBatchConfig(
 
             for (i in articles.indices) {
                 val nowArticle = articles.get(i)
-                val nowCategory = categoryMap.get(i)
-                log.info("${nowArticle.title} : ${nowCategory!!.name}")
-                nowCategory?.let { articleCategories.add(ArticleCategory(nowArticle, it)) }
+                categoryMap[i]?.let { nowCategory ->
+                    log.info("${nowArticle.title} : ${nowCategory.name}")
+                    articleCategories.add(ArticleCategory(nowArticle, nowCategory))
+                }
             }
 
-            webHookService.sendCategoryAllocateMessage(articles, categoryMap)
+            val articleDatas = articles.map { ArticleAlertDto.from(it) }.toList()
+
+            webHookService.sendCategoryAllocateMessage(articleDatas, categoryMap)
 
             articleCategories
 
