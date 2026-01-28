@@ -1,7 +1,7 @@
 package com.artijjaek.core.common.mail.service
 
-import com.artijjaek.core.common.mail.dto.ArticleMailDto
-import com.artijjaek.core.common.mail.dto.MemberMailDto
+import com.artijjaek.core.common.mail.dto.ArticleAlertDto
+import com.artijjaek.core.common.mail.dto.MemberAlertDto
 import org.slf4j.LoggerFactory
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mail.javamail.MimeMessageHelper
@@ -18,7 +18,7 @@ class MailService(
     private val log = LoggerFactory.getLogger(MailService::class.java)
 
     @Async("asyncEmailThreadPoolExecutor")
-    fun sendArticleMail(memberData: MemberMailDto, articleDatas: List<ArticleMailDto>) {
+    fun sendArticleMail(memberData: MemberAlertDto, articleDatas: List<ArticleAlertDto>) {
         val mimeMessage = javaMailSender.createMimeMessage()
         val today = LocalDate.now()
 
@@ -164,7 +164,7 @@ class MailService(
         }
     }
 
-    private fun generateBookmarkCards(articleDatas: List<ArticleMailDto>): String {
+    private fun generateBookmarkCards(articleDatas: List<ArticleAlertDto>): String {
         return articleDatas.joinToString("\n") { articleData ->
             val safeLink = articleData.link.takeIf { it.isNotBlank() } ?: "#"
             val safeTitle = cleanText(articleData.title)
@@ -255,7 +255,7 @@ class MailService(
     }
 
     @Async("asyncEmailThreadPoolExecutor")
-    fun sendSubscribeMail(memberData: MemberMailDto) {
+    fun sendSubscribeMail(memberData: MemberAlertDto) {
         val mimeMessage = javaMailSender.createMimeMessage()
         val today = LocalDate.now()
 

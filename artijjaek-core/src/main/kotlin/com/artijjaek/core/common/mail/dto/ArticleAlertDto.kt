@@ -2,7 +2,7 @@ package com.artijjaek.core.common.mail.dto
 
 import com.artijjaek.core.domain.article.entity.Article
 
-data class ArticleMailDto(
+data class ArticleAlertDto(
     val title: String,
     val link: String,
     val image: String?,
@@ -11,8 +11,8 @@ data class ArticleMailDto(
 ) {
 
     companion object {
-        fun from(article: Article): ArticleMailDto {
-            return ArticleMailDto(
+        fun from(article: Article): ArticleAlertDto {
+            return ArticleAlertDto(
                 title = article.title,
                 link = article.link,
                 image = article.image,

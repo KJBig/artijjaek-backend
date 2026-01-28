@@ -1,6 +1,6 @@
 package com.artijjaek.core.webhook
 
-import com.artijjaek.core.common.mail.dto.ArticleMailDto
+import com.artijjaek.core.common.mail.dto.ArticleAlertDto
 import com.artijjaek.core.domain.category.entity.Category
 import com.artijjaek.core.domain.inquiry.entity.Inquiry
 import org.springframework.beans.factory.annotation.Value
@@ -23,12 +23,12 @@ class DiscordWebHookService(
     lateinit var DISCORD_CATEGORY_ALLOCATION_URL: String;
 
     @Async("asyncThreadPoolExecutor")
-    override fun sendNewArticleMessage(newArticles: List<ArticleMailDto>) {
+    override fun sendNewArticleMessage(newArticles: List<ArticleAlertDto>) {
         val message = WebHookMessage(buildNewArticleMessage(newArticles))
         discordWebHookConnector.sendMessageForDiscord(message, DISCORD_NEW_ARTICLE_URL)
     }
 
-    private fun buildNewArticleMessage(newArticles: List<ArticleMailDto>): String {
+    private fun buildNewArticleMessage(newArticles: List<ArticleAlertDto>): String {
         val stringBuilder = StringBuilder()
         val prefix = """
             🔔 **새 게시글 알림**
@@ -71,7 +71,7 @@ class DiscordWebHookService(
 
     @Async("asyncThreadPoolExecutor")
     override fun sendCategoryAllocateMessage(
-        articles: List<ArticleMailDto>,
+        articles: List<ArticleAlertDto>,
         categories: Map<Int, Category>
     ) {
         val message = WebHookMessage(buildCategoryAllocateMessage(articles, categories))
@@ -79,7 +79,7 @@ class DiscordWebHookService(
     }
 
     private fun buildCategoryAllocateMessage(
-        articles: List<ArticleMailDto>,
+        articles: List<ArticleAlertDto>,
         categories: Map<Int, Category>
     ): String {
         val stringBuilder = StringBuilder()

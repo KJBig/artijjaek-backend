@@ -1,6 +1,6 @@
 package com.artijjaek.batch.job
 
-import com.artijjaek.core.common.mail.dto.ArticleMailDto
+import com.artijjaek.core.common.mail.dto.ArticleAlertDto
 import com.artijjaek.core.domain.article.service.ArticleDomainService
 import com.artijjaek.core.webhook.WebHookService
 import org.slf4j.LoggerFactory
@@ -43,7 +43,7 @@ class NewArticleAlertBatchConfig(
                 try {
                     // 최근 24시간 이내 새 게시글 조회
                     val newArticles = articleDomainService.findTodayArticle()
-                        .map { ArticleMailDto.from(it) }
+                        .map { ArticleAlertDto.from(it) }
                         .toList()
 
                     if (newArticles.isEmpty()) {

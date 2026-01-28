@@ -7,7 +7,7 @@ import com.artijjaek.api.dto.request.UnsubscriptionRequest
 import com.artijjaek.api.dto.response.MemberDataResponse
 import com.artijjaek.core.common.error.ApplicationException
 import com.artijjaek.core.common.error.ErrorCode.*
-import com.artijjaek.core.common.mail.dto.MemberMailDto
+import com.artijjaek.core.common.mail.dto.MemberAlertDto
 import com.artijjaek.core.common.mail.service.MailService
 import com.artijjaek.core.domain.category.entity.Category
 import com.artijjaek.core.domain.category.service.CategoryDomainService
@@ -62,7 +62,7 @@ class MemberService(
         val categorySubscriptions = categories.map { CategorySubscription(member = newMember, category = it) }
         categorySubscriptionDomainService.saveAll(categorySubscriptions)
 
-        mailService.sendSubscribeMail(MemberMailDto.from(newMember))
+        mailService.sendSubscribeMail(MemberAlertDto.from(newMember))
     }
 
     @Transactional(readOnly = true)
