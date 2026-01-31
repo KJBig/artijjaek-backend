@@ -31,8 +31,7 @@ class UrlDataCrawler {
 
 private fun extractData(head: Element): UrlData {
     val ogTitle = head.select("meta[property=og:title]").attr("content")
-    val ogDescription = head.select("meta[property=og:description]").attr("content")
     val ogImage = head.select("meta[property=og:image]").attr("content")
 
-    return UrlData(ogTitle, ogDescription, ogImage)
+    return UrlData(ogTitle, ogImage)
 }
