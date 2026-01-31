@@ -1,5 +1,6 @@
 package com.artijjaek.batch.crawler.blog
 
+import com.artijjaek.batch.crawler.RssCrawler
 import com.artijjaek.batch.dto.CrawledArticleDto
 import com.artijjaek.core.domain.company.entity.Company
 import org.jsoup.Jsoup
@@ -26,13 +27,11 @@ class NaverD2BlogCrawler(
         val contentHtml = item.selectFirst("content")?.wholeText()
 
         val htmlDoc = Jsoup.parse(contentHtml ?: "")
-        val firstText = findFirstTextElement(htmlDoc.body())
         val firstImg = findFirstImageElement(htmlDoc, company)
 
         return CrawledArticleDto(
             title = title ?: "",
             link = link ?: "",
-            firstText = firstText,
             firstImg = firstImg
         )
     }

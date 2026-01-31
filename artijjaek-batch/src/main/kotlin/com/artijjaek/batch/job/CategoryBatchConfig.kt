@@ -11,6 +11,7 @@ import jakarta.persistence.EntityManagerFactory
 import org.slf4j.LoggerFactory
 import org.springframework.batch.core.Job
 import org.springframework.batch.core.Step
+import org.springframework.batch.core.configuration.annotation.StepScope
 import org.springframework.batch.core.job.builder.JobBuilder
 import org.springframework.batch.core.repository.JobRepository
 import org.springframework.batch.core.step.builder.StepBuilder
@@ -52,6 +53,7 @@ class CategoryBatchConfig(
     }
 
     @Bean
+    @StepScope
     fun articleReaderForAllocateCategory(): ItemReader<List<Article>> {
         return object : ItemReader<List<Article>> {
             private val pageSize = 10
