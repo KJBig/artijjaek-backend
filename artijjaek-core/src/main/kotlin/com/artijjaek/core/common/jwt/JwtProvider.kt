@@ -90,27 +90,27 @@ class JwtProvider(
     private fun parseAndValidate(token: String): Claims {
         try {
             val parser = Jwts.parser()
-                .verifyWith(secretKeyFromRawString(secretKey))
+                .verifyWith(signingKey)
                 .build()
 
             return parser.parseSignedClaims(token).payload
         } catch (e: ExpiredJwtException) {
-            log.error("Jwt Expired: ${e.message}", e)
+            log.error("JWT 만료 : ${e.message}", e)
             throw ApplicationException(ErrorCode.JWT_EXPIRATION_ERROR)
         } catch (e: JwtException) {
-            log.error("Invalid Jwt: ${e.message}", e)
+            log.error("유효하지 않은 JWT: ${e.message}", e)
             throw ApplicationException(ErrorCode.JWT_INVALIDATE_ERROR)
         } catch (e: IllegalArgumentException) {
-            log.error("Jwt Invalid", e)
+            log.error("유효하지 않은 JWT", e)
             throw ApplicationException(ErrorCode.JWT_NOT_FOUND_ERROR)
         } catch (e: Exception) {
-            log.error("Jwt parse error", e)
+            log.error("JWT parse error", e)
             throw ApplicationException(ErrorCode.INTERNAL_SERVER_ERROR)
         }
     }
 
-    private fun secretKeyFromRawString(secret: String): SecretKey {
-        return Keys.hmacShaKeyFor(secret.toByteArray(Charsets.UTF_8))
+    fun validateRefreshToken(refreshToken: String) {
+        parseAndValidate(refreshToken)
     }
 
 }

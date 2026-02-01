@@ -2,7 +2,9 @@ package com.artijjaek.admin.controller
 
 import com.artijjaek.admin.dto.common.SuccessDataResponse
 import com.artijjaek.admin.dto.request.LoginRequest
+import com.artijjaek.admin.dto.request.RefreshRequest
 import com.artijjaek.admin.dto.response.LoginResponse
+import com.artijjaek.admin.dto.response.RefreshResponse
 import com.artijjaek.admin.service.AdminService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
@@ -17,8 +19,14 @@ class AuthControllerV1(
 ) {
 
     @PostMapping("/login")
-    fun adminLogin(@RequestBody request: LoginRequest): ResponseEntity<SuccessDataResponse<LoginResponse>> {
+    fun loginAdmin(@RequestBody request: LoginRequest): ResponseEntity<SuccessDataResponse<LoginResponse>> {
         val response = adminService.login(request)
+        return ResponseEntity.ok().body(SuccessDataResponse(response))
+    }
+
+    @PostMapping("/refresh")
+    fun refreshAccessToken(@RequestBody request: RefreshRequest): ResponseEntity<SuccessDataResponse<RefreshResponse>> {
+        val response = adminService.refreshAccessToken(request)
         return ResponseEntity.ok().body(SuccessDataResponse(response))
     }
 }

@@ -2,9 +2,11 @@ package com.artijjaek.admin.service
 
 import com.artijjaek.admin.common.util.PasswordEncoder
 import com.artijjaek.admin.dto.request.LoginRequest
+import com.artijjaek.admin.dto.request.RefreshRequest
 import com.artijjaek.admin.dto.response.LoginResponse
+import com.artijjaek.admin.dto.response.RefreshResponse
 import com.artijjaek.core.common.error.ApplicationException
-import com.artijjaek.core.common.error.ErrorCode.ADMIN_PASSWORD_NOT_MATCH_ERROR
+import com.artijjaek.core.common.error.ErrorCode.*
 import com.artijjaek.core.common.jwt.JwtProvider
 import com.artijjaek.core.domain.admin.service.AdminDomainService
 import org.springframework.stereotype.Service
@@ -33,6 +35,27 @@ class AdminService(
         admin.changeRefreshToken(refreshToken)
 
         return LoginResponse(accessToken, refreshToken)
+    }
+
+    @Transactional(readOnly = true)
+    fun refreshAccessToken(request: RefreshRequest): RefreshResponse {
+        // Refresh Token 검증
+        jwtProvider.validateRefreshToken(request.refreshToken)
+        
+        val adminId = jwtProvider.parseAccessToken(request.accessToken).subject.toLong()
+        val admin = adminDomainService.findById(adminId)
+
+        if (admin.refreshToken == null) {
+            throw ApplicationException(ADMIN_NO_LOGIN_ERROR)
+        }
+
+        if (!admin.refreshToken.equals(request.refreshToken)) {
+            throw ApplicationException(JWT_NOT_MATCH_ERROR)
+        }
+
+        val newAccessToken = jwtProvider.generateAccessToken(admin.id!!, admin.adminRole.name)
+
+        return RefreshResponse(newAccessToken, request.refreshToken)
     }
 
 }

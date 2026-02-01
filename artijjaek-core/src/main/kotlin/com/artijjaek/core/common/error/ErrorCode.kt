@@ -5,7 +5,9 @@ import org.apache.http.HttpStatus.*
 enum class ErrorCode(val code: String, val httpStatus: Int, val message: String) {
 
     // Admin Error
-    ADMIN_PASSWORD_NOT_MATCH_ERROR("ADE-1", SC_UNAUTHORIZED, "비밀번호가 일치하지 않습니다."),
+    ADMIN_NOT_FOUND_ERROR("ADE-1", SC_UNAUTHORIZED, "존재하지 않는 관리자입니다."),
+    ADMIN_PASSWORD_NOT_MATCH_ERROR("ADE-2", SC_UNAUTHORIZED, "비밀번호가 일치하지 않습니다."),
+    ADMIN_NO_LOGIN_ERROR("ADE-3", SC_UNAUTHORIZED, "로그인하지 않은 관리자입니다."),
 
     // Article Error
 
@@ -27,6 +29,7 @@ enum class ErrorCode(val code: String, val httpStatus: Int, val message: String)
     JWT_NOT_FOUND_ERROR("REE-2", SC_UNAUTHORIZED, "토큰이 존재하지 않습니다."),
     JWT_EXPIRATION_ERROR("REE-3", SC_UNAUTHORIZED, "만료된 토큰입니다."),
     JWT_INVALIDATE_ERROR("REE-4", SC_UNAUTHORIZED, "잘못된 토큰입니다."),
+    JWT_NOT_MATCH_ERROR("REE-5", SC_UNAUTHORIZED, "토큰이 일치하지 않습니다."),
 
     // Server Error
     INTERNAL_SERVER_ERROR("SVE-1", SC_INTERNAL_SERVER_ERROR, "내부 서버 에러입니다.")
