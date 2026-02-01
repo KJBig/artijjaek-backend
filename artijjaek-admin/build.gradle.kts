@@ -2,6 +2,9 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":artijjaek-core"))
     implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework:spring-tx")
+    implementation("org.springframework.security:spring-security-crypto")
+
+    implementation(project(":artijjaek-core"))
 }

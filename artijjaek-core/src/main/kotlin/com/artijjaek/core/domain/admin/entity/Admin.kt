@@ -21,6 +21,7 @@ class Admin(
     @Column(nullable = true)
     var password: String,
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = true)
     var adminRole: AdminRole,
 
