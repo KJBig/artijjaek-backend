@@ -16,7 +16,7 @@ class AdminService(
     private val jwtProvider: JwtProvider,
 ) {
 
-    @Transactional(readOnly = true)
+    @Transactional
     fun login(request: LoginRequest): LoginResponse {
         // 비밀번호 체크
         val admin = adminDomainService.findByEmail(request.email) ?: throw IllegalStateException()
@@ -29,6 +29,8 @@ class AdminService(
         // 토큰 생성
         val accessToken = jwtProvider.generateAccessToken(admin.id!!, admin.adminRole.name)
         val refreshToken = jwtProvider.generateRefreshToken()
+
+        admin.changeRefreshToken(refreshToken)
 
         return LoginResponse(accessToken, refreshToken)
     }

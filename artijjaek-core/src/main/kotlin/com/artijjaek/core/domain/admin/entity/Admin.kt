@@ -25,5 +25,13 @@ class Admin(
     @Column(nullable = true)
     var adminRole: AdminRole,
 
+    @Column(nullable = true)
+    var refreshToken: String?,
+
     ) : BaseEntity() {
+
+    fun changeRefreshToken(refreshToken: String) {
+        this.refreshToken = refreshToken
+    }
+
 }
