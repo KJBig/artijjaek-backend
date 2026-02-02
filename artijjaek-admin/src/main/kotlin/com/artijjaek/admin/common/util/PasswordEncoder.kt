@@ -5,14 +5,14 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 class PasswordEncoder {
 
     companion object {
+        
+        private val encoder = BCryptPasswordEncoder()
 
         fun passwordEncode(password: String): String {
-            val encoder = BCryptPasswordEncoder()
             return encoder.encode(password)
         }
 
         fun isMatch(password: String, encodePassword: String): Boolean {
-            val encoder = BCryptPasswordEncoder()
             return encoder.matches(password, encodePassword)
         }
 
