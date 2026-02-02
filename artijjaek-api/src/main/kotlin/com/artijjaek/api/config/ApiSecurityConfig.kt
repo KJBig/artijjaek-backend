@@ -10,19 +10,22 @@ import org.springframework.web.cors.CorsConfigurationSource
 
 @Configuration
 @EnableWebSecurity
-class SecurityConfig(
+class ApiSecurityConfig(
     private val corsConfigurationSource: CorsConfigurationSource,
 ) {
 
     @Bean
-    fun filterChain(http: HttpSecurity): SecurityFilterChain {
+    fun apiFilterChain(http: HttpSecurity): SecurityFilterChain {
         http
+            .securityMatcher("/api/**")
             .csrf { it.disable() }
             .cors { it.configurationSource(corsConfigurationSource) }
             .httpBasic { it.disable() }
             .formLogin { it.disable() }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
-            .authorizeHttpRequests { it.anyRequest().permitAll() }
+            .authorizeHttpRequests {
+                it.anyRequest().permitAll()
+            }
 
         return http.build()
     }
