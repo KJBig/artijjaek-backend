@@ -40,8 +40,8 @@ class AdminService(
     @Transactional(readOnly = true)
     fun refreshAccessToken(request: RefreshRequest): RefreshResponse {
         // Refresh Token 검증
-        jwtProvider.validateRefreshToken(request.refreshToken)
-        
+        jwtProvider.validateToken(request.refreshToken)
+
         val adminId = jwtProvider.parseAccessToken(request.accessToken).subject.toLong()
         val admin = adminDomainService.findById(adminId)
 

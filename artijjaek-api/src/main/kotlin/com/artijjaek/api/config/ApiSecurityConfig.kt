@@ -10,13 +10,14 @@ import org.springframework.web.cors.CorsConfigurationSource
 
 @Configuration
 @EnableWebSecurity
-class SecurityConfig(
+class ApiSecurityConfig(
     private val corsConfigurationSource: CorsConfigurationSource,
 ) {
 
     @Bean
-    fun filterChain(http: HttpSecurity): SecurityFilterChain {
+    fun apiFilterChain(http: HttpSecurity): SecurityFilterChain {
         http
+            .securityMatcher("/api/**")
             .csrf { it.disable() }
             .cors { it.configurationSource(corsConfigurationSource) }
             .httpBasic { it.disable() }
@@ -29,9 +30,4 @@ class SecurityConfig(
         return http.build()
     }
 
-
-//    @Bean
-//    fun passwordEncoder(): BCryptPasswordEncoder {
-//        return BCryptPasswordEncoder();
-//    }
 }
