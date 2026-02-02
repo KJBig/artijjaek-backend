@@ -28,9 +28,9 @@ class AuthAdminIdArgumentResolver : HandlerMethodArgumentResolver {
         val authentication = SecurityContextHolder.getContext().authentication
 
         if (authentication != null && authentication.name != "anonymousUser") {
-            val adminId = authentication.name.toLong()
-            log.info("== Admin Id : {} ==", adminId)
-            return adminId
+            return authentication.name.toLongOrNull()?.also { adminId ->
+                log.info("== Admin Id : {} ==", adminId)
+            }
         }
 
         return null
