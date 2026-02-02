@@ -46,16 +46,16 @@ class DaangnTeamBlogCrawler(
 
                         log.info(
                             "[${company.nameKr}] : Title->${crawlingUrlData.title}, Link->$articleUrl, " +
-                                    "Img->${crawlingUrlData.imageUrl}, Description->${crawlingUrlData.description}"
+                                    "Img->${crawlingUrlData.imageUrl}"
                         )
 
                         articles.add(
                             Article(
                                 company = company,
                                 title = crawlingUrlData.title,
-                                description = crawlingUrlData.description,
                                 link = articleUrl,
                                 image = crawlingUrlData.imageUrl,
+                                description = null,
                                 category = null
                             )
                         )

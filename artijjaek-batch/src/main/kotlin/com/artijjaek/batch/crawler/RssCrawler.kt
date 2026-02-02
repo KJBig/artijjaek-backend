@@ -1,5 +1,6 @@
-package com.artijjaek.batch.crawler.blog
+package com.artijjaek.batch.crawler
 
+import com.artijjaek.batch.crawler.blog.BlogCrawler
 import com.artijjaek.batch.dto.CrawledArticleDto
 import com.artijjaek.core.domain.article.entity.Article
 import com.artijjaek.core.domain.company.entity.Company
@@ -33,16 +34,15 @@ abstract class RssCrawler(
                 "[${company.nameKr}] : " +
                         "Title->${crawledArticleData.title}, " +
                         "Link->${crawledArticleData.link}, " +
-                        "Img->${crawledArticleData.firstImg}, " +
-                        "Description->${crawledArticleData.firstText}"
+                        "Img->${crawledArticleData.firstImg}, "
             )
 
             Article(
                 company = company,
                 title = crawledArticleData.title,
-                description = crawledArticleData.firstText,
                 link = crawledArticleData.link,
                 image = crawledArticleData.firstImg,
+                description = null,
                 category = null
             )
         }
@@ -63,13 +63,11 @@ abstract class RssCrawler(
         val contentHtml = item.selectFirst("content|encoded")?.wholeText()
 
         val htmlDoc = Jsoup.parse(contentHtml ?: "")
-        val firstText = findFirstTextElement(htmlDoc.body())
         val firstImg = findFirstImageElement(htmlDoc, company)
 
         return CrawledArticleDto(
             title = title ?: "",
             link = link ?: "",
-            firstText = firstText,
             firstImg = firstImg
         )
     }
