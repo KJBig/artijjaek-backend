@@ -69,4 +69,10 @@ class AuthService(
         return RefreshResponse(newAccessToken, request.refreshToken)
     }
 
+    @Transactional
+    fun logout(adminId: Long) {
+        val admin = adminDomainService.findById(adminId)
+        admin.changeRefreshToken(null)
+    }
+
 }
