@@ -22,7 +22,7 @@ class AuthService(
     @Transactional
     fun login(request: LoginRequest): LoginResponse {
         // 비밀번호 체크
-        val admin = adminDomainService.findByEmail(request.email) ?: throw IllegalStateException()
+        val admin = adminDomainService.findByEmail(request.email) ?: throw ApplicationException(ADMIN_NOT_FOUND_ERROR)
         val isMatch = PasswordEncoder.isMatch(request.password, admin.password)
 
         if (!isMatch) {
