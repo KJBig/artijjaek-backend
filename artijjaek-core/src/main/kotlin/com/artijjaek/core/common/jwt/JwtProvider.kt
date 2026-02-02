@@ -109,13 +109,8 @@ class JwtProvider(
         }
     }
 
-    fun validateToken(refreshToken: String): Boolean {
-        try {
-            parseAndValidate(refreshToken)
-            return true
-        } catch (e: Exception) {
-            return false
-        }
+    fun validateToken(refreshToken: String) {
+        parseAndValidate(refreshToken)
     }
 
 }

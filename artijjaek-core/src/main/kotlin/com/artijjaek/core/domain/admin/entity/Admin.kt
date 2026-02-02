@@ -30,7 +30,7 @@ class Admin(
 
     ) : BaseEntity() {
 
-    fun changeRefreshToken(refreshToken: String) {
+    fun changeRefreshToken(refreshToken: String?) {
         this.refreshToken = refreshToken
     }
 

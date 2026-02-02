@@ -13,8 +13,9 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
-class AdminService(
+class AuthService(
     private val adminDomainService: AdminDomainService,
+    private val adminRefreshTokenService: AdminRefreshTokenService,
     private val jwtProvider: JwtProvider,
 ) {
 
@@ -39,10 +40,20 @@ class AdminService(
 
     @Transactional(readOnly = true)
     fun refreshAccessToken(request: RefreshRequest): RefreshResponse {
-        // Refresh Token 검증
-        jwtProvider.validateToken(request.refreshToken)
-
         val adminId = jwtProvider.parseAccessToken(request.accessToken).subject.toLong()
+
+        // Refresh Token 검증
+        try {
+            jwtProvider.validateToken(request.refreshToken)
+        } catch (exception: ApplicationException) {
+            // 만료 시 로그아웃
+            if (exception.code == JWT_EXPIRATION_ERROR.code) {
+                adminRefreshTokenService.clearRefreshToken(adminId)
+            }
+            throw exception
+        }
+
+        // 정상로직
         val admin = adminDomainService.findById(adminId)
 
         if (admin.refreshToken == null) {
