@@ -34,4 +34,8 @@ class Admin(
         this.refreshToken = refreshToken
     }
 
+    fun changePassword(password: String) {
+        this.password = password
+    }
+
 }
