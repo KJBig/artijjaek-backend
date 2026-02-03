@@ -13,6 +13,8 @@ import com.artijjaek.core.domain.company.service.CompanyDomainService
 import com.artijjaek.core.domain.member.entity.Member
 import com.artijjaek.core.domain.member.enums.MemberStatus
 import com.artijjaek.core.domain.member.service.MemberDomainService
+import com.artijjaek.core.domain.subscription.entity.CategorySubscription
+import com.artijjaek.core.domain.subscription.entity.CompanySubscription
 import com.artijjaek.core.domain.subscription.service.CategorySubscriptionDomainService
 import com.artijjaek.core.domain.subscription.service.CompanySubscriptionDomainService
 import com.artijjaek.core.domain.unsubscription.service.UnsubscriptionDomainService
@@ -91,11 +93,11 @@ class MemberServiceTest {
         )
         val categories = mutableListOf(category)
 
-        every { memberDomainService.findByEmailAndMemberStatus(any(), any()) } returns null
-        every { memberDomainService.save(any()) } returns newMember
-        every { companyDomainService.findByIdsOrAll(request.companyIds) } returns companies
+        every { memberDomainService.findByEmailAndMemberStatus(any(), any()) }.returns(null)
+        every { memberDomainService.save(any()) }.returns(newMember)
+        every { companyDomainService.findByIdsOrAll(request.companyIds) }.returns(companies)
         justRun { companySubscriptionDomainService.saveAll(any()) }
-        every { categoryDomainService.findByIdsOrAll(request.categoryIds) } returns categories
+        every { categoryDomainService.findByIdsOrAll(request.categoryIds) }.returns(categories)
         justRun { categorySubscriptionDomainService.saveAll(any()) }
         justRun { mailService.sendSubscribeMail(any()) }
 
@@ -116,7 +118,7 @@ class MemberServiceTest {
         // given
         val request = RegisterMemberRequest(
             email = "newuser@example.com",
-            nickname = "securePass",
+            nickname = "nickname",
             categoryIds = mutableListOf(1),
             companyIds = mutableListOf(1)
         )
@@ -125,10 +127,10 @@ class MemberServiceTest {
             email = request.email,
             nickname = request.nickname,
             uuidToken = UuidTokenGenerator.generatorUuidToken(),
-            memberStatus = MemberStatus.ACTIVE,
+            memberStatus = MemberStatus.ACTIVE
         )
 
-        every { memberDomainService.findByEmailAndMemberStatus(any(), any()) } returns member
+        every { memberDomainService.findByEmailAndMemberStatus(any(), any()) }.returns(member)
 
         // when
         val exception = assertThrows(ApplicationException::class.java) {
@@ -141,5 +143,61 @@ class MemberServiceTest {
         verify(exactly = 0) { companySubscriptionDomainService.saveAll(any()) }
         verify(exactly = 0) { categorySubscriptionDomainService.saveAll(any()) }
         verify(exactly = 0) { mailService.sendSubscribeMail(any()) }
+    }
+
+    @Test
+    @DisplayName("구독자 이메일과 토큰을 통해 구독정보 조회")
+    fun getMemberDataWithTokenTest() {
+        // given
+        val email = "newuser@example.com"
+        val nickname = "nickname"
+
+        val member = Member(
+            email = email,
+            nickname = nickname,
+            uuidToken = UuidTokenGenerator.generatorUuidToken(),
+            memberStatus = MemberStatus.ACTIVE
+        )
+
+        val company = Company(
+            id = 1L,
+            nameKr = "회사1",
+            nameEn = "Company1",
+            logo = "http://example.com/logo1.png",
+            baseUrl = "http://example.com",
+            crawlUrl = "http://example.com/crawl1",
+            crawlAvailability = true
+        )
+        val companySubscription = CompanySubscription(
+            member = member,
+            company = company
+        )
+
+        val category = Category(
+            id = 1L,
+            name = "카테고리1",
+            categoryType = CategoryType.PUBLISH
+        )
+        val categorySubscription = CategorySubscription(
+            member = member,
+            category = category
+        )
+
+        every { memberDomainService.findByEmailAndMemberStatus(email, MemberStatus.ACTIVE) }.returns(member)
+        every { companySubscriptionDomainService.findAllByMember(member) }
+            .returns(mutableListOf(companySubscription))
+        every { categorySubscriptionDomainService.findAllByMember(member) }
+            .returns(mutableListOf(categorySubscription))
+
+
+        // when
+        val memberData = memberService.getMemberDataWithToken(email, member.uuidToken!!)
+
+
+        // then
+        assertThat(memberData.email).isEqualTo(email)
+        assertThat(memberData.nickname).isEqualTo(nickname)
+        assertThat(memberData.companyIds.size).isEqualTo(1)
+        assertThat(memberData.categoryIds.size).isEqualTo(1)
     }
 }
