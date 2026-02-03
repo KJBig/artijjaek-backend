@@ -1,6 +1,7 @@
 package com.artijjaek.api.service
 
 import com.artijjaek.api.dto.request.RegisterMemberRequest
+import com.artijjaek.api.dto.request.SubscriptionChangeRequest
 import com.artijjaek.core.common.error.ApplicationException
 import com.artijjaek.core.common.error.ErrorCode
 import com.artijjaek.core.common.mail.service.MailService
@@ -147,7 +148,7 @@ class MemberServiceTest {
     }
 
     @Test
-    @DisplayName("구독자 이메일과 토큰을 통해 구독정보 조회")
+    @DisplayName("구독자 이메일과 토큰을 통해 구독정보 조회 할 수 있다")
     fun getMemberDataWithTokenTest() {
         // given
         val email = "newuser@example.com"
@@ -204,7 +205,7 @@ class MemberServiceTest {
     }
 
     @Test
-    @DisplayName("구독자 이메일과 토큰을 통해 구독정보 조회 - 사용자 없음")
+    @DisplayName("구독자 이메일과 토큰을 통해 구독정보 조회 할 수 있다 - 사용자 없음")
     fun getMemberDataWithTokenTest_MemberNotFound() {
         // given
         val email = "newuser@example.com"
@@ -215,24 +216,23 @@ class MemberServiceTest {
 
         // when
         val exception = assertThrows(ApplicationException::class.java) {
+            memberService.getMemberDataWithToken(email, uuIdToken)
         }
-        memberService.getMemberDataWithToken(email, uuIdToken)
 
 
         // then
         assertThat(exception.code).isEqualTo(ErrorCode.MEMBER_NOT_FOUND_ERROR.code)
-        verify(exactly = 0) { companySubscriptionDomainService.findAllByMember(any()) }
-        verify(exactly = 0) { categorySubscriptionDomainService.findAllByMember(any()) }
+        verify(exactly = 0) { companySubscriptionDomainService.findAllByMember(any<Member>()) }
+        verify(exactly = 0) { categorySubscriptionDomainService.findAllByMember(any<Member>()) }
     }
 
     @Test
-    @DisplayName("구독자 이메일과 토큰을 통해 구독정보 조회 - 사용자 토큰 불일치")
+    @DisplayName("구독자 이메일과 토큰을 통해 구독정보 조회 할 수 있다 - 사용자 토큰 불일치")
     fun getMemberDataWithTokenTest_MemberTokenNotMatch() {
         // given
         val email = "newuser@example.com"
         val nickname = "nickname"
         val uuIdToken = "some-uuid-token"
-        val wrongToken = "wrong-uuid-token"
 
         val member = Member(
             email = email,
@@ -246,13 +246,156 @@ class MemberServiceTest {
 
         // when
         val exception = assertThrows(ApplicationException::class.java) {
-            memberService.getMemberDataWithToken(email, wrongToken)
+            memberService.getMemberDataWithToken(email, "wrong-uuid-token")
         }
 
 
         // then
         assertThat(exception.code).isEqualTo(ErrorCode.MEMBER_TOKEN_NOT_MATCH_ERROR.code)
-        verify(exactly = 0) { companySubscriptionDomainService.findAllByMember(any()) }
-        verify(exactly = 0) { categorySubscriptionDomainService.findAllByMember(any()) }
+        verify(exactly = 0) { companySubscriptionDomainService.findAllByMember(any<Member>()) }
+        verify(exactly = 0) { categorySubscriptionDomainService.findAllByMember(any<Member>()) }
     }
+
+    @Test
+    @DisplayName("구독자 이메일과 토큰을 통해 구독정보를 수정 할 수 있다")
+    fun changeSubscriptionTest() {
+        // given
+        val email = "newuser@example.com"
+        val nickname = "nickname"
+        val uuIdToken = "some-uuid-token"
+
+        val request = SubscriptionChangeRequest(
+            email = email,
+            token = uuIdToken,
+            nickname = nickname,
+            categoryIds = mutableListOf(1),
+            companyIds = mutableListOf(1),
+        )
+
+        val member = Member(
+            id = 1L,
+            email = email,
+            nickname = nickname,
+            uuidToken = uuIdToken,
+            memberStatus = MemberStatus.ACTIVE
+        )
+
+        val company = Company(
+            id = 1L,
+            nameKr = "회사1",
+            nameEn = "Company1",
+            logo = "http://example.com/logo1.png",
+            baseUrl = "http://example.com",
+            crawlUrl = "http://example.com/crawl1",
+            crawlAvailability = true
+        )
+        val companySubscription = CompanySubscription(
+            member = member,
+            company = company
+        )
+
+        val category = Category(
+            id = 1L,
+            name = "카테고리1",
+            categoryType = CategoryType.PUBLISH
+        )
+        val categorySubscription = CategorySubscription(
+            member = member,
+            category = category
+        )
+
+        every { memberDomainService.findByEmailAndMemberStatus(email, MemberStatus.ACTIVE) }.returns(member)
+
+        justRun { companySubscriptionDomainService.deleteAllByMemberId(member.id!!) }
+        every { companySubscriptionDomainService.findAllByMember(member) }
+            .returns(mutableListOf(companySubscription))
+
+        justRun { categorySubscriptionDomainService.deleteAllByMemberId(member.id!!) }
+        every { categorySubscriptionDomainService.findAllByMember(member) }
+            .returns(mutableListOf(categorySubscription))
+
+
+        // when
+        memberService.changeSubscription(request)
+
+
+        // then
+        verify { memberDomainService.findByEmailAndMemberStatus(email, MemberStatus.ACTIVE) }
+        verify { companySubscriptionDomainService.deleteAllByMemberId(any<Long>()) }
+        verify { companySubscriptionDomainService.findAllByMember(any<Member>()) }
+        verify { categorySubscriptionDomainService.deleteAllByMemberId(any<Long>()) }
+        verify { categorySubscriptionDomainService.findAllByMember(any<Member>()) }
+    }
+
+    @Test
+    @DisplayName("구독자 이메일과 토큰을 통해 구독정보를 수정 할 수 있다 - 사용자 없음")
+    fun changeSubscriptionTest_MemberNotFound() {
+        // given
+        val email = "newuser@example.com"
+        val uuIdToken = "some-uuid-token"
+        val nickname = "nickname"
+
+        val request = SubscriptionChangeRequest(
+            email = email,
+            token = uuIdToken,
+            nickname = nickname,
+            categoryIds = mutableListOf(1),
+            companyIds = mutableListOf(1),
+        )
+
+        every { memberDomainService.findByEmailAndMemberStatus(email, MemberStatus.ACTIVE) }.returns(null)
+
+
+        // when
+        val exception = assertThrows(ApplicationException::class.java) {
+            memberService.changeSubscription(request)
+        }
+
+
+        // then
+        assertThat(exception.code).isEqualTo(ErrorCode.MEMBER_NOT_FOUND_ERROR.code)
+        verify(exactly = 0) { companySubscriptionDomainService.deleteAllByMemberId(any<Long>()) }
+        verify(exactly = 0) { companySubscriptionDomainService.findAllByMember(any<Member>()) }
+        verify(exactly = 0) { categorySubscriptionDomainService.deleteAllByMemberId(any<Long>()) }
+        verify(exactly = 0) { categorySubscriptionDomainService.findAllByMember(any<Member>()) }
+    }
+
+    @Test
+    @DisplayName("구독자 이메일과 토큰을 통해 구독정보를 수정 할 수 있다 - 사용자 토큰 불일치")
+    fun changeSubscriptionTest_MemberTokenNotMatch() {
+        // given
+        val email = "newuser@example.com"
+        val nickname = "nickname"
+        val uuIdToken = "some-uuid-token"
+
+        val request = SubscriptionChangeRequest(
+            email = email,
+            token = "wrong-uuid-token",
+            nickname = nickname,
+            categoryIds = mutableListOf(1),
+            companyIds = mutableListOf(1),
+        )
+
+        val member = Member(
+            email = email,
+            nickname = nickname,
+            uuidToken = uuIdToken,
+            memberStatus = MemberStatus.ACTIVE
+        )
+
+        every { memberDomainService.findByEmailAndMemberStatus(email, MemberStatus.ACTIVE) }.returns(member)
+
+
+        // when
+        val exception = assertThrows(ApplicationException::class.java) {
+            memberService.changeSubscription(request)
+        }
+
+
+        // then
+        assertThat(exception.code).isEqualTo(ErrorCode.MEMBER_TOKEN_NOT_MATCH_ERROR.code)
+        verify(exactly = 0) { companySubscriptionDomainService.findAllByMember(any<Member>()) }
+        verify(exactly = 0) { categorySubscriptionDomainService.findAllByMember(any<Member>()) }
+    }
+
 }
