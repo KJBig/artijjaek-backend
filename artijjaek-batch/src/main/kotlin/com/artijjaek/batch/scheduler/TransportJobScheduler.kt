@@ -8,17 +8,18 @@ import org.springframework.stereotype.Component
 import java.time.LocalDateTime
 
 @Component
-class MailJobScheduler(
+class TransportJobScheduler(
     private val jobLauncher: JobLauncher,
-    private val mailJob: Job
+    private val transportJob: Job
 ) {
 
-    @Scheduled(cron = "0 0 7 * * *")
+    //    @Scheduled(cron = "0 0 7 * * *")
+    @Scheduled(fixedDelay = 10000)
     fun runMailJob() {
         val jobParameters = JobParametersBuilder()
             .addString("runTime", LocalDateTime.now().toString())
             .toJobParameters()
 
-        jobLauncher.run(mailJob, jobParameters)
+        jobLauncher.run(transportJob, jobParameters)
     }
 }

@@ -33,13 +33,18 @@ class ArticleRepositoryImpl(
             .fetch()
     }
 
-    override fun findTodayByCompanies(memberSubscribeCompanies: List<Company>): List<Article> {
+    override fun findTodayByCompaniesAndCategories(
+        companies: List<Company>,
+        categories: List<Category>
+    ): List<Article> {
         val startOfToday = LocalDate.now().atStartOfDay()
-        val companyIds = memberSubscribeCompanies.stream().map { it.id }.toList()
+        val companyIds = companies.stream().map { it.id }.toList()
+        val categoryIds = categories.stream().map { it.id }.toList()
 
         return jpaQueryFactory.selectFrom(article)
             .where(
                 article.company.id.`in`(companyIds)
+                    .and(article.category.id.`in`(categoryIds))
                     .and(
                         article.createdAt.goe(startOfToday)
                             .and(article.createdAt.lt(LocalDateTime.now()))
