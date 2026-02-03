@@ -1,4 +1,4 @@
-package com.artijjaek.api.controller
+package com.artijjaek.api.common.health
 
 import com.artijjaek.api.dto.common.SuccessResponse
 import org.springframework.http.ResponseEntity
