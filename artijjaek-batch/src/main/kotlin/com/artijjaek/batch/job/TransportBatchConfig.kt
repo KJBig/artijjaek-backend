@@ -61,7 +61,7 @@ class TransportBatchConfig(
         return JpaPagingItemReaderBuilder<Member>()
             .name("memberReader")
             .entityManagerFactory(entityManagerFactory)
-            .queryString("SELECT m FROM Member m")
+            .queryString("SELECT m FROM Member m WHERE m.memberStatus = 'ACTIVE'")
             .pageSize(10)
             .build()
     }
@@ -100,7 +100,10 @@ class TransportBatchConfig(
         return ItemWriter { items ->
             val memberArticles = items.flatten()
 
-            if (memberArticles.isEmpty()) return@ItemWriter
+            if (memberArticles.isEmpty()) {
+                log.info("[TransportBatch] chunk processed - members={}, articles={}", 0, 0)
+                return@ItemWriter
+            }
 
             val memberCount = memberArticles.map { it.member.id }.distinct().count()
             val articleCount = memberArticles.size
