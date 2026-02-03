@@ -15,7 +15,10 @@ class CompanyService(
     @Transactional(readOnly = true)
     fun searchCompanyList(pageable: Pageable): PageResponse<CompanySimpleDataResponse> {
         val companyPage = companyDomainService.findWithPageable(pageable)
-        val content = companyPage.content.stream().map { CompanySimpleDataResponse.from(it) }.toList()
+        val content = companyPage.content.stream()
+            .map { CompanySimpleDataResponse.from(it) }
+            .toList()
+
         return PageResponse(companyPage.pageable.pageNumber, companyPage.hasNext(), content)
     }
 }
