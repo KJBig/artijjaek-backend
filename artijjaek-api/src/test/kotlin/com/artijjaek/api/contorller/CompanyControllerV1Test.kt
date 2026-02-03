@@ -33,7 +33,7 @@ class CompanyControllerV1Test {
     lateinit var companyService: CompanyService
 
     @Test
-    @DisplayName("문의하기")
+    @DisplayName("회사 목록 조회")
     fun getCompaniesTest() {
         // given
         val data = CompanySimpleDataResponse(

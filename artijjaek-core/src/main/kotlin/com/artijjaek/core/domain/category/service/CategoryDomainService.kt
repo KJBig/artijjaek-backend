@@ -19,7 +19,7 @@ class CategoryDomainService(
         return categoryRepository.findByIdsOrAll(categoryIds)
     }
 
-    fun findPublishCategoryWithPageable(pageable: Pageable): Page<Category> {
+    fun findPublishableCategoryWithPageable(pageable: Pageable): Page<Category> {
         return categoryRepository.findPublishCategoryWithPageable(pageable)
     }
 

@@ -7,7 +7,7 @@ import com.artijjaek.core.common.error.ApplicationException
 import com.artijjaek.core.common.error.ErrorCode
 import com.artijjaek.core.common.mail.service.MailService
 import com.artijjaek.core.domain.category.entity.Category
-import com.artijjaek.core.domain.category.enums.CategoryType
+import com.artijjaek.core.domain.category.enums.PublishType
 import com.artijjaek.core.domain.category.service.CategoryDomainService
 import com.artijjaek.core.domain.company.entity.Company
 import com.artijjaek.core.domain.company.service.CompanyDomainService
@@ -93,7 +93,7 @@ class MemberServiceTest {
 
         val category = Category(
             name = "카테고리1",
-            categoryType = CategoryType.PUBLISH
+            publishType = PublishType.PUBLISH
         )
         val categories = mutableListOf(category)
 
@@ -183,7 +183,7 @@ class MemberServiceTest {
         val category = Category(
             id = 1L,
             name = "카테고리1",
-            categoryType = CategoryType.PUBLISH
+            publishType = PublishType.PUBLISH
         )
         val categorySubscription = CategorySubscription(
             member = member,
@@ -301,7 +301,7 @@ class MemberServiceTest {
         val category = Category(
             id = 1L,
             name = "카테고리1",
-            categoryType = CategoryType.PUBLISH
+            publishType = PublishType.PUBLISH
         )
         val categorySubscription = CategorySubscription(
             member = member,

@@ -30,7 +30,7 @@ class InquiryServiceTest {
 
     @Test
     @DisplayName("누구나 문의를 남길 수 있다")
-    fun saveInquiry() {
+    fun saveInquiryTest() {
         // given
         val request = InquiryRequest(
             email = "test@example.com",
@@ -47,5 +47,5 @@ class InquiryServiceTest {
         verify { inquiryDomainService.saveInquiry(any()) }
         verify { webHookService.sendNewInquiryMessage(any()) }
     }
-    
+
 }

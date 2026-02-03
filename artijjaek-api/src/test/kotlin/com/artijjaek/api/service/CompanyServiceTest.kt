@@ -26,7 +26,7 @@ class CompanyServiceTest {
 
     @Test
     @DisplayName("회사 목록을 조회할 수 있다")
-    fun saveInquiry() {
+    fun searchCompanyListTest() {
         // given
         val pageRequest = PageRequest.of(0, 1)
 
