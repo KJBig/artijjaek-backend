@@ -13,9 +13,8 @@ class TransportJobScheduler(
     private val transportJob: Job
 ) {
 
-    //    @Scheduled(cron = "0 0 7 * * *")
-    @Scheduled(fixedDelay = 10000)
-    fun runMailJob() {
+    @Scheduled(cron = "0 0 12 * * *")
+    fun transportMailJob() {
         val jobParameters = JobParametersBuilder()
             .addString("runTime", LocalDateTime.now().toString())
             .toJobParameters()
