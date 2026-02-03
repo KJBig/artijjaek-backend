@@ -2,6 +2,7 @@ package com.artijjaek.api.service
 
 import com.artijjaek.api.dto.request.RegisterMemberRequest
 import com.artijjaek.api.dto.request.SubscriptionChangeRequest
+import com.artijjaek.api.dto.request.UnsubscriptionRequest
 import com.artijjaek.core.common.error.ApplicationException
 import com.artijjaek.core.common.error.ErrorCode
 import com.artijjaek.core.common.mail.service.MailService
@@ -17,12 +18,15 @@ import com.artijjaek.core.domain.subscription.entity.CategorySubscription
 import com.artijjaek.core.domain.subscription.entity.CompanySubscription
 import com.artijjaek.core.domain.subscription.service.CategorySubscriptionDomainService
 import com.artijjaek.core.domain.subscription.service.CompanySubscriptionDomainService
+import com.artijjaek.core.domain.unsubscription.entity.Unsubscription
+import com.artijjaek.core.domain.unsubscription.enums.UnSubscriptionReason
 import com.artijjaek.core.domain.unsubscription.service.UnsubscriptionDomainService
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.justRun
+import io.mockk.mockk
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -396,6 +400,108 @@ class MemberServiceTest {
         assertThat(exception.code).isEqualTo(ErrorCode.MEMBER_TOKEN_NOT_MATCH_ERROR.code)
         verify(exactly = 0) { companySubscriptionDomainService.findAllByMember(any<Member>()) }
         verify(exactly = 0) { categorySubscriptionDomainService.findAllByMember(any<Member>()) }
+    }
+
+    @Test
+    @DisplayName("이메일과 토큰으로 구독을 해지 할 수 있다")
+    fun cancelSubscriptionTest() {
+        // given
+        val email = "test@example.com"
+        val nickname = "nickname"
+        val uuIdToken = "some-uuid-token"
+
+        val request = UnsubscriptionRequest(
+            email = email,
+            token = uuIdToken,
+            reason = UnSubscriptionReason.NO_COMPANY,
+            detail = "reason detail"
+        )
+
+        val member = Member(
+            id = 1L,
+            email = email,
+            nickname = nickname,
+            uuidToken = uuIdToken,
+            memberStatus = MemberStatus.ACTIVE
+        )
+
+        every { memberDomainService.findByEmailAndMemberStatus(any(), any()) }.returns(member)
+        every { unsubscriptionDomainService.saveUnsubscription(any()) }.returns(mockk())
+
+
+        // when
+        memberService.cancelSubscription(request)
+
+
+        // then
+        verify { memberDomainService.findByEmailAndMemberStatus(email, MemberStatus.ACTIVE) }
+        verify { unsubscriptionDomainService.saveUnsubscription(any<Unsubscription>()) }
+    }
+
+    @Test
+    @DisplayName("이메일과 토큰으로 구독을 해지 할 수 있다 - 사용자 없음")
+    fun cancelSubscription_MemberNotFound() {
+        // given
+        val email = "test@example.com"
+        val uuIdToken = "some-uuid-token"
+
+        val request = UnsubscriptionRequest(
+            email = email,
+            token = uuIdToken,
+            reason = UnSubscriptionReason.NO_COMPANY,
+            detail = "reason detail"
+        )
+
+        every { memberDomainService.findByEmailAndMemberStatus(any(), any()) }.returns(null)
+
+
+        // when
+        val exception = assertThrows(ApplicationException::class.java) {
+            memberService.cancelSubscription(request)
+        }
+
+
+        // then
+        assertThat(exception.code).isEqualTo(ErrorCode.MEMBER_NOT_FOUND_ERROR.code)
+        verify(exactly = 0) { unsubscriptionDomainService.saveUnsubscription(any()) }
+    }
+
+    @Test
+    @DisplayName("이메일과 토큰으로 구독을 해지 할 수 있다 - 사용자 토큰 불일치")
+    fun cancelSubscription_MemberTokenNotMatch() {
+        // given
+        val email = "test@example.com"
+        val nickname = "nickname"
+        val uuIdToken = "some-uuid-token"
+
+        val request = UnsubscriptionRequest(
+            email = email,
+            token = "wrong-uuid-token",
+            reason = UnSubscriptionReason.NO_COMPANY,
+            detail = "reason detail"
+        )
+
+        val member = Member(
+            id = 1L,
+            email = email,
+            nickname = nickname,
+            uuidToken = uuIdToken,
+            memberStatus = MemberStatus.ACTIVE
+        )
+
+        every { memberDomainService.findByEmailAndMemberStatus(any(), any()) }.returns(member)
+        every { unsubscriptionDomainService.saveUnsubscription(any()) }.returns(mockk())
+
+
+        // when
+        val exception = assertThrows(ApplicationException::class.java) {
+            memberService.cancelSubscription(request)
+        }
+
+
+        // then
+        assertThat(exception.code).isEqualTo(ErrorCode.MEMBER_TOKEN_NOT_MATCH_ERROR.code)
+        verify(exactly = 0) { unsubscriptionDomainService.saveUnsubscription(any()) }
     }
 
 }

@@ -4,8 +4,10 @@ import com.artijjaek.api.config.ApiSecurityConfig
 import com.artijjaek.api.controller.MemberControllerV1
 import com.artijjaek.api.dto.request.RegisterMemberRequest
 import com.artijjaek.api.dto.request.SubscriptionChangeRequest
+import com.artijjaek.api.dto.request.UnsubscriptionRequest
 import com.artijjaek.api.dto.response.MemberDataResponse
 import com.artijjaek.api.service.MemberService
+import com.artijjaek.core.domain.unsubscription.enums.UnSubscriptionReason
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
@@ -116,6 +118,36 @@ class MemberControllerV1Test {
         // when
         val mvcResult = mockMvc.perform(
             put("/api/v1/member/subscription")
+                .with(csrf())
+                .contentType(APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))
+        )
+
+        // then
+        mvcResult
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.isSuccess").value(true))
+    }
+
+    @Test
+    @DisplayName("구독 해지")
+    fun cancelSubscriptionTest() {
+        // given
+        val email = "test@example.com"
+        val uuIdToken = "some-uuid-token"
+
+        val request = UnsubscriptionRequest(
+            email = email,
+            token = uuIdToken,
+            reason = UnSubscriptionReason.NO_COMPANY,
+            detail = "reason detail"
+        )
+
+        justRun { memberService.cancelSubscription(any<UnsubscriptionRequest>()) }
+
+        // when
+        val mvcResult = mockMvc.perform(
+            post("/api/v1/member/unsubscription")
                 .with(csrf())
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request))
