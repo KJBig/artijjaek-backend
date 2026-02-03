@@ -22,8 +22,8 @@ class ArticleDomainService(
         return articleRepository.findByCompanyRecent(company, size)
     }
 
-    fun findTodayByCompanies(memberSubscribeCompanies: List<Company>): List<Article> {
-        return articleRepository.findTodayByCompanies(memberSubscribeCompanies)
+    fun findTodayByCompaniesAndCategories(companies: List<Company>, categories: List<Category>): List<Article> {
+        return articleRepository.findTodayByCompaniesAndCategories(companies, categories)
     }
 
     fun allocateCategory(article: Article, category: Category) {

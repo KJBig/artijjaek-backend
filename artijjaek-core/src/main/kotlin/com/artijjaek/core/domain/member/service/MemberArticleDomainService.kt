@@ -13,4 +13,8 @@ class MemberArticleDomainService(
         memberArticleRepository.save(memberArticle)
     }
 
+    fun saveAll(memberArticles: List<MemberArticle>) {
+        memberArticleRepository.saveAll(memberArticles)
+    }
+
 }
