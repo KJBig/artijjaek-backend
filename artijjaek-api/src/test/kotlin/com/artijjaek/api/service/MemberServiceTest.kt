@@ -1,6 +1,5 @@
 package com.artijjaek.api.service
 
-import com.artijjaek.api.common.UuidTokenGenerator
 import com.artijjaek.api.dto.request.RegisterMemberRequest
 import com.artijjaek.core.common.error.ApplicationException
 import com.artijjaek.core.common.error.ErrorCode
@@ -73,7 +72,7 @@ class MemberServiceTest {
         val newMember = Member(
             email = request.email,
             nickname = request.nickname,
-            uuidToken = UuidTokenGenerator.generatorUuidToken(),
+            uuidToken = "some-uuid-token",
             memberStatus = MemberStatus.ACTIVE,
         )
 
@@ -105,6 +104,7 @@ class MemberServiceTest {
         // when
         memberService.register(request)
 
+
         // then
         verify { memberDomainService.save(any()) }
         verify { companySubscriptionDomainService.saveAll(any()) }
@@ -126,11 +126,12 @@ class MemberServiceTest {
         val member = Member(
             email = request.email,
             nickname = request.nickname,
-            uuidToken = UuidTokenGenerator.generatorUuidToken(),
+            uuidToken = "some-uuid-token",
             memberStatus = MemberStatus.ACTIVE
         )
 
         every { memberDomainService.findByEmailAndMemberStatus(any(), any()) }.returns(member)
+
 
         // when
         val exception = assertThrows(ApplicationException::class.java) {
@@ -151,11 +152,12 @@ class MemberServiceTest {
         // given
         val email = "newuser@example.com"
         val nickname = "nickname"
+        val uuIdToken = "some-uuid-token"
 
         val member = Member(
             email = email,
             nickname = nickname,
-            uuidToken = UuidTokenGenerator.generatorUuidToken(),
+            uuidToken = uuIdToken,
             memberStatus = MemberStatus.ACTIVE
         )
 
@@ -191,7 +193,7 @@ class MemberServiceTest {
 
 
         // when
-        val memberData = memberService.getMemberDataWithToken(email, member.uuidToken!!)
+        val memberData = memberService.getMemberDataWithToken(email, uuIdToken)
 
 
         // then
@@ -199,5 +201,58 @@ class MemberServiceTest {
         assertThat(memberData.nickname).isEqualTo(nickname)
         assertThat(memberData.companyIds.size).isEqualTo(1)
         assertThat(memberData.categoryIds.size).isEqualTo(1)
+    }
+
+    @Test
+    @DisplayName("구독자 이메일과 토큰을 통해 구독정보 조회 - 사용자 없음")
+    fun getMemberDataWithTokenTest_MemberNotFound() {
+        // given
+        val email = "newuser@example.com"
+        val uuIdToken = "some-uuid-token"
+
+        every { memberDomainService.findByEmailAndMemberStatus(email, MemberStatus.ACTIVE) }.returns(null)
+
+
+        // when
+        val exception = assertThrows(ApplicationException::class.java) {
+        }
+        memberService.getMemberDataWithToken(email, uuIdToken)
+
+
+        // then
+        assertThat(exception.code).isEqualTo(ErrorCode.MEMBER_NOT_FOUND_ERROR.code)
+        verify(exactly = 0) { companySubscriptionDomainService.findAllByMember(any()) }
+        verify(exactly = 0) { categorySubscriptionDomainService.findAllByMember(any()) }
+    }
+
+    @Test
+    @DisplayName("구독자 이메일과 토큰을 통해 구독정보 조회 - 사용자 토큰 불일치")
+    fun getMemberDataWithTokenTest_MemberTokenNotMatch() {
+        // given
+        val email = "newuser@example.com"
+        val nickname = "nickname"
+        val uuIdToken = "some-uuid-token"
+        val wrongToken = "wrong-uuid-token"
+
+        val member = Member(
+            email = email,
+            nickname = nickname,
+            uuidToken = uuIdToken,
+            memberStatus = MemberStatus.ACTIVE
+        )
+
+        every { memberDomainService.findByEmailAndMemberStatus(email, MemberStatus.ACTIVE) }.returns(member)
+
+
+        // when
+        val exception = assertThrows(ApplicationException::class.java) {
+            memberService.getMemberDataWithToken(email, wrongToken)
+        }
+
+
+        // then
+        assertThat(exception.code).isEqualTo(ErrorCode.MEMBER_TOKEN_NOT_MATCH_ERROR.code)
+        verify(exactly = 0) { companySubscriptionDomainService.findAllByMember(any()) }
+        verify(exactly = 0) { categorySubscriptionDomainService.findAllByMember(any()) }
     }
 }
