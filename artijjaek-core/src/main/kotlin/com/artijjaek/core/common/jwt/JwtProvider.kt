@@ -46,7 +46,9 @@ class JwtProvider(
             .claim("type", "ACCESS")
 
         if (!role.isNullOrBlank()) {
-            builder.claim("role", role)
+            builder.claim("roles", listOf(role))
+        } else {
+            builder.claim("roles", emptyList<String>())
         }
 
         return builder
