@@ -12,9 +12,9 @@ class CompanyRepositoryImpl(
     private val jpaQueryFactory: JPAQueryFactory,
 ) : CompanyRepositoryCustom {
 
-    override fun findAllByIs(companyIds: List<Long>): List<Company> {
+    override fun findAllOrByIds(companyIds: List<Long>): List<Company> {
         return jpaQueryFactory.selectFrom(company)
-            .where(company.id.`in`(companyIds))
+            .where(company.id.`in`(companyIds).takeIf { companyIds.isNotEmpty() })
             .fetch()
     }
 

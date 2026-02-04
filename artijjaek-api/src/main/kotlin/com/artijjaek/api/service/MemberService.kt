@@ -53,12 +53,12 @@ class MemberService(
         )
 
         // 구독 회사
-        val companies: List<Company> = companyDomainService.findByIdsOrAll(request.companyIds)
+        val companies: List<Company> = companyDomainService.findAllOrByIds(request.companyIds)
         val companySubscriptions = companies.map { CompanySubscription(member = newMember, company = it) }
         companySubscriptionDomainService.saveAll(companySubscriptions)
 
         // 구독 카테고리
-        val categories: List<Category> = categoryDomainService.findByIdsOrAll(request.categoryIds)
+        val categories: List<Category> = categoryDomainService.findAllOrByIds(request.categoryIds)
         val categorySubscriptions = categories.map { CategorySubscription(member = newMember, category = it) }
         categorySubscriptionDomainService.saveAll(categorySubscriptions)
 
@@ -93,13 +93,13 @@ class MemberService(
 
         // 구독 회사 변경
         companySubscriptionDomainService.deleteAllByMemberId(member.id!!)
-        val companies: List<Company> = companyDomainService.findByIdsOrAll(request.companyIds)
+        val companies: List<Company> = companyDomainService.findAllOrByIds(request.companyIds)
         val companySubscriptions = companies.map { CompanySubscription(member = member, company = it) }
         companySubscriptionDomainService.saveAll(companySubscriptions)
 
         // 구독 카테고리 변경
         categorySubscriptionDomainService.deleteAllByMemberId(member.id!!)
-        val categories: List<Category> = categoryDomainService.findByIdsOrAll(request.categoryIds)
+        val categories: List<Category> = categoryDomainService.findAllOrByIds(request.categoryIds)
         val categorySubscriptions = categories.map { CategorySubscription(member = member, category = it) }
         categorySubscriptionDomainService.saveAll(categorySubscriptions)
     }

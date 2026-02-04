@@ -99,9 +99,9 @@ class MemberServiceTest {
 
         every { memberDomainService.findByEmailAndMemberStatus(any(), any()) }.returns(null)
         every { memberDomainService.save(any()) }.returns(newMember)
-        every { companyDomainService.findByIdsOrAll(request.companyIds) }.returns(companies)
+        every { companyDomainService.findAllOrByIds(request.companyIds) }.returns(companies)
         justRun { companySubscriptionDomainService.saveAll(any()) }
-        every { categoryDomainService.findByIdsOrAll(request.categoryIds) }.returns(categories)
+        every { categoryDomainService.findAllOrByIds(request.categoryIds) }.returns(categories)
         justRun { categorySubscriptionDomainService.saveAll(any()) }
         justRun { mailService.sendSubscribeMail(any()) }
 

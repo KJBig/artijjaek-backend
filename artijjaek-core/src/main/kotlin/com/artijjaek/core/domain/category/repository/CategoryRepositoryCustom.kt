@@ -5,7 +5,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 
 interface CategoryRepositoryCustom {
-    fun findByIdsOrAll(categoryIds: List<Long>): List<Category>
+    fun findAllOrByIds(categoryIds: List<Long>): List<Category>
     fun findPublishCategoryWithPageable(pageable: Pageable): Page<Category>
 
 }

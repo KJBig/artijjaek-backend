@@ -29,7 +29,7 @@ class CategoryRepositoryTest {
 
     @Test
     @DisplayName("ID 목록으로 카테고리 조회 또는 전체 조회 - ID 목록이 있을 경우")
-    fun findByIdsOrAllTest_IdList() {
+    fun findAllOrByIdsTest_IdList() {
         // given
         val backCategory = Category(
             name = "백엔드",
@@ -46,7 +46,7 @@ class CategoryRepositoryTest {
 
 
         // when
-        val result = categoryRepository.findByIdsOrAll(categoryIds)
+        val result = categoryRepository.findAllOrByIds(categoryIds)
 
         // then
         assertThat(result.size).isEqualTo(1)
@@ -55,7 +55,7 @@ class CategoryRepositoryTest {
 
     @Test
     @DisplayName("ID 목록으로 카테고리 조회 또는 전체 조회 - ID 목록이 없을 경우")
-    fun findByIdsOrAllTest_All() {
+    fun findAllOrByIdsTest_All() {
         // given
         val backCategory = Category(
             name = "백엔드",
@@ -70,7 +70,7 @@ class CategoryRepositoryTest {
 
 
         // when
-        val result = categoryRepository.findByIdsOrAll(emptyList())
+        val result = categoryRepository.findAllOrByIds(emptyList())
 
         // then
         assertThat(result.size).isEqualTo(2)

@@ -12,7 +12,7 @@ class CategoryRepositoryImpl(
     private val jpaQueryFactory: JPAQueryFactory,
 ) : CategoryRepositoryCustom {
 
-    override fun findByIdsOrAll(categoryIds: List<Long>): List<Category> {
+    override fun findAllOrByIds(categoryIds: List<Long>): List<Category> {
         return jpaQueryFactory.selectFrom(category)
             .where(category.id.`in`(categoryIds).takeIf { categoryIds.isNotEmpty() })
             .fetch()

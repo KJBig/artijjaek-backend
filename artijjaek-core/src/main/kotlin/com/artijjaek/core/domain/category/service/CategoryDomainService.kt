@@ -15,8 +15,8 @@ class CategoryDomainService(
         return categoryRepository.findAll()
     }
 
-    fun findByIdsOrAll(categoryIds: List<Long>): List<Category> {
-        return categoryRepository.findByIdsOrAll(categoryIds)
+    fun findAllOrByIds(categoryIds: List<Long>): List<Category> {
+        return categoryRepository.findAllOrByIds(categoryIds)
     }
 
     fun findPublishableCategoryWithPageable(pageable: Pageable): Page<Category> {
