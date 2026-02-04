@@ -191,9 +191,9 @@ class MemberServiceTest {
         )
 
         every { memberDomainService.findByEmailAndMemberStatus(email, MemberStatus.ACTIVE) }.returns(member)
-        every { companySubscriptionDomainService.findAllByMember(member) }
+        every { companySubscriptionDomainService.findAllByMemberFetchCompany(member) }
             .returns(mutableListOf(companySubscription))
-        every { categorySubscriptionDomainService.findAllByMember(member) }
+        every { categorySubscriptionDomainService.findAllByMemberFetchCategory(member) }
             .returns(mutableListOf(categorySubscription))
 
 
@@ -226,8 +226,8 @@ class MemberServiceTest {
 
         // then
         assertThat(exception.code).isEqualTo(ErrorCode.MEMBER_NOT_FOUND_ERROR.code)
-        verify(exactly = 0) { companySubscriptionDomainService.findAllByMember(any<Member>()) }
-        verify(exactly = 0) { categorySubscriptionDomainService.findAllByMember(any<Member>()) }
+        verify(exactly = 0) { companySubscriptionDomainService.findAllByMemberFetchCompany(any<Member>()) }
+        verify(exactly = 0) { categorySubscriptionDomainService.findAllByMemberFetchCategory(any<Member>()) }
     }
 
     @Test
@@ -256,8 +256,8 @@ class MemberServiceTest {
 
         // then
         assertThat(exception.code).isEqualTo(ErrorCode.MEMBER_TOKEN_NOT_MATCH_ERROR.code)
-        verify(exactly = 0) { companySubscriptionDomainService.findAllByMember(any<Member>()) }
-        verify(exactly = 0) { categorySubscriptionDomainService.findAllByMember(any<Member>()) }
+        verify(exactly = 0) { companySubscriptionDomainService.findAllByMemberFetchCompany(any<Member>()) }
+        verify(exactly = 0) { categorySubscriptionDomainService.findAllByMemberFetchCategory(any<Member>()) }
     }
 
     @Test
@@ -311,11 +311,11 @@ class MemberServiceTest {
         every { memberDomainService.findByEmailAndMemberStatus(email, MemberStatus.ACTIVE) }.returns(member)
 
         justRun { companySubscriptionDomainService.deleteAllByMemberId(member.id!!) }
-        every { companySubscriptionDomainService.findAllByMember(member) }
+        every { companySubscriptionDomainService.findAllByMemberFetchCompany(member) }
             .returns(mutableListOf(companySubscription))
 
         justRun { categorySubscriptionDomainService.deleteAllByMemberId(member.id!!) }
-        every { categorySubscriptionDomainService.findAllByMember(member) }
+        every { categorySubscriptionDomainService.findAllByMemberFetchCategory(member) }
             .returns(mutableListOf(categorySubscription))
 
 
@@ -326,9 +326,9 @@ class MemberServiceTest {
         // then
         verify { memberDomainService.findByEmailAndMemberStatus(email, MemberStatus.ACTIVE) }
         verify { companySubscriptionDomainService.deleteAllByMemberId(any<Long>()) }
-        verify { companySubscriptionDomainService.findAllByMember(any<Member>()) }
+        verify { companySubscriptionDomainService.findAllByMemberFetchCompany(any<Member>()) }
         verify { categorySubscriptionDomainService.deleteAllByMemberId(any<Long>()) }
-        verify { categorySubscriptionDomainService.findAllByMember(any<Member>()) }
+        verify { categorySubscriptionDomainService.findAllByMemberFetchCategory(any<Member>()) }
     }
 
     @Test
@@ -359,9 +359,9 @@ class MemberServiceTest {
         // then
         assertThat(exception.code).isEqualTo(ErrorCode.MEMBER_NOT_FOUND_ERROR.code)
         verify(exactly = 0) { companySubscriptionDomainService.deleteAllByMemberId(any<Long>()) }
-        verify(exactly = 0) { companySubscriptionDomainService.findAllByMember(any<Member>()) }
+        verify(exactly = 0) { companySubscriptionDomainService.findAllByMemberFetchCompany(any<Member>()) }
         verify(exactly = 0) { categorySubscriptionDomainService.deleteAllByMemberId(any<Long>()) }
-        verify(exactly = 0) { categorySubscriptionDomainService.findAllByMember(any<Member>()) }
+        verify(exactly = 0) { categorySubscriptionDomainService.findAllByMemberFetchCategory(any<Member>()) }
     }
 
     @Test
@@ -398,8 +398,8 @@ class MemberServiceTest {
 
         // then
         assertThat(exception.code).isEqualTo(ErrorCode.MEMBER_TOKEN_NOT_MATCH_ERROR.code)
-        verify(exactly = 0) { companySubscriptionDomainService.findAllByMember(any<Member>()) }
-        verify(exactly = 0) { categorySubscriptionDomainService.findAllByMember(any<Member>()) }
+        verify(exactly = 0) { companySubscriptionDomainService.findAllByMemberFetchCompany(any<Member>()) }
+        verify(exactly = 0) { categorySubscriptionDomainService.findAllByMemberFetchCategory(any<Member>()) }
     }
 
     @Test

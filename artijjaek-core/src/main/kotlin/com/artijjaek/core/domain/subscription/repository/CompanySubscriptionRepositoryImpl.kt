@@ -11,10 +11,10 @@ class CompanySubscriptionRepositoryImpl(
     private val jpaQueryFactory: JPAQueryFactory,
 ) : CompanySubscriptionRepositoryCustom {
 
-    override fun findAllByMember(member: Member): List<CompanySubscription> {
+    override fun findAllByMemberFetchCompany(member: Member): List<CompanySubscription> {
         return jpaQueryFactory.selectFrom(companySubscription)
             .leftJoin(companySubscription.company, company).fetchJoin()
-            .where(companySubscription.member.eq(member))
+            .where(companySubscription.member.id.eq(member.id))
             .fetch()
     }
 

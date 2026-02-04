@@ -74,9 +74,9 @@ class MemberService(
             throw ApplicationException(MEMBER_TOKEN_NOT_MATCH_ERROR)
         }
 
-        val companyIds = companySubscriptionDomainService.findAllByMember(member)
+        val companyIds = companySubscriptionDomainService.findAllByMemberFetchCompany(member)
             .mapNotNull { companySubscription -> companySubscription.company.id }
-        val categoryIds: List<Long> = categorySubscriptionDomainService.findAllByMember(member)
+        val categoryIds: List<Long> = categorySubscriptionDomainService.findAllByMemberFetchCategory(member)
             .mapNotNull { categorySubscription -> categorySubscription.category.id }
 
         return MemberDataResponse.of(member, companyIds, categoryIds)

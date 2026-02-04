@@ -11,7 +11,7 @@ class CategorySubscriptionRepositoryImpl(
     private val jpaQueryFactory: JPAQueryFactory,
 ) : CategorySubscriptionRepositoryCustom {
 
-    override fun findAllByMember(member: Member): List<CategorySubscription> {
+    override fun findAllByMemberFetchCategory(member: Member): List<CategorySubscription> {
         return jpaQueryFactory.selectFrom(categorySubscription)
             .leftJoin(categorySubscription.category, category).fetchJoin()
             .where(categorySubscription.member.eq(member))
