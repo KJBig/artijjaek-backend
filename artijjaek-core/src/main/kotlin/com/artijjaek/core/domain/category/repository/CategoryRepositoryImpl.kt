@@ -14,7 +14,7 @@ class CategoryRepositoryImpl(
 
     override fun findByIdsOrAll(categoryIds: List<Long>): List<Category> {
         return jpaQueryFactory.selectFrom(category)
-            .where(category.id.`in`(categoryIds))
+            .where(category.id.`in`(categoryIds).takeIf { categoryIds.isNotEmpty() })
             .fetch()
     }
 

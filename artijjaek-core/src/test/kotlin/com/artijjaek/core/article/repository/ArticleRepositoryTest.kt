@@ -108,7 +108,7 @@ class ArticleRepositoryTest {
 
         // then
         assertThat(result.size).isEqualTo(5)
-        assertThat(result.get(0).title).isEqualTo("아티클6")
+        assertThat(result[0].title).isEqualTo("아티클6")
     }
 
     @Test
@@ -157,7 +157,7 @@ class ArticleRepositoryTest {
 
         // then
         assertThat(result.size).isEqualTo(5)
-        assertThat(result.get(0).title).isEqualTo("아티클5")
+        assertThat(result[0].title).isEqualTo("아티클5")
     }
 
 
@@ -223,7 +223,7 @@ class ArticleRepositoryTest {
 
         // then
         assertThat(result.size).isEqualTo(5)
-        assertThat(result.get(0).title).isEqualTo("아티클5")
+        assertThat(result[0].title).isEqualTo("아티클5")
     }
 
     @Test
@@ -298,6 +298,6 @@ class ArticleRepositoryTest {
 
         // then
         assertThat(result.size).isEqualTo(1)
-        assertThat(result.get(0).title).isEqualTo("아티클")
+        assertThat(result[0].title).isEqualTo("아티클")
     }
 }
