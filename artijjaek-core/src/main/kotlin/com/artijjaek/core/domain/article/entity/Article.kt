@@ -18,7 +18,7 @@ class Article(
     var company: Company,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
+    @JoinColumn(name = "category_id", nullable = true)
     var category: Category?,
 
     @Column(nullable = false)
