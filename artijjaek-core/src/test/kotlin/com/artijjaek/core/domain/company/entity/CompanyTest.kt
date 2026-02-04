@@ -1,6 +1,5 @@
-package com.artijjaek.core.company.entity
+package com.artijjaek.core.domain.company.entity
 
-import com.artijjaek.core.domain.company.entity.Company
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import kotlin.test.Test

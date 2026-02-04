@@ -1,8 +1,7 @@
-package com.artijjaek.core.article.repository
+package com.artijjaek.core.domain.article.repository
 
 import com.artijjaek.core.config.TestConfig
 import com.artijjaek.core.domain.article.entity.Article
-import com.artijjaek.core.domain.article.repository.ArticleRepository
 import com.artijjaek.core.domain.category.entity.Category
 import com.artijjaek.core.domain.category.enums.PublishType
 import com.artijjaek.core.domain.category.repository.CategoryRepository

@@ -1,6 +1,5 @@
-package com.artijjaek.core.article.entity
+package com.artijjaek.core.domain.article.entity
 
-import com.artijjaek.core.domain.article.entity.Article
 import com.artijjaek.core.domain.category.entity.Category
 import com.artijjaek.core.domain.category.enums.PublishType
 import io.mockk.mockk
@@ -35,5 +34,5 @@ class ArticleTest {
         // then
         Assertions.assertThat(article.category!!.name).isEqualTo("카테고리")
     }
-    
+
 }

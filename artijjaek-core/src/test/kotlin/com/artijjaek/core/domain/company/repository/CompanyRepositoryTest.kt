@@ -1,8 +1,7 @@
-package com.artijjaek.core.company.repository
+package com.artijjaek.core.domain.company.repository
 
 import com.artijjaek.core.config.TestConfig
 import com.artijjaek.core.domain.company.entity.Company
-import com.artijjaek.core.domain.company.repository.CompanyRepository
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.DisplayName

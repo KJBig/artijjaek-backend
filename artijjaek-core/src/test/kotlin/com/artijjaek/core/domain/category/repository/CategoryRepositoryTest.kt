@@ -1,9 +1,8 @@
-package com.artijjaek.core.category.repository
+package com.artijjaek.core.domain.category.repository
 
 import com.artijjaek.core.config.TestConfig
 import com.artijjaek.core.domain.category.entity.Category
 import com.artijjaek.core.domain.category.enums.PublishType
-import com.artijjaek.core.domain.category.repository.CategoryRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.DisplayName

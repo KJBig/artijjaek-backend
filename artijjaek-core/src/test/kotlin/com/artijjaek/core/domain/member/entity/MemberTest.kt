@@ -1,6 +1,5 @@
-package com.artijjaek.core.member.entity
+package com.artijjaek.core.domain.member.entity
 
-import com.artijjaek.core.domain.member.entity.Member
 import com.artijjaek.core.domain.member.enums.MemberStatus
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
