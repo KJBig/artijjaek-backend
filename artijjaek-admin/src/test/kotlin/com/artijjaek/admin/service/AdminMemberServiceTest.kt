@@ -96,4 +96,101 @@ class AdminMemberServiceTest {
             )
         }
     }
+
+    @Test
+    @DisplayName("정렬 조건이 EMAIL이면 도메인 정렬이 EMAIL로 전달된다")
+    fun searchMembersWithEmailSortTest() {
+        // given
+        val pageable = PageRequest.of(1, 10)
+        val member = Member(
+            id = 3L,
+            email = "alpha@example.com",
+            nickname = "Alpha",
+            uuidToken = "token-3",
+            memberStatus = MemberStatus.ACTIVE
+        ).apply { createdAt = LocalDateTime.of(2024, 12, 13, 0, 0) }
+        val page = PageImpl(listOf(member), pageable, 21)
+
+        every {
+            memberDomainService.findWithCondition(
+                pageable = pageable,
+                memberStatus = null,
+                nicknameKeyword = null,
+                emailKeyword = "alpha",
+                sortBy = MemberSortBy.EMAIL,
+                sortDirection = Sort.Direction.ASC
+            )
+        } returns page
+        every { memberDomainService.countByMemberStatus(null) } returns 21L
+        every { memberDomainService.countByMemberStatus(MemberStatus.ACTIVE) } returns 18L
+        every { memberDomainService.countByMemberStatus(MemberStatus.DELETED) } returns 3L
+
+        // when
+        val result = adminMemberService.searchMembers(
+            pageable = pageable,
+            statusFilter = MemberStatusFilter.ALL,
+            searchType = MemberListSearchType.EMAIL,
+            keyword = " alpha ",
+            sortBy = MemberListSortBy.EMAIL,
+            sortDirection = Sort.Direction.ASC
+        )
+
+        // then
+        assertThat(result.totalCount).isEqualTo(21)
+        assertThat(result.content[0].email).isEqualTo("alpha@example.com")
+        verify(exactly = 1) {
+            memberDomainService.findWithCondition(
+                pageable = pageable,
+                memberStatus = null,
+                nicknameKeyword = null,
+                emailKeyword = "alpha",
+                sortBy = MemberSortBy.EMAIL,
+                sortDirection = Sort.Direction.ASC
+            )
+        }
+    }
+
+    @Test
+    @DisplayName("검색 타입이 없으면 닉네임과 이메일 조건을 함께 검색한다")
+    fun searchMembersWithCombinedKeywordTest() {
+        // given
+        val pageable = PageRequest.of(0, 20)
+        val page = PageImpl(emptyList<Member>(), pageable, 0)
+
+        every {
+            memberDomainService.findWithCondition(
+                pageable = pageable,
+                memberStatus = MemberStatus.DELETED,
+                nicknameKeyword = "john",
+                emailKeyword = "john",
+                sortBy = MemberSortBy.STATUS,
+                sortDirection = Sort.Direction.DESC
+            )
+        } returns page
+        every { memberDomainService.countByMemberStatus(null) } returns 0L
+        every { memberDomainService.countByMemberStatus(MemberStatus.ACTIVE) } returns 0L
+        every { memberDomainService.countByMemberStatus(MemberStatus.DELETED) } returns 0L
+
+        // when
+        adminMemberService.searchMembers(
+            pageable = pageable,
+            statusFilter = MemberStatusFilter.DELETED,
+            searchType = null,
+            keyword = " john ",
+            sortBy = MemberListSortBy.STATUS,
+            sortDirection = Sort.Direction.DESC
+        )
+
+        // then
+        verify(exactly = 1) {
+            memberDomainService.findWithCondition(
+                pageable = pageable,
+                memberStatus = MemberStatus.DELETED,
+                nicknameKeyword = "john",
+                emailKeyword = "john",
+                sortBy = MemberSortBy.STATUS,
+                sortDirection = Sort.Direction.DESC
+            )
+        }
+    }
 }

@@ -107,4 +107,105 @@ class AdminMemberControllerV1Test {
             )
         }
     }
+
+    @Test
+    @WithMockUser(username = "1")
+    @DisplayName("회원 목록 조회 시 파라미터가 없으면 기본값으로 조회한다")
+    fun getMemberListWithDefaultParamsTest() {
+        // given
+        val pageable = PageRequest.of(0, 20)
+        val response = createMemberListResponse()
+        every {
+            adminMemberService.searchMembers(
+                pageable = pageable,
+                statusFilter = MemberStatusFilter.ALL,
+                searchType = null,
+                keyword = null,
+                sortBy = MemberListSortBy.SUBSCRIBE_DATE,
+                sortDirection = Sort.Direction.DESC
+            )
+        } returns response
+
+        // when & then
+        mockMvc.perform(get("/admin/v1/member/list"))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.isSuccess").value(true))
+            .andExpect(jsonPath("$.data.pageNumber").value(0))
+
+        verify(exactly = 1) {
+            adminMemberService.searchMembers(
+                pageable = pageable,
+                statusFilter = MemberStatusFilter.ALL,
+                searchType = null,
+                keyword = null,
+                sortBy = MemberListSortBy.SUBSCRIBE_DATE,
+                sortDirection = Sort.Direction.DESC
+            )
+        }
+    }
+
+    @Test
+    @WithMockUser(username = "1")
+    @DisplayName("회원 목록 조회 시 정렬 파라미터를 서비스에 그대로 전달한다")
+    fun getMemberListWithStatusSortTest() {
+        // given
+        val pageable = PageRequest.of(0, 5)
+        val response = createMemberListResponse()
+        every {
+            adminMemberService.searchMembers(
+                pageable = pageable,
+                statusFilter = MemberStatusFilter.ALL,
+                searchType = MemberListSearchType.EMAIL,
+                keyword = "example",
+                sortBy = MemberListSortBy.STATUS,
+                sortDirection = Sort.Direction.ASC
+            )
+        } returns response
+
+        // when & then
+        mockMvc.perform(
+            get("/admin/v1/member/list")
+                .param("page", "0")
+                .param("size", "5")
+                .param("searchType", "EMAIL")
+                .param("keyword", "example")
+                .param("sortBy", "STATUS")
+                .param("sortDirection", "ASC")
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.isSuccess").value(true))
+
+        verify(exactly = 1) {
+            adminMemberService.searchMembers(
+                pageable = pageable,
+                statusFilter = MemberStatusFilter.ALL,
+                searchType = MemberListSearchType.EMAIL,
+                keyword = "example",
+                sortBy = MemberListSortBy.STATUS,
+                sortDirection = Sort.Direction.ASC
+            )
+        }
+    }
+
+    private fun createMemberListResponse(): MemberListPageResponse {
+        return MemberListPageResponse(
+            pageNumber = 0,
+            totalCount = 15,
+            hasNext = true,
+            statusCount = MemberStatusCountResponse(
+                allCount = 15,
+                activeCount = 11,
+                deletedCount = 4
+            ),
+            content = listOf(
+                MemberSimpleResponse(
+                    memberId = 1L,
+                    email = "john.doe@example.com",
+                    nickname = "John Doe",
+                    memberStatus = com.artijjaek.core.domain.member.enums.MemberStatus.ACTIVE,
+                    createdAt = LocalDateTime.of(2024, 12, 15, 0, 0)
+                )
+            )
+        )
+    }
 }
