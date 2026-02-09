@@ -3,10 +3,17 @@ package com.artijjaek.admin.service
 import com.artijjaek.admin.enums.MemberListSearchType
 import com.artijjaek.admin.enums.MemberListSortBy
 import com.artijjaek.admin.enums.MemberStatusFilter
+import com.artijjaek.core.domain.category.entity.Category
+import com.artijjaek.core.domain.category.enums.PublishType
+import com.artijjaek.core.domain.company.entity.Company
 import com.artijjaek.core.domain.member.entity.Member
 import com.artijjaek.core.domain.member.enums.MemberSortBy
 import com.artijjaek.core.domain.member.enums.MemberStatus
 import com.artijjaek.core.domain.member.service.MemberDomainService
+import com.artijjaek.core.domain.subscription.entity.CategorySubscription
+import com.artijjaek.core.domain.subscription.entity.CompanySubscription
+import com.artijjaek.core.domain.subscription.service.CategorySubscriptionDomainService
+import com.artijjaek.core.domain.subscription.service.CompanySubscriptionDomainService
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
@@ -31,6 +38,56 @@ class AdminMemberServiceTest {
 
     @MockK
     lateinit var memberDomainService: MemberDomainService
+
+    @MockK
+    lateinit var companySubscriptionDomainService: CompanySubscriptionDomainService
+
+    @MockK
+    lateinit var categorySubscriptionDomainService: CategorySubscriptionDomainService
+
+    @Test
+    @DisplayName("회원 상세 정보를 조회한다")
+    fun getMemberDetailTest() {
+        // given
+        val member = Member(
+            id = 1L,
+            email = "john.doe@example.com",
+            nickname = "John Doe",
+            uuidToken = "token-1",
+            memberStatus = MemberStatus.ACTIVE
+        )
+        val company = Company(
+            id = 10L,
+            nameKr = "회사A",
+            nameEn = "CompanyA",
+            logo = "logo",
+            baseUrl = "baseUrl",
+            crawlUrl = "crawlUrl",
+            crawlAvailability = true
+        )
+        val category = Category(
+            id = 20L,
+            name = "백엔드",
+            publishType = PublishType.PUBLISH
+        )
+        val companySubscription = CompanySubscription(member = member, company = company)
+        val categorySubscription = CategorySubscription(member = member, category = category)
+
+        every { memberDomainService.findById(1L) } returns member
+        every { companySubscriptionDomainService.findAllByMemberFetchCompany(member) } returns listOf(companySubscription)
+        every { categorySubscriptionDomainService.findAllByMemberFetchCategory(member) } returns listOf(categorySubscription)
+
+        // when
+        val result = adminMemberService.getMemberDetail(1L)
+
+        // then
+        assertThat(result.memberId).isEqualTo(1L)
+        assertThat(result.email).isEqualTo("john.doe@example.com")
+        assertThat(result.subscribedCompanies).hasSize(1)
+        assertThat(result.subscribedCompanies[0].companyNameKr).isEqualTo("회사A")
+        assertThat(result.subscribedCategories).hasSize(1)
+        assertThat(result.subscribedCategories[0].categoryName).isEqualTo("백엔드")
+    }
 
     @Test
     @DisplayName("회원 목록을 닉네임 검색, 상태 필터, 구독일 정렬로 조회한다")

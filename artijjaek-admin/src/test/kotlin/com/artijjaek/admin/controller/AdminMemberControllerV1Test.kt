@@ -2,9 +2,12 @@ package com.artijjaek.admin.controller
 
 import com.artijjaek.admin.common.auth.AuthAdminIdArgumentResolver
 import com.artijjaek.admin.config.security.WebConfig
+import com.artijjaek.admin.dto.response.MemberDetailResponse
 import com.artijjaek.admin.dto.response.MemberListPageResponse
 import com.artijjaek.admin.dto.response.MemberSimpleResponse
 import com.artijjaek.admin.dto.response.MemberStatusCountResponse
+import com.artijjaek.admin.dto.response.MemberSubscribedCategoryResponse
+import com.artijjaek.admin.dto.response.MemberSubscribedCompanyResponse
 import com.artijjaek.admin.enums.MemberListSearchType
 import com.artijjaek.admin.enums.MemberListSortBy
 import com.artijjaek.admin.enums.MemberStatusFilter
@@ -39,6 +42,44 @@ class AdminMemberControllerV1Test {
 
     @MockkBean
     lateinit var adminMemberService: AdminMemberService
+
+    @Test
+    @WithMockUser(username = "1")
+    @DisplayName("회원 상세 정보를 조회한다")
+    fun getMemberDetailTest() {
+        // given
+        val response = MemberDetailResponse(
+            memberId = 1L,
+            email = "john.doe@example.com",
+            nickname = "John Doe",
+            memberStatus = com.artijjaek.core.domain.member.enums.MemberStatus.ACTIVE,
+            subscribedCompanies = listOf(
+                MemberSubscribedCompanyResponse(
+                    companyId = 10L,
+                    companyNameKr = "회사A",
+                    companyNameEn = "CompanyA"
+                )
+            ),
+            subscribedCategories = listOf(
+                MemberSubscribedCategoryResponse(
+                    categoryId = 20L,
+                    categoryName = "백엔드"
+                )
+            )
+        )
+
+        every { adminMemberService.getMemberDetail(1L) } returns response
+
+        // when & then
+        mockMvc.perform(get("/admin/v1/member/1"))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.isSuccess").value(true))
+            .andExpect(jsonPath("$.data.memberId").value(1))
+            .andExpect(jsonPath("$.data.subscribedCompanies[0].companyNameKr").value("회사A"))
+            .andExpect(jsonPath("$.data.subscribedCategories[0].categoryName").value("백엔드"))
+
+        verify(exactly = 1) { adminMemberService.getMemberDetail(1L) }
+    }
 
     @Test
     @WithMockUser(username = "1")

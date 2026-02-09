@@ -26,6 +26,10 @@ class MemberDomainService(
         return memberRepository.findByEmailAndMemberStatus(email, memberStatus)
     }
 
+    fun findById(memberId: Long): Member? {
+        return memberRepository.findById(memberId).orElse(null)
+    }
+
     fun findWithCondition(
         pageable: Pageable,
         memberStatus: MemberStatus?,

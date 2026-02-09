@@ -1,14 +1,21 @@
 package com.artijjaek.admin.service
 
+import com.artijjaek.admin.dto.response.MemberDetailResponse
 import com.artijjaek.admin.dto.response.MemberListPageResponse
 import com.artijjaek.admin.dto.response.MemberSimpleResponse
 import com.artijjaek.admin.dto.response.MemberStatusCountResponse
+import com.artijjaek.admin.dto.response.MemberSubscribedCategoryResponse
+import com.artijjaek.admin.dto.response.MemberSubscribedCompanyResponse
 import com.artijjaek.admin.enums.MemberListSearchType
 import com.artijjaek.admin.enums.MemberListSortBy
 import com.artijjaek.admin.enums.MemberStatusFilter
+import com.artijjaek.core.common.error.ApplicationException
+import com.artijjaek.core.common.error.ErrorCode.MEMBER_NOT_FOUND_ERROR
 import com.artijjaek.core.domain.member.enums.MemberSortBy
 import com.artijjaek.core.domain.member.enums.MemberStatus
 import com.artijjaek.core.domain.member.service.MemberDomainService
+import com.artijjaek.core.domain.subscription.service.CategorySubscriptionDomainService
+import com.artijjaek.core.domain.subscription.service.CompanySubscriptionDomainService
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
@@ -18,7 +25,38 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class AdminMemberService(
     private val memberDomainService: MemberDomainService,
+    private val companySubscriptionDomainService: CompanySubscriptionDomainService,
+    private val categorySubscriptionDomainService: CategorySubscriptionDomainService,
 ) {
+
+    @Transactional(readOnly = true)
+    fun getMemberDetail(memberId: Long): MemberDetailResponse {
+        val member = memberDomainService.findById(memberId)
+            ?: throw ApplicationException(MEMBER_NOT_FOUND_ERROR)
+
+        val subscribedCompanies = companySubscriptionDomainService.findAllByMemberFetchCompany(member).map {
+            MemberSubscribedCompanyResponse(
+                companyId = it.company.id!!,
+                companyNameKr = it.company.nameKr,
+                companyNameEn = it.company.nameEn
+            )
+        }
+        val subscribedCategories = categorySubscriptionDomainService.findAllByMemberFetchCategory(member).map {
+            MemberSubscribedCategoryResponse(
+                categoryId = it.category.id!!,
+                categoryName = it.category.name
+            )
+        }
+
+        return MemberDetailResponse(
+            memberId = member.id!!,
+            email = member.email,
+            nickname = member.nickname,
+            memberStatus = member.memberStatus,
+            subscribedCompanies = subscribedCompanies,
+            subscribedCategories = subscribedCategories
+        )
+    }
 
     @Transactional(readOnly = true)
     fun searchMembers(
