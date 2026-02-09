@@ -47,7 +47,8 @@ class AdminMemberService(
             MemberSubscribedCompanyResponse(
                 companyId = it.company.id!!,
                 companyNameKr = it.company.nameKr,
-                companyNameEn = it.company.nameEn
+                companyNameEn = it.company.nameEn,
+                logo = it.company.logo
             )
         }
         val subscribedCategories = categorySubscriptionDomainService.findAllByMemberFetchCategory(member).map {

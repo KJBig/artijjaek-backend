@@ -94,6 +94,7 @@ class AdminMemberServiceTest {
         assertThat(result.email).isEqualTo("john.doe@example.com")
         assertThat(result.subscribedCompanies).hasSize(1)
         assertThat(result.subscribedCompanies[0].companyNameKr).isEqualTo("회사A")
+        assertThat(result.subscribedCompanies[0].logo).isEqualTo("logo")
         assertThat(result.subscribedCategories).hasSize(1)
         assertThat(result.subscribedCategories[0].categoryName).isEqualTo("백엔드")
     }

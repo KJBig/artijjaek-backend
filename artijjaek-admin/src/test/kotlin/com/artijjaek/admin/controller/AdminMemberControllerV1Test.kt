@@ -60,7 +60,8 @@ class AdminMemberControllerV1Test {
                 MemberSubscribedCompanyResponse(
                     companyId = 10L,
                     companyNameKr = "회사A",
-                    companyNameEn = "CompanyA"
+                    companyNameEn = "CompanyA",
+                    logo = "https://cdn.example.com/company-a.png"
                 )
             ),
             subscribedCategories = listOf(
@@ -78,6 +79,7 @@ class AdminMemberControllerV1Test {
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.isSuccess").value(true))
             .andExpect(jsonPath("$.data.memberId").value(1))
+            .andExpect(jsonPath("$.data.subscribedCompanies[0].logo").value("https://cdn.example.com/company-a.png"))
             .andExpect(jsonPath("$.data.subscribedCompanies[0].companyNameKr").value("회사A"))
             .andExpect(jsonPath("$.data.subscribedCategories[0].categoryName").value("백엔드"))
 
