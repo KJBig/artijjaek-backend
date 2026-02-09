@@ -1,5 +1,7 @@
 package com.artijjaek.admin.controller
 
+import com.artijjaek.admin.common.auth.AuthAdminIdArgumentResolver
+import com.artijjaek.admin.config.security.WebConfig
 import com.artijjaek.admin.dto.request.LoginRequest
 import com.artijjaek.admin.dto.request.RefreshRequest
 import com.artijjaek.admin.dto.response.LoginResponse
@@ -8,13 +10,17 @@ import com.artijjaek.admin.service.AuthService
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
+import io.mockk.justRun
 import io.mockk.verify
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
+import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType.APPLICATION_JSON
+import org.springframework.security.test.context.support.WithMockUser
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
@@ -24,6 +30,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 @ActiveProfiles("test")
 @WebMvcTest(AuthControllerV1::class)
 @AutoConfigureMockMvc(addFilters = false)
+@Import(WebConfig::class, AuthAdminIdArgumentResolver::class)
 class AuthControllerV1Test {
 
     @Autowired
@@ -93,5 +100,26 @@ class AuthControllerV1Test {
             .andExpect(jsonPath("$.data.accessToken").value("new-access-token"))
             .andExpect(jsonPath("$.data.refreshToken").value("refresh-token"))
         verify(exactly = 1) { authService.refreshAccessToken(request) }
+    }
+
+    @Test
+    @WithMockUser(username = "1")
+    @DisplayName("관리자 로그아웃에 성공한다")
+    fun logoutAdminTest() {
+        // given
+        justRun { authService.logout(1L) }
+
+        // when
+        val mvcResult = mockMvc.perform(
+            post("/admin/v1/auth/logout")
+                .with(csrf())
+                .contentType(APPLICATION_JSON)
+        )
+
+        // then
+        mvcResult
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.isSuccess").value(true))
+        verify(exactly = 1) { authService.logout(1L) }
     }
 }

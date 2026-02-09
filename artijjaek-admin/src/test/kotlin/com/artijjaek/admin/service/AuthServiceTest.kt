@@ -218,4 +218,25 @@ class AuthServiceTest {
         assertThat(exception.message).isEqualTo(JWT_EXPIRATION_ERROR.message)
         verify(exactly = 1) { adminRefreshTokenService.clearRefreshToken(1L) }
     }
+
+    @Test
+    @DisplayName("로그아웃하면 리프레시 토큰을 비운다")
+    fun logoutTest() {
+        // given
+        val admin = Admin(
+            id = 1L,
+            name = "관리자",
+            email = "admin@test.com",
+            password = "encoded-password",
+            adminRole = AdminRole.SUPER_ADMIN,
+            refreshToken = "refresh-token"
+        )
+        every { adminDomainService.findById(1L) } returns admin
+
+        // when
+        authService.logout(1L)
+
+        // then
+        assertThat(admin.refreshToken).isNull()
+    }
 }
