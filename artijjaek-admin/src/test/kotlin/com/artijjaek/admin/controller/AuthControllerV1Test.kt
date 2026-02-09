@@ -1,7 +1,9 @@
 package com.artijjaek.admin.controller
 
 import com.artijjaek.admin.dto.request.LoginRequest
+import com.artijjaek.admin.dto.request.RefreshRequest
 import com.artijjaek.admin.dto.response.LoginResponse
+import com.artijjaek.admin.dto.response.RefreshResponse
 import com.artijjaek.admin.service.AuthService
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ninjasquad.springmockk.MockkBean
@@ -61,5 +63,35 @@ class AuthControllerV1Test {
             .andExpect(jsonPath("$.data.accessToken").value("access-token"))
             .andExpect(jsonPath("$.data.refreshToken").value("refresh-token"))
         verify(exactly = 1) { authService.login(request) }
+    }
+
+    @Test
+    @DisplayName("액세스 토큰을 재발급한다")
+    fun refreshAccessTokenTest() {
+        // given
+        val request = RefreshRequest(
+            accessToken = "access-token",
+            refreshToken = "refresh-token"
+        )
+        val response = RefreshResponse(
+            accessToken = "new-access-token",
+            refreshToken = "refresh-token"
+        )
+        every { authService.refreshAccessToken(request) } returns response
+
+        // when
+        val mvcResult = mockMvc.perform(
+            post("/admin/v1/auth/refresh")
+                .contentType(APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))
+        )
+
+        // then
+        mvcResult
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.isSuccess").value(true))
+            .andExpect(jsonPath("$.data.accessToken").value("new-access-token"))
+            .andExpect(jsonPath("$.data.refreshToken").value("refresh-token"))
+        verify(exactly = 1) { authService.refreshAccessToken(request) }
     }
 }
