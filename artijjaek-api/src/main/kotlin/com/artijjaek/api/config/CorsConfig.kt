@@ -19,6 +19,7 @@ class CorsConfig {
             )
         )
         configuration.addAllowedHeader("Content-Type")
+        configuration.addAllowedHeader("Authorization")
         configuration.addAllowedMethod("*")
         configuration.setAllowCredentials(true)
         configuration.setMaxAge(3600L)
