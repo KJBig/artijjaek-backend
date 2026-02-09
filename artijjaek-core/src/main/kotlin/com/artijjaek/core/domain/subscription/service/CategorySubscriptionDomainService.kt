@@ -18,8 +18,8 @@ class CategorySubscriptionDomainService(
         categorySubscriptionRepository.deleteAllByMemberId(memberId)
     }
 
-    fun findAllByMember(member: Member): List<CategorySubscription> {
-        return categorySubscriptionRepository.findAllByMember(member)
+    fun findAllByMemberFetchCategory(member: Member): List<CategorySubscription> {
+        return categorySubscriptionRepository.findAllByMemberFetchCategory(member)
     }
 
 }

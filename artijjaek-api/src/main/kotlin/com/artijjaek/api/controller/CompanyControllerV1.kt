@@ -17,7 +17,7 @@ class CompanyControllerV1(
 ) {
 
     @GetMapping("/list")
-    fun getCompanyList(
+    fun getCompanies(
         pageable: Pageable
     ): ResponseEntity<SuccessDataResponse<PageResponse<CompanySimpleDataResponse>>> {
         val response = companyService.searchCompanyList(pageable)

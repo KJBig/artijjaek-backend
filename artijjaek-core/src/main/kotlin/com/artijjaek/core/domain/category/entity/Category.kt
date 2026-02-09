@@ -1,7 +1,7 @@
 package com.artijjaek.core.domain.category.entity
 
 import com.artijjaek.core.common.entity.BaseEntity
-import com.artijjaek.core.domain.category.enums.CategoryType
+import com.artijjaek.core.domain.category.enums.PublishType
 import jakarta.persistence.*
 
 @Entity
@@ -17,7 +17,7 @@ class Category(
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    var categoryType: CategoryType,
+    var publishType: PublishType,
 
     ) : BaseEntity() {
 

@@ -257,7 +257,6 @@ class MailService(
     @Async("asyncEmailThreadPoolExecutor")
     fun sendSubscribeMail(memberData: MemberAlertDto) {
         val mimeMessage = javaMailSender.createMimeMessage()
-        val today = LocalDate.now()
 
         try {
             val mimeMessageHelper = MimeMessageHelper(mimeMessage, false, "UTF-8")

@@ -51,9 +51,11 @@ class GeminiClient(
 
             log.info("제미나이 클라이언트 만들기 생성 성공 in GeminiClient.class")
 
-            log.info("Gemini response text: ${response.text()}")
+            val responseText = response.text() ?: throw IllegalStateException("Gemini response text is null")
 
-            response.text()
+            log.info("Gemini response text: $responseText")
+
+            responseText
                 .lines()
                 .filter { it.isNotBlank() }
                 .map { it.trim().split(":") }
