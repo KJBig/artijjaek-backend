@@ -15,14 +15,15 @@ class CompanyDomainService(
         companyRepository.save(company)
     }
 
-    fun findByIdsOrAll(companyIds: List<Long>): List<Company> {
-        if (companyIds.isEmpty()) {
-            return companyRepository.findAll()
-        }
-        return companyRepository.findAllByIs(companyIds)
+    fun findAllOrByIds(companyIds: List<Long>): List<Company> {
+        return companyRepository.findAllOrByIds(companyIds)
     }
 
     fun findWithPageable(pageable: Pageable): Page<Company> {
         return companyRepository.findWithPageable(pageable)
+    }
+
+    fun findAll(): List<Company> {
+        return companyRepository.findAll()
     }
 }

@@ -69,13 +69,14 @@ class TransportBatchConfig(
     @Bean
     fun transportProcessor(): ItemProcessor<Member, List<MemberArticle>> {
         return ItemProcessor { member ->
-            val memberSubscribeCompanies = companySubscriptionDomainService.findAllByMember(member).stream()
+            val memberSubscribeCompanies = companySubscriptionDomainService.findAllByMemberFetchCompany(member).stream()
                 .map { it.company }
                 .toList()
 
-            val memberSubscribeCategories = categorySubscriptionDomainService.findAllByMember(member).stream()
-                .map { it.category }
-                .toList()
+            val memberSubscribeCategories =
+                categorySubscriptionDomainService.findAllByMemberFetchCategory(member).stream()
+                    .map { it.category }
+                    .toList()
 
             val todayArticles = articleDomainService.findTodayByCompaniesAndCategories(
                 memberSubscribeCompanies,

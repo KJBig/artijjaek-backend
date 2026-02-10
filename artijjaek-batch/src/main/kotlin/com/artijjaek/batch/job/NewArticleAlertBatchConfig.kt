@@ -39,7 +39,7 @@ class NewArticleAlertBatchConfig(
         transactionManager: PlatformTransactionManager
     ): Step {
         return StepBuilder("sendDiscordNotificationStep", jobRepository)
-            .tasklet({ contribution, chunkContext ->
+            .tasklet({ _, _ ->
                 try {
                     // 최근 24시간 이내 새 게시글 조회
                     val newArticles = articleDomainService.findTodayArticle()

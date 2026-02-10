@@ -9,8 +9,8 @@ import org.springframework.stereotype.Service
 class CompanySubscriptionDomainService(
     val companySubscriptionRepository: CompanySubscriptionRepository,
 ) {
-    fun findAllByMember(member: Member): List<CompanySubscription> {
-        return companySubscriptionRepository.findAllByMember(member)
+    fun findAllByMemberFetchCompany(member: Member): List<CompanySubscription> {
+        return companySubscriptionRepository.findAllByMemberFetchCompany(member)
     }
 
     fun saveAll(companySubscriptions: List<CompanySubscription>) {

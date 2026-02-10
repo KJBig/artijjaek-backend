@@ -17,7 +17,7 @@ class CategoryControllerV1(
 ) {
 
     @GetMapping("/list")
-    fun getCompanyList(
+    fun getCategories(
         pageable: Pageable
     ): ResponseEntity<SuccessDataResponse<PageResponse<CategorySimpleDataResponse>>> {
         val response = categoryService.searchCategoryList(pageable)
