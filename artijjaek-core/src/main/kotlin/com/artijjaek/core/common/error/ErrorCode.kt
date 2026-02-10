@@ -10,6 +10,7 @@ enum class ErrorCode(val code: String, val httpStatus: Int, val message: String)
     ADMIN_NO_LOGIN_ERROR("ADE-3", SC_UNAUTHORIZED, "로그인하지 않은 관리자입니다."),
 
     // Article Error
+    ARTICLE_NOT_FOUND_ERROR("ARE-1", SC_NOT_FOUND, "존재하지 않는 아티클입니다."),
 
     // Category Error
     CATEGORY_NOT_FOUND_ERROR("CAE-1", SC_NOT_FOUND, "존재하지 않는 카테고리입니다."),
