@@ -1,19 +1,13 @@
 package com.artijjaek.admin.service
 
+import com.artijjaek.admin.dto.request.PatchMemberStatusRequest
 import com.artijjaek.admin.dto.request.PutMemberRequest
-import com.artijjaek.admin.dto.response.MemberDetailResponse
-import com.artijjaek.admin.dto.response.MemberListPageResponse
-import com.artijjaek.admin.dto.response.MemberSimpleResponse
-import com.artijjaek.admin.dto.response.MemberStatusCountResponse
-import com.artijjaek.admin.dto.response.MemberSubscribedCategoryResponse
-import com.artijjaek.admin.dto.response.MemberSubscribedCompanyResponse
+import com.artijjaek.admin.dto.response.*
 import com.artijjaek.admin.enums.MemberListSearchType
 import com.artijjaek.admin.enums.MemberListSortBy
 import com.artijjaek.admin.enums.MemberStatusFilter
 import com.artijjaek.core.common.error.ApplicationException
-import com.artijjaek.core.common.error.ErrorCode.CATEGORY_NOT_FOUND_ERROR
-import com.artijjaek.core.common.error.ErrorCode.COMPANY_NOT_FOUND_ERROR
-import com.artijjaek.core.common.error.ErrorCode.MEMBER_NOT_FOUND_ERROR
+import com.artijjaek.core.common.error.ErrorCode.*
 import com.artijjaek.core.domain.category.service.CategoryDomainService
 import com.artijjaek.core.domain.company.service.CompanyDomainService
 import com.artijjaek.core.domain.member.enums.MemberSortBy
@@ -37,6 +31,14 @@ class AdminMemberService(
     private val companySubscriptionDomainService: CompanySubscriptionDomainService,
     private val categorySubscriptionDomainService: CategorySubscriptionDomainService,
 ) {
+
+    @Transactional
+    fun updateMemberStatus(memberId: Long, request: PatchMemberStatusRequest) {
+        val member = memberDomainService.findById(memberId)
+            ?: throw ApplicationException(MEMBER_NOT_FOUND_ERROR)
+
+        member.changeMemberStatus(request.memberStatus)
+    }
 
     @Transactional(readOnly = true)
     fun getMemberDetail(memberId: Long): MemberDetailResponse {

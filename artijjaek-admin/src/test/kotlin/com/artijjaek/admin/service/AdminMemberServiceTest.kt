@@ -1,5 +1,6 @@
 package com.artijjaek.admin.service
 
+import com.artijjaek.admin.dto.request.PatchMemberStatusRequest
 import com.artijjaek.admin.dto.request.PutMemberRequest
 import com.artijjaek.admin.enums.MemberListSearchType
 import com.artijjaek.admin.enums.MemberListSortBy
@@ -53,6 +54,30 @@ class AdminMemberServiceTest {
 
     @MockK
     lateinit var categorySubscriptionDomainService: CategorySubscriptionDomainService
+
+    @Test
+    @DisplayName("회원 상태를 변경한다")
+    fun updateMemberStatusTest() {
+        // given
+        val member = Member(
+            id = 1L,
+            email = "john.doe@example.com",
+            nickname = "John",
+            uuidToken = "token-1",
+            memberStatus = MemberStatus.DELETED
+        )
+        val request = PatchMemberStatusRequest(memberStatus = MemberStatus.ACTIVE)
+
+        every { memberDomainService.findById(1L) } returns member
+        every { memberDomainService.save(member) } returns member
+
+        // when
+        adminMemberService.updateMemberStatus(1L, request)
+
+        // then
+        assertThat(member.memberStatus).isEqualTo(MemberStatus.ACTIVE)
+        verify(exactly = 1) { memberDomainService.save(member) }
+    }
 
     @Test
     @DisplayName("회원 상세 정보를 조회한다")

@@ -2,6 +2,7 @@ package com.artijjaek.admin.controller
 
 import com.artijjaek.admin.common.auth.AuthAdminIdArgumentResolver
 import com.artijjaek.admin.config.security.WebConfig
+import com.artijjaek.admin.dto.request.PatchMemberStatusRequest
 import com.artijjaek.admin.dto.request.PutMemberRequest
 import com.artijjaek.admin.dto.response.MemberDetailResponse
 import com.artijjaek.admin.dto.response.MemberListPageResponse
@@ -28,6 +29,7 @@ import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -45,6 +47,35 @@ class AdminMemberControllerV1Test {
 
     @MockkBean
     lateinit var adminMemberService: AdminMemberService
+
+    @Test
+    @WithMockUser(username = "1")
+    @DisplayName("회원 상태를 변경한다")
+    fun patchMemberStatusTest() {
+        // given
+        val request = PatchMemberStatusRequest(
+            memberStatus = com.artijjaek.core.domain.member.enums.MemberStatus.ACTIVE
+        )
+        every { adminMemberService.updateMemberStatus(1L, request) } returns Unit
+
+        // when & then
+        mockMvc.perform(
+            patch("/admin/v1/member/1/status")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "memberStatus": "ACTIVE"
+                    }
+                    """.trimIndent()
+                )
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.isSuccess").value(true))
+            .andExpect(jsonPath("$.message").value("요청성공"))
+
+        verify(exactly = 1) { adminMemberService.updateMemberStatus(1L, request) }
+    }
 
     @Test
     @WithMockUser(username = "1")
