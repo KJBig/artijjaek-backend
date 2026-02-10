@@ -1,12 +1,22 @@
 package com.artijjaek.admin.service
 
+import com.artijjaek.admin.dto.request.PutMemberRequest
 import com.artijjaek.admin.enums.MemberListSearchType
 import com.artijjaek.admin.enums.MemberListSortBy
 import com.artijjaek.admin.enums.MemberStatusFilter
+import com.artijjaek.core.domain.category.entity.Category
+import com.artijjaek.core.domain.category.enums.PublishType
+import com.artijjaek.core.domain.category.service.CategoryDomainService
+import com.artijjaek.core.domain.company.entity.Company
+import com.artijjaek.core.domain.company.service.CompanyDomainService
 import com.artijjaek.core.domain.member.entity.Member
 import com.artijjaek.core.domain.member.enums.MemberSortBy
 import com.artijjaek.core.domain.member.enums.MemberStatus
 import com.artijjaek.core.domain.member.service.MemberDomainService
+import com.artijjaek.core.domain.subscription.entity.CategorySubscription
+import com.artijjaek.core.domain.subscription.entity.CompanySubscription
+import com.artijjaek.core.domain.subscription.service.CategorySubscriptionDomainService
+import com.artijjaek.core.domain.subscription.service.CompanySubscriptionDomainService
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
@@ -31,6 +41,133 @@ class AdminMemberServiceTest {
 
     @MockK
     lateinit var memberDomainService: MemberDomainService
+
+    @MockK
+    lateinit var companyDomainService: CompanyDomainService
+
+    @MockK
+    lateinit var categoryDomainService: CategoryDomainService
+
+    @MockK
+    lateinit var companySubscriptionDomainService: CompanySubscriptionDomainService
+
+    @MockK
+    lateinit var categorySubscriptionDomainService: CategorySubscriptionDomainService
+
+    @Test
+    @DisplayName("회원 상세 정보를 조회한다")
+    fun getMemberDetailTest() {
+        // given
+        val member = Member(
+            id = 1L,
+            email = "john.doe@example.com",
+            nickname = "John Doe",
+            uuidToken = "token-1",
+            memberStatus = MemberStatus.ACTIVE
+        )
+        val company = Company(
+            id = 10L,
+            nameKr = "회사A",
+            nameEn = "CompanyA",
+            logo = "logo",
+            baseUrl = "baseUrl",
+            crawlUrl = "crawlUrl",
+            crawlAvailability = true
+        )
+        val category = Category(
+            id = 20L,
+            name = "백엔드",
+            publishType = PublishType.PUBLISH
+        )
+        val companySubscription = CompanySubscription(member = member, company = company)
+        val categorySubscription = CategorySubscription(member = member, category = category)
+
+        every { memberDomainService.findById(1L) } returns member
+        every { companySubscriptionDomainService.findAllByMemberFetchCompany(member) } returns listOf(companySubscription)
+        every { categorySubscriptionDomainService.findAllByMemberFetchCategory(member) } returns listOf(categorySubscription)
+
+        // when
+        val result = adminMemberService.getMemberDetail(1L)
+
+        // then
+        assertThat(result.memberId).isEqualTo(1L)
+        assertThat(result.email).isEqualTo("john.doe@example.com")
+        assertThat(result.subscribedCompanies).hasSize(1)
+        assertThat(result.subscribedCompanies[0].companyNameKr).isEqualTo("회사A")
+        assertThat(result.subscribedCompanies[0].logo).isEqualTo("logo")
+        assertThat(result.subscribedCategories).hasSize(1)
+        assertThat(result.subscribedCategories[0].categoryName).isEqualTo("백엔드")
+    }
+
+    @Test
+    @DisplayName("회원 정보와 구독 정보를 수정한다")
+    fun updateMemberTest() {
+        // given
+        val member = Member(
+            id = 1L,
+            email = "old@example.com",
+            nickname = "old",
+            uuidToken = "token-1",
+            memberStatus = MemberStatus.ACTIVE
+        )
+        val companyA = Company(
+            id = 10L,
+            nameKr = "회사A",
+            nameEn = "CompanyA",
+            logo = "logo-a",
+            baseUrl = "base-a",
+            crawlUrl = "crawl-a",
+            crawlAvailability = true
+        )
+        val companyB = Company(
+            id = 11L,
+            nameKr = "회사B",
+            nameEn = "CompanyB",
+            logo = "logo-b",
+            baseUrl = "base-b",
+            crawlUrl = "crawl-b",
+            crawlAvailability = true
+        )
+        val categoryA = Category(
+            id = 20L,
+            name = "백엔드",
+            publishType = PublishType.PUBLISH
+        )
+        val categoryB = Category(
+            id = 21L,
+            name = "프론트",
+            publishType = PublishType.PUBLISH
+        )
+        val request = PutMemberRequest(
+            email = "new@example.com",
+            nickname = "new",
+            companyIds = listOf(10L, 11L, 10L),
+            categoryIds = listOf(20L, 21L, 20L)
+        )
+
+        every { memberDomainService.findById(1L) } returns member
+        every { memberDomainService.save(member) } returns member
+        every { companyDomainService.findAllOrByIds(listOf(10L, 11L)) } returns listOf(companyA, companyB)
+        every { categoryDomainService.findAllOrByIds(listOf(20L, 21L)) } returns listOf(categoryA, categoryB)
+        every { companySubscriptionDomainService.deleteAllByMemberId(1L) } returns Unit
+        every { categorySubscriptionDomainService.deleteAllByMemberId(1L) } returns Unit
+        every { companySubscriptionDomainService.saveAll(any()) } returns Unit
+        every { categorySubscriptionDomainService.saveAll(any()) } returns Unit
+
+        // when
+        adminMemberService.updateMember(1L, request)
+
+        // then
+        assertThat(member.email).isEqualTo("new@example.com")
+        assertThat(member.nickname).isEqualTo("new")
+        verify(exactly = 1) { memberDomainService.save(member) }
+        verify(exactly = 1) { companyDomainService.findAllOrByIds(listOf(10L, 11L)) }
+        verify(exactly = 1) { categoryDomainService.findAllOrByIds(listOf(20L, 21L)) }
+        verify(exactly = 1) { companySubscriptionDomainService.deleteAllByMemberId(1L) }
+        verify(exactly = 1) { categorySubscriptionDomainService.deleteAllByMemberId(1L) }
+        verify(exactly = 1) { companySubscriptionDomainService.saveAll(match { it.size == 2 }) }
+        verify(exactly = 1) { categorySubscriptionDomainService.saveAll(match { it.size == 2 }) }
+    }
 
     @Test
     @DisplayName("회원 목록을 닉네임 검색, 상태 필터, 구독일 정렬로 조회한다")

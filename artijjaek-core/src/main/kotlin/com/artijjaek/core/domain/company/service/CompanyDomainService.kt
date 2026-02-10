@@ -22,4 +22,8 @@ class CompanyDomainService(
     fun findWithPageable(pageable: Pageable): Page<Company> {
         return companyRepository.findWithPageable(pageable)
     }
+
+    fun findAll(): List<Company> {
+        return companyRepository.findAll()
+    }
 }

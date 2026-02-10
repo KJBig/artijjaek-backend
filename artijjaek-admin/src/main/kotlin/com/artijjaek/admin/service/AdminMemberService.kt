@@ -1,14 +1,28 @@
 package com.artijjaek.admin.service
 
+import com.artijjaek.admin.dto.request.PutMemberRequest
+import com.artijjaek.admin.dto.response.MemberDetailResponse
 import com.artijjaek.admin.dto.response.MemberListPageResponse
 import com.artijjaek.admin.dto.response.MemberSimpleResponse
 import com.artijjaek.admin.dto.response.MemberStatusCountResponse
+import com.artijjaek.admin.dto.response.MemberSubscribedCategoryResponse
+import com.artijjaek.admin.dto.response.MemberSubscribedCompanyResponse
 import com.artijjaek.admin.enums.MemberListSearchType
 import com.artijjaek.admin.enums.MemberListSortBy
 import com.artijjaek.admin.enums.MemberStatusFilter
+import com.artijjaek.core.common.error.ApplicationException
+import com.artijjaek.core.common.error.ErrorCode.CATEGORY_NOT_FOUND_ERROR
+import com.artijjaek.core.common.error.ErrorCode.COMPANY_NOT_FOUND_ERROR
+import com.artijjaek.core.common.error.ErrorCode.MEMBER_NOT_FOUND_ERROR
+import com.artijjaek.core.domain.category.service.CategoryDomainService
+import com.artijjaek.core.domain.company.service.CompanyDomainService
 import com.artijjaek.core.domain.member.enums.MemberSortBy
 import com.artijjaek.core.domain.member.enums.MemberStatus
 import com.artijjaek.core.domain.member.service.MemberDomainService
+import com.artijjaek.core.domain.subscription.entity.CategorySubscription
+import com.artijjaek.core.domain.subscription.entity.CompanySubscription
+import com.artijjaek.core.domain.subscription.service.CategorySubscriptionDomainService
+import com.artijjaek.core.domain.subscription.service.CompanySubscriptionDomainService
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
@@ -18,7 +32,77 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class AdminMemberService(
     private val memberDomainService: MemberDomainService,
+    private val companyDomainService: CompanyDomainService,
+    private val categoryDomainService: CategoryDomainService,
+    private val companySubscriptionDomainService: CompanySubscriptionDomainService,
+    private val categorySubscriptionDomainService: CategorySubscriptionDomainService,
 ) {
+
+    @Transactional(readOnly = true)
+    fun getMemberDetail(memberId: Long): MemberDetailResponse {
+        val member = memberDomainService.findById(memberId)
+            ?: throw ApplicationException(MEMBER_NOT_FOUND_ERROR)
+
+        val subscribedCompanies = companySubscriptionDomainService.findAllByMemberFetchCompany(member).map {
+            MemberSubscribedCompanyResponse(
+                companyId = it.company.id!!,
+                companyNameKr = it.company.nameKr,
+                companyNameEn = it.company.nameEn,
+                logo = it.company.logo
+            )
+        }
+        val subscribedCategories = categorySubscriptionDomainService.findAllByMemberFetchCategory(member).map {
+            MemberSubscribedCategoryResponse(
+                categoryId = it.category.id!!,
+                categoryName = it.category.name
+            )
+        }
+
+        return MemberDetailResponse(
+            memberId = member.id!!,
+            email = member.email,
+            nickname = member.nickname,
+            memberStatus = member.memberStatus,
+            subscribedCompanies = subscribedCompanies,
+            subscribedCategories = subscribedCategories
+        )
+    }
+
+    @Transactional
+    fun updateMember(memberId: Long, request: PutMemberRequest) {
+        val member = memberDomainService.findById(memberId)
+            ?: throw ApplicationException(MEMBER_NOT_FOUND_ERROR)
+
+        member.email = request.email
+        member.nickname = request.nickname
+        memberDomainService.save(member)
+
+        val companyIds = request.companyIds.distinct()
+        val companies = companyDomainService.findAllOrByIds(companyIds)
+        if (companies.size != companyIds.size) {
+            throw ApplicationException(COMPANY_NOT_FOUND_ERROR)
+        }
+
+        val categoryIds = request.categoryIds.distinct()
+        val categories = categoryDomainService.findAllOrByIds(categoryIds)
+        if (categories.size != categoryIds.size) {
+            throw ApplicationException(CATEGORY_NOT_FOUND_ERROR)
+        }
+
+        companySubscriptionDomainService.deleteAllByMemberId(memberId)
+        categorySubscriptionDomainService.deleteAllByMemberId(memberId)
+
+        companySubscriptionDomainService.saveAll(
+            companies.map { company ->
+                CompanySubscription(member = member, company = company)
+            }
+        )
+        categorySubscriptionDomainService.saveAll(
+            categories.map { category ->
+                CategorySubscription(member = member, category = category)
+            }
+        )
+    }
 
     @Transactional(readOnly = true)
     fun searchMembers(
