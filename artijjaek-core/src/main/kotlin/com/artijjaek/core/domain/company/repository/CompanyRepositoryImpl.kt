@@ -22,11 +22,11 @@ class CompanyRepositoryImpl(
         val content = jpaQueryFactory.selectFrom(company)
             .offset(pageable.offset)
             .limit(pageable.pageSize.toLong())
-            .orderBy(company.id.asc())
+            .orderBy(company.nameKr.asc())
             .fetch()
 
         val countQuery = jpaQueryFactory.selectFrom(company)
-            .orderBy(company.id.asc())
+            .orderBy(company.nameKr.asc())
 
         return PageableExecutionUtils.getPage(content, pageable) {
             countQuery.fetch().size.toLong()
