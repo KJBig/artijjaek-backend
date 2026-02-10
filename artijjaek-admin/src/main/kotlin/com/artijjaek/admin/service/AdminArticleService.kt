@@ -1,11 +1,20 @@
 package com.artijjaek.admin.service
 
+import com.artijjaek.admin.dto.request.PutArticleRequest
+import com.artijjaek.admin.dto.response.ArticleCategoryResponse
+import com.artijjaek.admin.dto.response.ArticleDetailResponse
 import com.artijjaek.admin.dto.response.ArticleListPageResponse
 import com.artijjaek.admin.dto.response.ArticleCompanyResponse
 import com.artijjaek.admin.dto.response.ArticleSimpleResponse
 import com.artijjaek.admin.enums.ArticleListSortBy
+import com.artijjaek.core.common.error.ApplicationException
+import com.artijjaek.core.common.error.ErrorCode.ARTICLE_NOT_FOUND_ERROR
+import com.artijjaek.core.common.error.ErrorCode.CATEGORY_NOT_FOUND_ERROR
+import com.artijjaek.core.common.error.ErrorCode.COMPANY_NOT_FOUND_ERROR
 import com.artijjaek.core.domain.article.enums.ArticleSortBy
 import com.artijjaek.core.domain.article.service.ArticleDomainService
+import com.artijjaek.core.domain.category.service.CategoryDomainService
+import com.artijjaek.core.domain.company.service.CompanyDomainService
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
@@ -15,7 +24,57 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class AdminArticleService(
     private val articleDomainService: ArticleDomainService,
+    private val companyDomainService: CompanyDomainService,
+    private val categoryDomainService: CategoryDomainService,
 ) {
+
+    @Transactional(readOnly = true)
+    fun getArticleDetail(articleId: Long): ArticleDetailResponse {
+        val article = articleDomainService.findById(articleId)
+            ?: throw ApplicationException(ARTICLE_NOT_FOUND_ERROR)
+
+        return ArticleDetailResponse(
+            articleId = article.id!!,
+            title = article.title,
+            description = article.description,
+            image = article.image,
+            link = article.link,
+            company = ArticleCompanyResponse(
+                companyId = article.company.id!!,
+                companyNameKr = article.company.nameKr,
+                logo = article.company.logo
+            ),
+            category = article.category?.let {
+                ArticleCategoryResponse(
+                    categoryId = it.id!!,
+                    categoryName = it.name
+                )
+            },
+            createdAt = article.createdAt!!
+        )
+    }
+
+    @Transactional
+    fun updateArticle(articleId: Long, request: PutArticleRequest) {
+        val article = articleDomainService.findById(articleId)
+            ?: throw ApplicationException(ARTICLE_NOT_FOUND_ERROR)
+
+        val company = companyDomainService.findAllOrByIds(listOf(request.companyId)).firstOrNull()
+            ?: throw ApplicationException(COMPANY_NOT_FOUND_ERROR)
+        val category = request.categoryId?.let { categoryId ->
+            categoryDomainService.findAllOrByIds(listOf(categoryId)).firstOrNull()
+                ?: throw ApplicationException(CATEGORY_NOT_FOUND_ERROR)
+        }
+
+        article.title = request.title
+        article.description = request.description
+        article.image = request.image
+        article.link = request.link
+        article.company = company
+        article.changeCategory(category)
+
+        articleDomainService.save(article)
+    }
 
     @Transactional(readOnly = true)
     fun searchArticles(

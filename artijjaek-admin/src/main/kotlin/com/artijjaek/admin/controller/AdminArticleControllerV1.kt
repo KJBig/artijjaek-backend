@@ -1,6 +1,9 @@
 package com.artijjaek.admin.controller
 
 import com.artijjaek.admin.dto.common.SuccessDataResponse
+import com.artijjaek.admin.dto.common.SuccessResponse
+import com.artijjaek.admin.dto.request.PutArticleRequest
+import com.artijjaek.admin.dto.response.ArticleDetailResponse
 import com.artijjaek.admin.dto.response.ArticleListPageResponse
 import com.artijjaek.admin.enums.ArticleListSortBy
 import com.artijjaek.admin.service.AdminArticleService
@@ -8,6 +11,9 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -17,6 +23,23 @@ import org.springframework.web.bind.annotation.RestController
 class AdminArticleControllerV1(
     private val adminArticleService: AdminArticleService,
 ) {
+
+    @GetMapping("/{articleId}")
+    fun getArticleDetail(
+        @PathVariable articleId: Long,
+    ): ResponseEntity<SuccessDataResponse<ArticleDetailResponse>> {
+        val response = adminArticleService.getArticleDetail(articleId)
+        return ResponseEntity.ok(SuccessDataResponse(response))
+    }
+
+    @PutMapping("/{articleId}")
+    fun putArticle(
+        @PathVariable articleId: Long,
+        @RequestBody request: PutArticleRequest,
+    ): ResponseEntity<SuccessResponse> {
+        adminArticleService.updateArticle(articleId, request)
+        return ResponseEntity.ok(SuccessResponse())
+    }
 
     @GetMapping("/list")
     fun getArticles(

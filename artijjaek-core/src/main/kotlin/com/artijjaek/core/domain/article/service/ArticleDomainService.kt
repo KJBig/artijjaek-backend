@@ -14,6 +14,10 @@ import org.springframework.stereotype.Service
 class ArticleDomainService(
     private val articleRepository: ArticleRepository,
 ) {
+    fun findById(articleId: Long): Article? {
+        return articleRepository.findById(articleId).orElse(null)
+    }
+
     fun findWithCondition(
         pageable: Pageable,
         companyId: Long?,
