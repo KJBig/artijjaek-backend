@@ -1,5 +1,6 @@
 package com.artijjaek.admin.service
 
+import com.artijjaek.admin.dto.request.PostArticleRequest
 import com.artijjaek.admin.dto.request.PutArticleRequest
 import com.artijjaek.core.common.error.ApplicationException
 import com.artijjaek.core.common.error.ErrorCode
@@ -43,6 +44,80 @@ class AdminArticleServiceTest {
 
     @MockK
     lateinit var categoryDomainService: CategoryDomainService
+
+    @Test
+    @DisplayName("아티클을 등록한다")
+    fun createArticleTest() {
+        // given
+        val company = Company(
+            id = 10L,
+            nameKr = "회사A",
+            nameEn = "CompanyA",
+            logo = "logo",
+            baseUrl = "baseUrl",
+            crawlUrl = "crawlUrl",
+            crawlAvailability = true
+        )
+        val category = Category(
+            id = 20L,
+            name = "백엔드",
+            publishType = PublishType.PUBLISH
+        )
+        val request = PostArticleRequest(
+            title = "신규 아티클",
+            description = "설명",
+            image = "https://image.example.com/new.png",
+            link = "https://example.com/article/new",
+            companyId = 10L,
+            categoryId = 20L
+        )
+
+        every { companyDomainService.findAllOrByIds(listOf(10L)) } returns listOf(company)
+        every { categoryDomainService.findAllOrByIds(listOf(20L)) } returns listOf(category)
+        every { articleDomainService.save(any()) } answers {
+            firstArg<Article>().id = 101L
+            Unit
+        }
+
+        // when
+        val result = adminArticleService.createArticle(request)
+
+        // then
+        assertThat(result.articleId).isEqualTo(101L)
+        verify(exactly = 1) {
+            articleDomainService.save(
+                match {
+                    it.title == "신규 아티클" &&
+                        it.company.id == 10L &&
+                        it.category?.id == 20L &&
+                        it.link == "https://example.com/article/new"
+                }
+            )
+        }
+    }
+
+    @Test
+    @DisplayName("아티클 등록 시 회사가 없으면 예외가 발생한다")
+    fun createArticleCompanyNotFoundTest() {
+        // given
+        val request = PostArticleRequest(
+            title = "신규 아티클",
+            description = null,
+            image = null,
+            link = "https://example.com/article/new",
+            companyId = 999L,
+            categoryId = null
+        )
+        every { companyDomainService.findAllOrByIds(listOf(999L)) } returns emptyList()
+
+        // when
+        val exception = assertThrows<ApplicationException> {
+            adminArticleService.createArticle(request)
+        }
+
+        // then
+        assertThat(exception.code).isEqualTo(ErrorCode.COMPANY_NOT_FOUND_ERROR.code)
+    }
 
     @Test
     @DisplayName("아티클 상세 정보를 조회한다")

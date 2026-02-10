@@ -2,12 +2,14 @@ package com.artijjaek.admin.controller
 
 import com.artijjaek.admin.common.auth.AuthAdminIdArgumentResolver
 import com.artijjaek.admin.config.security.WebConfig
+import com.artijjaek.admin.dto.request.PostArticleRequest
 import com.artijjaek.admin.dto.request.PutArticleRequest
 import com.artijjaek.admin.dto.response.ArticleCategoryResponse
 import com.artijjaek.admin.dto.response.ArticleCompanyResponse
 import com.artijjaek.admin.dto.response.ArticleDetailResponse
 import com.artijjaek.admin.dto.response.ArticleListPageResponse
 import com.artijjaek.admin.dto.response.ArticleSimpleResponse
+import com.artijjaek.admin.dto.response.PostArticleResponse
 import com.artijjaek.admin.enums.ArticleListSortBy
 import com.artijjaek.admin.service.AdminArticleService
 import com.ninjasquad.springmockk.MockkBean
@@ -25,6 +27,7 @@ import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
@@ -42,6 +45,46 @@ class AdminArticleControllerV1Test {
 
     @MockkBean
     lateinit var adminArticleService: AdminArticleService
+
+    @Test
+    @WithMockUser(username = "1")
+    @DisplayName("아티클을 등록한다")
+    fun postArticleTest() {
+        // given
+        val request = PostArticleRequest(
+            title = "신규 아티클",
+            description = "설명",
+            image = "https://image.example.com/new.png",
+            link = "https://example.com/article/new",
+            companyId = 10L,
+            categoryId = 20L
+        )
+        val response = PostArticleResponse(articleId = 101L)
+        every { adminArticleService.createArticle(request) } returns response
+
+        // when & then
+        mockMvc.perform(
+            post("/admin/v1/article")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "title": "신규 아티클",
+                      "description": "설명",
+                      "image": "https://image.example.com/new.png",
+                      "link": "https://example.com/article/new",
+                      "companyId": 10,
+                      "categoryId": 20
+                    }
+                    """.trimIndent()
+                )
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.isSuccess").value(true))
+            .andExpect(jsonPath("$.data.articleId").value(101))
+
+        verify(exactly = 1) { adminArticleService.createArticle(request) }
+    }
 
     @Test
     @WithMockUser(username = "1")

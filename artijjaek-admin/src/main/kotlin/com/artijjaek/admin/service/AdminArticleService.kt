@@ -1,16 +1,19 @@
 package com.artijjaek.admin.service
 
+import com.artijjaek.admin.dto.request.PostArticleRequest
 import com.artijjaek.admin.dto.request.PutArticleRequest
 import com.artijjaek.admin.dto.response.ArticleCategoryResponse
 import com.artijjaek.admin.dto.response.ArticleDetailResponse
 import com.artijjaek.admin.dto.response.ArticleListPageResponse
 import com.artijjaek.admin.dto.response.ArticleCompanyResponse
 import com.artijjaek.admin.dto.response.ArticleSimpleResponse
+import com.artijjaek.admin.dto.response.PostArticleResponse
 import com.artijjaek.admin.enums.ArticleListSortBy
 import com.artijjaek.core.common.error.ApplicationException
 import com.artijjaek.core.common.error.ErrorCode.ARTICLE_NOT_FOUND_ERROR
 import com.artijjaek.core.common.error.ErrorCode.CATEGORY_NOT_FOUND_ERROR
 import com.artijjaek.core.common.error.ErrorCode.COMPANY_NOT_FOUND_ERROR
+import com.artijjaek.core.domain.article.entity.Article
 import com.artijjaek.core.domain.article.enums.ArticleSortBy
 import com.artijjaek.core.domain.article.service.ArticleDomainService
 import com.artijjaek.core.domain.category.service.CategoryDomainService
@@ -27,6 +30,28 @@ class AdminArticleService(
     private val companyDomainService: CompanyDomainService,
     private val categoryDomainService: CategoryDomainService,
 ) {
+
+    @Transactional
+    fun createArticle(request: PostArticleRequest): PostArticleResponse {
+        val company = companyDomainService.findAllOrByIds(listOf(request.companyId)).firstOrNull()
+            ?: throw ApplicationException(COMPANY_NOT_FOUND_ERROR)
+        val category = request.categoryId?.let { categoryId ->
+            categoryDomainService.findAllOrByIds(listOf(categoryId)).firstOrNull()
+                ?: throw ApplicationException(CATEGORY_NOT_FOUND_ERROR)
+        }
+
+        val article = Article(
+            company = company,
+            category = category,
+            title = request.title,
+            description = request.description,
+            image = request.image,
+            link = request.link
+        )
+        articleDomainService.save(article)
+
+        return PostArticleResponse(articleId = article.id!!)
+    }
 
     @Transactional(readOnly = true)
     fun getArticleDetail(articleId: Long): ArticleDetailResponse {
