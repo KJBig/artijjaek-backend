@@ -21,6 +21,7 @@ import com.artijjaek.core.domain.subscription.service.CompanySubscriptionDomainS
 import com.artijjaek.core.domain.unsubscription.entity.Unsubscription
 import com.artijjaek.core.domain.unsubscription.enums.UnSubscriptionReason
 import com.artijjaek.core.domain.unsubscription.service.UnsubscriptionDomainService
+import com.artijjaek.core.webhook.WebHookService
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
@@ -62,6 +63,9 @@ class MemberServiceTest {
 
     @MockK
     lateinit var mailService: MailService
+
+    @MockK
+    lateinit var webHookService: WebHookService
 
     @Test
     @DisplayName("이메일로 구독을 시작할 수 있다")
@@ -105,6 +109,7 @@ class MemberServiceTest {
         every { categoryDomainService.findAllOrByIds(request.categoryIds) }.returns(categories)
         justRun { categorySubscriptionDomainService.saveAll(any()) }
         justRun { mailService.sendSubscribeMail(any()) }
+        justRun { webHookService.sendNewSubscribeMessage(any()) }
 
 
         // when
@@ -116,6 +121,7 @@ class MemberServiceTest {
         verify { companySubscriptionDomainService.saveAll(any()) }
         verify { categorySubscriptionDomainService.saveAll(any()) }
         verify { mailService.sendSubscribeMail(any()) }
+        verify { webHookService.sendNewSubscribeMessage(any()) }
     }
 
     @Test
@@ -420,6 +426,7 @@ class MemberServiceTest {
 
         every { memberDomainService.findByEmailAndMemberStatus(any(), any()) }.returns(member)
         every { unsubscriptionDomainService.saveUnsubscription(any()) }.returns(mockk())
+        justRun { webHookService.sendUnsubscribeMessage(any(), any()) }
 
 
         // when
@@ -429,6 +436,7 @@ class MemberServiceTest {
         // then
         verify { memberDomainService.findByEmailAndMemberStatus(email, MemberStatus.ACTIVE) }
         verify { unsubscriptionDomainService.saveUnsubscription(any<Unsubscription>()) }
+        verify { webHookService.sendUnsubscribeMessage(any(), any()) }
     }
 
     @Test
