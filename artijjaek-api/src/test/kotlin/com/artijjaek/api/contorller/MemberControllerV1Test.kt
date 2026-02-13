@@ -5,6 +5,8 @@ import com.artijjaek.api.controller.MemberControllerV1
 import com.artijjaek.api.dto.request.RegisterMemberRequest
 import com.artijjaek.api.dto.request.SubscriptionChangeRequest
 import com.artijjaek.api.dto.request.UnsubscriptionRequest
+import com.artijjaek.api.dto.response.CategorySimpleDataResponse
+import com.artijjaek.api.dto.response.CompanySimpleDataResponse
 import com.artijjaek.api.dto.response.MemberDataResponse
 import com.artijjaek.api.service.MemberService
 import com.artijjaek.core.domain.unsubscription.enums.UnSubscriptionReason
@@ -77,8 +79,14 @@ class MemberControllerV1Test {
         val response = MemberDataResponse(
             email = email,
             nickname = "password123",
-            companies = listOf(1L, 2L),
-            categories = listOf(1L, 2L)
+            companies = listOf(
+                CompanySimpleDataResponse(1L, "회사1", "Company1", "https://example.com/logo1.png", "https://example.com/blog1"),
+                CompanySimpleDataResponse(2L, "회사2", "Company2", "https://example.com/logo2.png", "https://example.com/blog2")
+            ),
+            categories = listOf(
+                CategorySimpleDataResponse(1L, "카테고리1"),
+                CategorySimpleDataResponse(2L, "카테고리2")
+            )
         )
 
         every { memberService.getMemberDataWithToken(email, uuIdToken) }.returns(response)
