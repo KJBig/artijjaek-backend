@@ -2,6 +2,8 @@ package com.artijjaek.core.domain.company.repository
 
 import com.artijjaek.core.domain.company.entity.Company
 import com.artijjaek.core.domain.company.entity.QCompany.company
+import com.artijjaek.core.domain.company.enums.CompanySortOption
+import com.artijjaek.core.domain.subscription.entity.QCompanySubscription.companySubscription
 import com.querydsl.jpa.impl.JPAQueryFactory
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -30,6 +32,29 @@ class CompanyRepositoryImpl(
 
         return PageableExecutionUtils.getPage(content, pageable) {
             countQuery.fetch().size.toLong()
+        }
+    }
+
+    override fun findWithPageableOrderBySortOption(sortOption: CompanySortOption, pageable: Pageable): Page<Company> {
+        val orderSpecifiers = when (sortOption) {
+            CompanySortOption.KR_NAME -> arrayOf(company.nameKr.asc())
+            CompanySortOption.POPULARITY -> arrayOf(companySubscription.id.count().desc(), company.nameKr.asc())
+        }
+
+        val content = jpaQueryFactory.select(company)
+            .from(company)
+            .leftJoin(companySubscription).on(companySubscription.company.id.eq(company.id))
+            .groupBy(company.id)
+            .offset(pageable.offset)
+            .limit(pageable.pageSize.toLong())
+            .orderBy(*orderSpecifiers)
+            .fetch()
+
+        val countQuery = jpaQueryFactory.select(company.count())
+            .from(company)
+
+        return PageableExecutionUtils.getPage(content, pageable) {
+            countQuery.fetchOne() ?: 0L
         }
     }
 

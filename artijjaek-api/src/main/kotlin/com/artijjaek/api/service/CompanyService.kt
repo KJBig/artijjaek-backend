@@ -3,6 +3,7 @@ package com.artijjaek.api.service
 import com.artijjaek.api.dto.common.PageResponse
 import com.artijjaek.api.dto.response.CompanyCountResponse
 import com.artijjaek.api.dto.response.CompanySimpleDataResponse
+import com.artijjaek.core.domain.company.enums.CompanySortOption
 import com.artijjaek.core.domain.company.service.CompanyDomainService
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -14,8 +15,8 @@ class CompanyService(
 ) {
 
     @Transactional(readOnly = true)
-    fun searchCompanyList(pageable: Pageable): PageResponse<CompanySimpleDataResponse> {
-        val companyPage = companyDomainService.findWithPageable(pageable)
+    fun searchCompanyList(sortOption: CompanySortOption, pageable: Pageable): PageResponse<CompanySimpleDataResponse> {
+        val companyPage = companyDomainService.findWithPageableOrderBySortOption(sortOption, pageable)
         val content = companyPage.content.stream()
             .map { CompanySimpleDataResponse.from(it) }
             .toList()

@@ -1,6 +1,7 @@
 package com.artijjaek.core.domain.company.service
 
 import com.artijjaek.core.domain.company.entity.Company
+import com.artijjaek.core.domain.company.enums.CompanySortOption
 import com.artijjaek.core.domain.company.repository.CompanyRepository
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -21,6 +22,10 @@ class CompanyDomainService(
 
     fun findWithPageable(pageable: Pageable): Page<Company> {
         return companyRepository.findWithPageable(pageable)
+    }
+
+    fun findWithPageableOrderBySortOption(sortOption: CompanySortOption, pageable: Pageable): Page<Company> {
+        return companyRepository.findWithPageableOrderBySortOption(sortOption, pageable)
     }
 
     fun findAll(): List<Company> {
