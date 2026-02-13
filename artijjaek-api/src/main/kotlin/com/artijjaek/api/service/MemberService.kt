@@ -122,6 +122,8 @@ class MemberService(
 
         val unsubscription = Unsubscription(member = member, reason = request.reason, detail = request.detail)
         unsubscriptionDomainService.saveUnsubscription(unsubscription)
+
+        webHookService.sendUnsubscribeMessage(member, unsubscription)
     }
 
 
