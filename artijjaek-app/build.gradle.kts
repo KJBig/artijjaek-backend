@@ -13,6 +13,15 @@ tasks.named<Test>("test") {
     )
 }
 
+tasks.named("clean") {
+    dependsOn(
+        ":artijjaek-core:clean",
+        ":artijjaek-admin:clean",
+        ":artijjaek-api:clean",
+        ":artijjaek-batch:clean"
+    )
+}
+
 dependencies {
     implementation(project(":artijjaek-admin"))
     implementation(project(":artijjaek-api"))
