@@ -3,6 +3,7 @@ package com.artijjaek.core.webhook
 import com.artijjaek.core.common.mail.dto.ArticleAlertDto
 import com.artijjaek.core.domain.category.entity.Category
 import com.artijjaek.core.domain.inquiry.entity.Inquiry
+import com.artijjaek.core.domain.member.entity.Member
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
@@ -21,6 +22,10 @@ class DiscordWebHookService(
 
     @Value("\${discord.webhook.category-allocation}")
     lateinit var DISCORD_CATEGORY_ALLOCATION_URL: String;
+
+    @Value("\${discord.webhook.new-subscribe}")
+    lateinit var DISCORD_NEW_SUBSCRIBE_URL: String;
+
 
     @Async("asyncThreadPoolExecutor")
     override fun sendNewArticleMessage(newArticles: List<ArticleAlertDto>) {
@@ -99,4 +104,26 @@ class DiscordWebHookService(
         }
         return stringBuilder.toString()
     }
+
+    @Async("asyncThreadPoolExecutor")
+    override fun sendNewSubscribeMessage(newMember: Member) {
+        val message = WebHookMessage(buildNewSubscribeMessage(newMember))
+        discordWebHookConnector.sendMessageForDiscord(message, DISCORD_NEW_SUBSCRIBE_URL)
+    }
+
+    private fun buildNewSubscribeMessage(member: Member): String {
+        val stringBuilder = StringBuilder()
+        val prefix = """
+            🔔 **새 구독 알림**
+            
+            📅 ${LocalDateTime.now()}
+
+
+        """.trimIndent()
+        stringBuilder.append(prefix)
+        stringBuilder.append("Email : ").append(member.email).append("\n")
+        stringBuilder.append("Nickname : ").append(member.nickname).append("\n")
+        return stringBuilder.toString()
+    }
+
 }

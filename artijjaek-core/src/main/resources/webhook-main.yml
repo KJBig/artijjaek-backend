@@ -3,3 +3,4 @@ discord:
     new-article: ${DISCORD_NEW_ARTICLE_URL}
     new-inquiry: ${DISCORD_NEW_INQUIRY_URL}
     category-allocation: ${DISCORD_CATEGORY_ALLOCATION_URL}
+    new-subscribe: ${DISCORD_NEW_SUBSCRIBE_URL}

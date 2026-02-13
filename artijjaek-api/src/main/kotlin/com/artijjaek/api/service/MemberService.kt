@@ -24,6 +24,7 @@ import com.artijjaek.core.domain.subscription.service.CategorySubscriptionDomain
 import com.artijjaek.core.domain.subscription.service.CompanySubscriptionDomainService
 import com.artijjaek.core.domain.unsubscription.entity.Unsubscription
 import com.artijjaek.core.domain.unsubscription.service.UnsubscriptionDomainService
+import com.artijjaek.core.webhook.WebHookService
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -36,6 +37,7 @@ class MemberService(
     private val categorySubscriptionDomainService: CategorySubscriptionDomainService,
     private val unsubscriptionDomainService: UnsubscriptionDomainService,
     private val mailService: MailService,
+    private val webHookService: WebHookService,
 ) {
 
     @Transactional
@@ -65,6 +67,7 @@ class MemberService(
         categorySubscriptionDomainService.saveAll(categorySubscriptions)
 
         mailService.sendSubscribeMail(MemberAlertDto.from(newMember))
+        webHookService.sendNewSubscribeMessage(newMember)
     }
 
     @Transactional(readOnly = true)
