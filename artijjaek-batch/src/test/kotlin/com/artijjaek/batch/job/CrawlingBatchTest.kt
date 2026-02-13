@@ -118,6 +118,7 @@ class CrawlingBatchTest {
             nameEn = "OLIVE YOUNG",
             logo = "http://example.com/logo.png",
             baseUrl = "http://example.com",
+            blogUrl = "http://example.com/blog",
             crawlUrl = "http://example.com/crawl",
             crawlAvailability = true
         )
@@ -143,6 +144,7 @@ class CrawlingBatchTest {
                 nameEn = "OLIVE YOUNG",
                 logo = "http://example.com/logo1.png",
                 baseUrl = "http://example.com/1",
+                blogUrl = "http://example.com/blog",
                 crawlUrl = "http://example.com/crawl/1",
                 crawlAvailability = true
             )
@@ -153,6 +155,7 @@ class CrawlingBatchTest {
                 nameEn = "NO-CRAWL",
                 logo = "http://example.com/logo2.png",
                 baseUrl = "http://example.com/2",
+                blogUrl = "http://example.com/blog",
                 crawlUrl = "http://example.com/crawl/2",
                 crawlAvailability = false
             )
@@ -163,6 +166,7 @@ class CrawlingBatchTest {
                 nameEn = "KAKAO",
                 logo = "http://example.com/logo3.png",
                 baseUrl = "http://example.com/3",
+                blogUrl = "http://example.com/blog",
                 crawlUrl = "http://example.com/crawl/3",
                 crawlAvailability = true
             )

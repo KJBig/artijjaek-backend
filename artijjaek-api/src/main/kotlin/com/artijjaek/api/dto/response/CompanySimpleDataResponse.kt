@@ -9,6 +9,7 @@ data class CompanySimpleDataResponse(
     val companyNameKr: String,
     val companyNameEn: String,
     val companyImageUrl: String,
+    val companyBlogUrl: String,
 ) {
     companion object {
         fun from(company: Company): CompanySimpleDataResponse {
@@ -16,7 +17,8 @@ data class CompanySimpleDataResponse(
                 companyId = requireNotNull(company.id) { throw ApplicationException(ErrorCode.COMPANY_ID_MISSING_ERROR) },
                 companyNameKr = company.nameKr,
                 companyNameEn = company.nameEn,
-                companyImageUrl = company.logo
+                companyImageUrl = company.logo,
+                companyBlogUrl = company.blogUrl,
             )
         }
     }

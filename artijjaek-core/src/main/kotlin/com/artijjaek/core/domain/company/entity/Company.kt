@@ -24,6 +24,9 @@ class Company(
     var baseUrl: String,
 
     @Column(columnDefinition = "TEXT", nullable = false)
+    var blogUrl: String,
+
+    @Column(columnDefinition = "TEXT", nullable = false)
     var crawlUrl: String,
 
     @Column(nullable = false)

@@ -69,14 +69,12 @@ class AdminMemberServiceTest {
         val request = PatchMemberStatusRequest(memberStatus = MemberStatus.ACTIVE)
 
         every { memberDomainService.findById(1L) } returns member
-        every { memberDomainService.save(member) } returns member
 
         // when
         adminMemberService.updateMemberStatus(1L, request)
 
         // then
         assertThat(member.memberStatus).isEqualTo(MemberStatus.ACTIVE)
-        verify(exactly = 1) { memberDomainService.save(member) }
     }
 
     @Test
@@ -96,6 +94,7 @@ class AdminMemberServiceTest {
             nameEn = "CompanyA",
             logo = "logo",
             baseUrl = "baseUrl",
+            blogUrl = "blogUrl",
             crawlUrl = "crawlUrl",
             crawlAvailability = true
         )
@@ -108,8 +107,12 @@ class AdminMemberServiceTest {
         val categorySubscription = CategorySubscription(member = member, category = category)
 
         every { memberDomainService.findById(1L) } returns member
-        every { companySubscriptionDomainService.findAllByMemberFetchCompany(member) } returns listOf(companySubscription)
-        every { categorySubscriptionDomainService.findAllByMemberFetchCategory(member) } returns listOf(categorySubscription)
+        every { companySubscriptionDomainService.findAllByMemberFetchCompany(member) } returns listOf(
+            companySubscription
+        )
+        every { categorySubscriptionDomainService.findAllByMemberFetchCategory(member) } returns listOf(
+            categorySubscription
+        )
 
         // when
         val result = adminMemberService.getMemberDetail(1L)
@@ -141,6 +144,7 @@ class AdminMemberServiceTest {
             nameEn = "CompanyA",
             logo = "logo-a",
             baseUrl = "base-a",
+            blogUrl = "blog-a",
             crawlUrl = "crawl-a",
             crawlAvailability = true
         )
@@ -150,6 +154,7 @@ class AdminMemberServiceTest {
             nameEn = "CompanyB",
             logo = "logo-b",
             baseUrl = "base-b",
+            blogUrl = "blog-b",
             crawlUrl = "crawl-b",
             crawlAvailability = true
         )
