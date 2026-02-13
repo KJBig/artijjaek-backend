@@ -32,6 +32,7 @@ class AdminCompanyServiceTest {
             nameEn = "CompanyA",
             logo = "https://cdn.example.com/company-a.png",
             baseUrl = "base-a",
+            blogUrl = "blog-a",
             crawlUrl = "crawl-a",
             crawlAvailability = true
         )
@@ -41,6 +42,7 @@ class AdminCompanyServiceTest {
             nameEn = "CompanyB",
             logo = "https://cdn.example.com/company-b.png",
             baseUrl = "base-b",
+            blogUrl = "blog-b",
             crawlUrl = "crawl-b",
             crawlAvailability = true
         )
