@@ -204,8 +204,8 @@ class MemberServiceTest {
         // then
         assertThat(memberData.email).isEqualTo(email)
         assertThat(memberData.nickname).isEqualTo(nickname)
-        assertThat(memberData.companyIds.size).isEqualTo(1)
-        assertThat(memberData.categoryIds.size).isEqualTo(1)
+        assertThat(memberData.companies.size).isEqualTo(1)
+        assertThat(memberData.categories.size).isEqualTo(1)
     }
 
     @Test

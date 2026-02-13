@@ -28,8 +28,8 @@ class MemberDataResponseTest {
         // then
         assertThat(response.email).isEqualTo("newuser@example.com")
         assertThat(response.nickname).isEqualTo("nickname")
-        assertThat(response.companyIds.size).isEqualTo(3)
-        assertThat(response.categoryIds.size).isEqualTo(3)
+        assertThat(response.companies.size).isEqualTo(3)
+        assertThat(response.categories.size).isEqualTo(3)
     }
 
 }

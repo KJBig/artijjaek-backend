@@ -77,8 +77,8 @@ class MemberControllerV1Test {
         val response = MemberDataResponse(
             email = email,
             nickname = "password123",
-            companyIds = listOf(1L, 2L),
-            categoryIds = listOf(1L, 2L)
+            companies = listOf(1L, 2L),
+            categories = listOf(1L, 2L)
         )
 
         every { memberService.getMemberDataWithToken(email, uuIdToken) }.returns(response)
