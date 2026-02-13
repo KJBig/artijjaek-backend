@@ -153,9 +153,16 @@ class JwtProviderTest {
     @DisplayName("validateToken - 변조된 토큰이면 JWT_INVALIDATE_ERROR 예외를 던진다")
     fun validateTokenTest_tampered() {
         // given
-        val refreshToken = jwtProvider.generateRefreshToken()
+        val invalidKeyBase64 = "YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXphYmNkZWY="
+        val invalidSigningKey: SecretKey =
+            Keys.hmacShaKeyFor(Decoders.BASE64.decode(invalidKeyBase64))
 
-        val tampered = refreshToken.dropLast(1) + if (refreshToken.last() != 'a') 'a' else 'b'
+        val tampered = Jwts.builder()
+            .issuedAt(Date())
+            .expiration(Date(System.currentTimeMillis() + 120_000L))
+            .claim("type", "REFRESH")
+            .signWith(invalidSigningKey)
+            .compact()
 
 
         // when

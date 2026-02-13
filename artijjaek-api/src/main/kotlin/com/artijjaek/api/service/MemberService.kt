@@ -4,6 +4,8 @@ import com.artijjaek.api.common.UuidTokenGenerator
 import com.artijjaek.api.dto.request.RegisterMemberRequest
 import com.artijjaek.api.dto.request.SubscriptionChangeRequest
 import com.artijjaek.api.dto.request.UnsubscriptionRequest
+import com.artijjaek.api.dto.response.CategorySimpleDataResponse
+import com.artijjaek.api.dto.response.CompanySimpleDataResponse
 import com.artijjaek.api.dto.response.MemberDataResponse
 import com.artijjaek.core.common.error.ApplicationException
 import com.artijjaek.core.common.error.ErrorCode.*
@@ -75,9 +77,9 @@ class MemberService(
         }
 
         val companyIds = companySubscriptionDomainService.findAllByMemberFetchCompany(member)
-            .mapNotNull { companySubscription -> companySubscription.company.id }
-        val categoryIds: List<Long> = categorySubscriptionDomainService.findAllByMemberFetchCategory(member)
-            .mapNotNull { categorySubscription -> categorySubscription.category.id }
+            .mapNotNull { companySubscription -> CompanySimpleDataResponse.from(companySubscription.company) }
+        val categoryIds = categorySubscriptionDomainService.findAllByMemberFetchCategory(member)
+            .mapNotNull { categorySubscription -> CategorySimpleDataResponse.from(categorySubscription.category) }
 
         return MemberDataResponse.of(member, companyIds, categoryIds)
     }

@@ -48,6 +48,7 @@ class CompanySubscriptionRepositoryTest {
             nameEn = "Company",
             logo = "http://example.com/logo.png",
             baseUrl = "http://example.com",
+            blogUrl = "http://example.com",
             crawlUrl = "http://example.com/crawl",
             crawlAvailability = true
         )

@@ -19,17 +19,25 @@ class MemberDataResponseTest {
             memberStatus = MemberStatus.ACTIVE
         )
 
-        val categoryIds = listOf(1L, 2L, 3L)
-        val companyIds = listOf(1L, 2L, 3L)
+        val categories = listOf(
+            CategorySimpleDataResponse(1L, "카테고리1"),
+            CategorySimpleDataResponse(2L, "카테고리2"),
+            CategorySimpleDataResponse(3L, "카테고리3")
+        )
+        val companies = listOf(
+            CompanySimpleDataResponse(1L, "회사1", "Company1", "https://example.com/logo1.png", "https://example.com/blog1"),
+            CompanySimpleDataResponse(2L, "회사2", "Company2", "https://example.com/logo2.png", "https://example.com/blog2"),
+            CompanySimpleDataResponse(3L, "회사3", "Company3", "https://example.com/logo3.png", "https://example.com/blog3")
+        )
 
         // when
-        val response = MemberDataResponse.of(member, companyIds, categoryIds)
+        val response = MemberDataResponse.of(member, companies, categories)
 
         // then
         assertThat(response.email).isEqualTo("newuser@example.com")
         assertThat(response.nickname).isEqualTo("nickname")
-        assertThat(response.companyIds.size).isEqualTo(3)
-        assertThat(response.categoryIds.size).isEqualTo(3)
+        assertThat(response.companies.size).isEqualTo(3)
+        assertThat(response.categories.size).isEqualTo(3)
     }
 
 }

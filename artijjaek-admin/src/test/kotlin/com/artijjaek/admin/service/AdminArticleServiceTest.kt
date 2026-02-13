@@ -2,9 +2,9 @@ package com.artijjaek.admin.service
 
 import com.artijjaek.admin.dto.request.PostArticleRequest
 import com.artijjaek.admin.dto.request.PutArticleRequest
+import com.artijjaek.admin.enums.ArticleListSortBy
 import com.artijjaek.core.common.error.ApplicationException
 import com.artijjaek.core.common.error.ErrorCode
-import com.artijjaek.admin.enums.ArticleListSortBy
 import com.artijjaek.core.domain.article.entity.Article
 import com.artijjaek.core.domain.article.enums.ArticleSortBy
 import com.artijjaek.core.domain.article.service.ArticleDomainService
@@ -21,8 +21,8 @@ import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
@@ -55,6 +55,7 @@ class AdminArticleServiceTest {
             nameEn = "CompanyA",
             logo = "logo",
             baseUrl = "baseUrl",
+            blogUrl = "blogUrl",
             crawlUrl = "crawlUrl",
             crawlAvailability = true
         )
@@ -88,9 +89,9 @@ class AdminArticleServiceTest {
             articleDomainService.save(
                 match {
                     it.title == "신규 아티클" &&
-                        it.company.id == 10L &&
-                        it.category?.id == 20L &&
-                        it.link == "https://example.com/article/new"
+                            it.company.id == 10L &&
+                            it.category?.id == 20L &&
+                            it.link == "https://example.com/article/new"
                 }
             )
         }
@@ -129,6 +130,7 @@ class AdminArticleServiceTest {
             nameEn = "CompanyA",
             logo = "logo",
             baseUrl = "baseUrl",
+            blogUrl = "blogUrl",
             crawlUrl = "crawlUrl",
             crawlAvailability = true
         )
@@ -168,6 +170,7 @@ class AdminArticleServiceTest {
             nameEn = "OldCompany",
             logo = "old-logo",
             baseUrl = "old-base",
+            blogUrl = "blogUrl",
             crawlUrl = "old-crawl",
             crawlAvailability = true
         )
@@ -191,6 +194,7 @@ class AdminArticleServiceTest {
             nameEn = "CompanyA",
             logo = "logo",
             baseUrl = "baseUrl",
+            blogUrl = "blogUrl",
             crawlUrl = "crawlUrl",
             crawlAvailability = true
         )
@@ -238,6 +242,7 @@ class AdminArticleServiceTest {
                 nameEn = "OldCompany",
                 logo = "old-logo",
                 baseUrl = "old-base",
+                blogUrl = "blogUrl",
                 crawlUrl = "old-crawl",
                 crawlAvailability = true
             ),
@@ -278,6 +283,7 @@ class AdminArticleServiceTest {
             nameEn = "CompanyA",
             logo = "logo",
             baseUrl = "baseUrl",
+            blogUrl = "blogUrl",
             crawlUrl = "crawlUrl",
             crawlAvailability = true
         )

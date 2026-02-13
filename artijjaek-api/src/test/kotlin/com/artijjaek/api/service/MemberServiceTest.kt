@@ -86,6 +86,7 @@ class MemberServiceTest {
             nameEn = "Company1",
             logo = "http://example.com/logo1.png",
             baseUrl = "http://example.com",
+            blogUrl = "http://example.com/blog1",
             crawlUrl = "http://example.com/crawl1",
             crawlAvailability = true
         )
@@ -172,6 +173,7 @@ class MemberServiceTest {
             nameEn = "Company1",
             logo = "http://example.com/logo1.png",
             baseUrl = "http://example.com",
+            blogUrl = "http://example.com/blog1",
             crawlUrl = "http://example.com/crawl1",
             crawlAvailability = true
         )
@@ -204,8 +206,8 @@ class MemberServiceTest {
         // then
         assertThat(memberData.email).isEqualTo(email)
         assertThat(memberData.nickname).isEqualTo(nickname)
-        assertThat(memberData.companyIds.size).isEqualTo(1)
-        assertThat(memberData.categoryIds.size).isEqualTo(1)
+        assertThat(memberData.companies.size).isEqualTo(1)
+        assertThat(memberData.categories.size).isEqualTo(1)
     }
 
     @Test
@@ -290,34 +292,23 @@ class MemberServiceTest {
             nameEn = "Company1",
             logo = "http://example.com/logo1.png",
             baseUrl = "http://example.com",
+            blogUrl = "http://example.com/blog1",
             crawlUrl = "http://example.com/crawl1",
             crawlAvailability = true
         )
-        val companySubscription = CompanySubscription(
-            member = member,
-            company = company
-        )
-
         val category = Category(
             id = 1L,
             name = "카테고리1",
             publishType = PublishType.PUBLISH
         )
-        val categorySubscription = CategorySubscription(
-            member = member,
-            category = category
-        )
 
         every { memberDomainService.findByEmailAndMemberStatus(email, MemberStatus.ACTIVE) }.returns(member)
-
         justRun { companySubscriptionDomainService.deleteAllByMemberId(member.id!!) }
-        every { companySubscriptionDomainService.findAllByMemberFetchCompany(member) }
-            .returns(mutableListOf(companySubscription))
-
+        every { companyDomainService.findAllOrByIds(request.companyIds) }.returns(listOf(company))
+        justRun { companySubscriptionDomainService.saveAll(any()) }
         justRun { categorySubscriptionDomainService.deleteAllByMemberId(member.id!!) }
-        every { categorySubscriptionDomainService.findAllByMemberFetchCategory(member) }
-            .returns(mutableListOf(categorySubscription))
-
+        every { categoryDomainService.findAllOrByIds(request.categoryIds) }.returns(listOf(category))
+        justRun { categorySubscriptionDomainService.saveAll(any()) }
 
         // when
         memberService.changeSubscription(request)
@@ -326,9 +317,11 @@ class MemberServiceTest {
         // then
         verify { memberDomainService.findByEmailAndMemberStatus(email, MemberStatus.ACTIVE) }
         verify { companySubscriptionDomainService.deleteAllByMemberId(any<Long>()) }
-        verify { companySubscriptionDomainService.findAllByMemberFetchCompany(any<Member>()) }
+        verify { companyDomainService.findAllOrByIds(request.companyIds) }
+        verify { companySubscriptionDomainService.saveAll(any()) }
         verify { categorySubscriptionDomainService.deleteAllByMemberId(any<Long>()) }
-        verify { categorySubscriptionDomainService.findAllByMemberFetchCategory(any<Member>()) }
+        verify { categoryDomainService.findAllOrByIds(request.categoryIds) }
+        verify { categorySubscriptionDomainService.saveAll(any()) }
     }
 
     @Test

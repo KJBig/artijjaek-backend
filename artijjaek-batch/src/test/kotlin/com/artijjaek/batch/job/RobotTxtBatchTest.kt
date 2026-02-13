@@ -74,6 +74,7 @@ class RobotTxtBatchTest {
             nameEn = "OLIVE YOUNG",
             logo = "http://example.com/logo.png",
             baseUrl = "http://example.com",
+            blogUrl = "http://example.com/blog",
             crawlUrl = "http://example.com/crawl",
             crawlAvailability = crawlAvailability
         )

@@ -20,6 +20,7 @@ class CompanySimpleDataResponseTest {
             nameEn = "Company",
             logo = "http://example.com/logo1.png",
             baseUrl = "http://example.com",
+            blogUrl = "http://example.com/blog",
             crawlUrl = "http://example.com/crawl1",
             crawlAvailability = true
         )
@@ -32,6 +33,7 @@ class CompanySimpleDataResponseTest {
         assertThat(response.companyNameKr).isEqualTo("회사")
         assertThat(response.companyNameEn).isEqualTo("Company")
         assertThat(response.companyImageUrl).isEqualTo("http://example.com/logo1.png")
+        assertThat(response.companyBlogUrl).isEqualTo("http://example.com/blog")
     }
 
     @Test
@@ -43,6 +45,7 @@ class CompanySimpleDataResponseTest {
             nameEn = "Company",
             logo = "http://example.com/logo1.png",
             baseUrl = "http://example.com",
+            blogUrl = "http://example.com/blog",
             crawlUrl = "http://example.com/crawl1",
             crawlAvailability = true
         )
