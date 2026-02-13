@@ -1,6 +1,7 @@
 package com.artijjaek.api.service
 
 import com.artijjaek.api.dto.common.PageResponse
+import com.artijjaek.api.dto.response.CompanyCountResponse
 import com.artijjaek.api.dto.response.CompanySimpleDataResponse
 import com.artijjaek.core.domain.company.service.CompanyDomainService
 import org.springframework.data.domain.Pageable
@@ -20,5 +21,11 @@ class CompanyService(
             .toList()
 
         return PageResponse(companyPage.pageable.pageNumber, companyPage.hasNext(), content)
+    }
+
+    @Transactional(readOnly = true)
+    fun getCompanyCount(): CompanyCountResponse {
+        val companyCount = companyDomainService.countCompanies()
+        return CompanyCountResponse(companyCount)
     }
 }

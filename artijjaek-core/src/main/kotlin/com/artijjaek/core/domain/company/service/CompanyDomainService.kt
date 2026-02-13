@@ -26,4 +26,8 @@ class CompanyDomainService(
     fun findAll(): List<Company> {
         return companyRepository.findAll()
     }
+
+    fun countCompanies(): Long {
+        return companyRepository.count();
+    }
 }
