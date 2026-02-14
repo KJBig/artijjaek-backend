@@ -137,7 +137,7 @@ class AdminMemberService(
         val content = memberPage.content.map {
             MemberSimpleResponse(
                 memberId = it.id!!,
-                email = it.email,
+                email = it.email!!,
                 nickname = it.nickname,
                 memberStatus = it.memberStatus,
                 createdAt = it.createdAt!!

@@ -118,10 +118,16 @@ class MemberService(
             throw ApplicationException(MEMBER_TOKEN_NOT_MATCH_ERROR)
         }
 
-        member.changeMemberStatus(MemberStatus.DELETED)
-
-        val unsubscription = Unsubscription(member = member, reason = request.reason, detail = request.detail)
+        val unsubscription = Unsubscription(
+            member = member,
+            email = member.email,
+            reason = request.reason,
+            detail = request.detail
+        )
         unsubscriptionDomainService.saveUnsubscription(unsubscription)
+
+        member.changeMemberStatus(MemberStatus.DELETED)
+        member.changeEmail(null)
 
         webHookService.sendUnsubscribeMessage(member, unsubscription)
     }
