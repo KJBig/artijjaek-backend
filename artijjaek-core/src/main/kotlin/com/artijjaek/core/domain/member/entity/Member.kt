@@ -12,8 +12,8 @@ class Member(
     @Column(name = "member_id")
     var id: Long? = null,
 
-    @Column(nullable = false)
-    var email: String,
+    @Column(nullable = true)
+    var email: String?,
 
     @Column(nullable = false)
     var nickname: String,
@@ -29,6 +29,10 @@ class Member(
 
     fun changeMemberStatus(memberStatus: MemberStatus) {
         this.memberStatus = memberStatus
+    }
+
+    fun changeEmail(email: String?) {
+        this.email = email
     }
 
 }

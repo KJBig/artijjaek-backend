@@ -26,7 +26,7 @@ class MailService(
             val mimeMessageHelper = MimeMessageHelper(mimeMessage, false, "UTF-8")
 
             // 수신자/제목
-            mimeMessageHelper.setTo(memberData.email)
+            mimeMessageHelper.setTo(memberData.email!!)
             mimeMessageHelper.setFrom("noreply@artijjaek.kr", "아티짹")
             mimeMessageHelper.setReplyTo("noreply@artijjaek.kr")
             mimeMessageHelper.setSubject("[아티짹] ${today} 아티클 목록")
@@ -262,7 +262,7 @@ class MailService(
             val mimeMessageHelper = MimeMessageHelper(mimeMessage, false, "UTF-8")
 
             // 수신자/제목
-            mimeMessageHelper.setTo(memberData.email)
+            mimeMessageHelper.setTo(memberData.email!!)
             mimeMessageHelper.setFrom("noreply@artijjaek.kr", "아티짹")
             mimeMessageHelper.setReplyTo("noreply@artijjaek.kr")
             mimeMessageHelper.setSubject("[아티짹] 환영합니다 ${memberData.nickname}님!")

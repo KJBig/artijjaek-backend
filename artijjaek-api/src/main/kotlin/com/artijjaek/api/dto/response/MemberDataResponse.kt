@@ -3,7 +3,7 @@ package com.artijjaek.api.dto.response
 import com.artijjaek.core.domain.member.entity.Member
 
 data class MemberDataResponse(
-    val email: String,
+    val email: String?,
     val nickname: String,
     val companies: List<CompanySimpleDataResponse>,
     val categories: List<CategorySimpleDataResponse>,
