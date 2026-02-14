@@ -17,6 +17,9 @@ class Unsubscription(
     @JoinColumn(name = "member_id", nullable = false)
     var member: Member,
 
+    @Column(nullable = true)
+    var email: String?,
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = true)
     var reason: UnSubscriptionReason,

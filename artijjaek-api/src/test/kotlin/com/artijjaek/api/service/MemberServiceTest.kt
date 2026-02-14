@@ -21,13 +21,11 @@ import com.artijjaek.core.domain.subscription.service.CompanySubscriptionDomainS
 import com.artijjaek.core.domain.unsubscription.entity.Unsubscription
 import com.artijjaek.core.domain.unsubscription.enums.UnSubscriptionReason
 import com.artijjaek.core.domain.unsubscription.service.UnsubscriptionDomainService
-import io.mockk.every
+import com.artijjaek.core.webhook.WebHookService
+import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
-import io.mockk.justRun
-import io.mockk.mockk
-import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.DisplayName
@@ -63,6 +61,9 @@ class MemberServiceTest {
     @MockK
     lateinit var mailService: MailService
 
+    @MockK
+    lateinit var webHookService: WebHookService
+
     @Test
     @DisplayName("이메일로 구독을 시작할 수 있다")
     fun registerTest() {
@@ -86,6 +87,7 @@ class MemberServiceTest {
             nameEn = "Company1",
             logo = "http://example.com/logo1.png",
             baseUrl = "http://example.com",
+            blogUrl = "http://example.com/blog1",
             crawlUrl = "http://example.com/crawl1",
             crawlAvailability = true
         )
@@ -104,6 +106,7 @@ class MemberServiceTest {
         every { categoryDomainService.findAllOrByIds(request.categoryIds) }.returns(categories)
         justRun { categorySubscriptionDomainService.saveAll(any()) }
         justRun { mailService.sendSubscribeMail(any()) }
+        justRun { webHookService.sendNewSubscribeMessage(any()) }
 
 
         // when
@@ -115,6 +118,7 @@ class MemberServiceTest {
         verify { companySubscriptionDomainService.saveAll(any()) }
         verify { categorySubscriptionDomainService.saveAll(any()) }
         verify { mailService.sendSubscribeMail(any()) }
+        verify { webHookService.sendNewSubscribeMessage(any()) }
     }
 
     @Test
@@ -172,6 +176,7 @@ class MemberServiceTest {
             nameEn = "Company1",
             logo = "http://example.com/logo1.png",
             baseUrl = "http://example.com",
+            blogUrl = "http://example.com/blog1",
             crawlUrl = "http://example.com/crawl1",
             crawlAvailability = true
         )
@@ -204,8 +209,8 @@ class MemberServiceTest {
         // then
         assertThat(memberData.email).isEqualTo(email)
         assertThat(memberData.nickname).isEqualTo(nickname)
-        assertThat(memberData.companyIds.size).isEqualTo(1)
-        assertThat(memberData.categoryIds.size).isEqualTo(1)
+        assertThat(memberData.companies.size).isEqualTo(1)
+        assertThat(memberData.categories.size).isEqualTo(1)
     }
 
     @Test
@@ -290,34 +295,23 @@ class MemberServiceTest {
             nameEn = "Company1",
             logo = "http://example.com/logo1.png",
             baseUrl = "http://example.com",
+            blogUrl = "http://example.com/blog1",
             crawlUrl = "http://example.com/crawl1",
             crawlAvailability = true
         )
-        val companySubscription = CompanySubscription(
-            member = member,
-            company = company
-        )
-
         val category = Category(
             id = 1L,
             name = "카테고리1",
             publishType = PublishType.PUBLISH
         )
-        val categorySubscription = CategorySubscription(
-            member = member,
-            category = category
-        )
 
         every { memberDomainService.findByEmailAndMemberStatus(email, MemberStatus.ACTIVE) }.returns(member)
-
         justRun { companySubscriptionDomainService.deleteAllByMemberId(member.id!!) }
-        every { companySubscriptionDomainService.findAllByMemberFetchCompany(member) }
-            .returns(mutableListOf(companySubscription))
-
+        every { companyDomainService.findAllOrByIds(request.companyIds) }.returns(listOf(company))
+        justRun { companySubscriptionDomainService.saveAll(any()) }
         justRun { categorySubscriptionDomainService.deleteAllByMemberId(member.id!!) }
-        every { categorySubscriptionDomainService.findAllByMemberFetchCategory(member) }
-            .returns(mutableListOf(categorySubscription))
-
+        every { categoryDomainService.findAllOrByIds(request.categoryIds) }.returns(listOf(category))
+        justRun { categorySubscriptionDomainService.saveAll(any()) }
 
         // when
         memberService.changeSubscription(request)
@@ -326,9 +320,11 @@ class MemberServiceTest {
         // then
         verify { memberDomainService.findByEmailAndMemberStatus(email, MemberStatus.ACTIVE) }
         verify { companySubscriptionDomainService.deleteAllByMemberId(any<Long>()) }
-        verify { companySubscriptionDomainService.findAllByMemberFetchCompany(any<Member>()) }
+        verify { companyDomainService.findAllOrByIds(request.companyIds) }
+        verify { companySubscriptionDomainService.saveAll(any()) }
         verify { categorySubscriptionDomainService.deleteAllByMemberId(any<Long>()) }
-        verify { categorySubscriptionDomainService.findAllByMemberFetchCategory(any<Member>()) }
+        verify { categoryDomainService.findAllOrByIds(request.categoryIds) }
+        verify { categorySubscriptionDomainService.saveAll(any()) }
     }
 
     @Test
@@ -417,16 +413,19 @@ class MemberServiceTest {
             detail = "reason detail"
         )
 
-        val member = Member(
-            id = 1L,
-            email = email,
-            nickname = nickname,
-            uuidToken = uuIdToken,
-            memberStatus = MemberStatus.ACTIVE
+        val member = spyk(
+            Member(
+                id = 1L,
+                email = email,
+                nickname = nickname,
+                uuidToken = uuIdToken,
+                memberStatus = MemberStatus.ACTIVE
+            )
         )
 
         every { memberDomainService.findByEmailAndMemberStatus(any(), any()) }.returns(member)
         every { unsubscriptionDomainService.saveUnsubscription(any()) }.returns(mockk())
+        justRun { webHookService.sendUnsubscribeMessage(any(), any()) }
 
 
         // when
@@ -435,7 +434,10 @@ class MemberServiceTest {
 
         // then
         verify { memberDomainService.findByEmailAndMemberStatus(email, MemberStatus.ACTIVE) }
+        verify { member.changeMemberStatus(MemberStatus.DELETED) }
+        verify { member.changeEmail(null) }
         verify { unsubscriptionDomainService.saveUnsubscription(any<Unsubscription>()) }
+        verify { webHookService.sendUnsubscribeMessage(any(), any()) }
     }
 
     @Test

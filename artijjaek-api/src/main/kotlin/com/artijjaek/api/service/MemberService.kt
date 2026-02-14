@@ -4,6 +4,8 @@ import com.artijjaek.api.common.UuidTokenGenerator
 import com.artijjaek.api.dto.request.RegisterMemberRequest
 import com.artijjaek.api.dto.request.SubscriptionChangeRequest
 import com.artijjaek.api.dto.request.UnsubscriptionRequest
+import com.artijjaek.api.dto.response.CategorySimpleDataResponse
+import com.artijjaek.api.dto.response.CompanySimpleDataResponse
 import com.artijjaek.api.dto.response.MemberDataResponse
 import com.artijjaek.core.common.error.ApplicationException
 import com.artijjaek.core.common.error.ErrorCode.*
@@ -22,6 +24,7 @@ import com.artijjaek.core.domain.subscription.service.CategorySubscriptionDomain
 import com.artijjaek.core.domain.subscription.service.CompanySubscriptionDomainService
 import com.artijjaek.core.domain.unsubscription.entity.Unsubscription
 import com.artijjaek.core.domain.unsubscription.service.UnsubscriptionDomainService
+import com.artijjaek.core.webhook.WebHookService
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -34,6 +37,7 @@ class MemberService(
     private val categorySubscriptionDomainService: CategorySubscriptionDomainService,
     private val unsubscriptionDomainService: UnsubscriptionDomainService,
     private val mailService: MailService,
+    private val webHookService: WebHookService,
 ) {
 
     @Transactional
@@ -63,6 +67,7 @@ class MemberService(
         categorySubscriptionDomainService.saveAll(categorySubscriptions)
 
         mailService.sendSubscribeMail(MemberAlertDto.from(newMember))
+        webHookService.sendNewSubscribeMessage(newMember)
     }
 
     @Transactional(readOnly = true)
@@ -75,9 +80,9 @@ class MemberService(
         }
 
         val companyIds = companySubscriptionDomainService.findAllByMemberFetchCompany(member)
-            .mapNotNull { companySubscription -> companySubscription.company.id }
-        val categoryIds: List<Long> = categorySubscriptionDomainService.findAllByMemberFetchCategory(member)
-            .mapNotNull { categorySubscription -> categorySubscription.category.id }
+            .mapNotNull { companySubscription -> CompanySimpleDataResponse.from(companySubscription.company) }
+        val categoryIds = categorySubscriptionDomainService.findAllByMemberFetchCategory(member)
+            .mapNotNull { categorySubscription -> CategorySimpleDataResponse.from(categorySubscription.category) }
 
         return MemberDataResponse.of(member, companyIds, categoryIds)
     }
@@ -113,10 +118,18 @@ class MemberService(
             throw ApplicationException(MEMBER_TOKEN_NOT_MATCH_ERROR)
         }
 
-        member.changeMemberStatus(MemberStatus.DELETED)
-
-        val unsubscription = Unsubscription(member = member, reason = request.reason, detail = request.detail)
+        val unsubscription = Unsubscription(
+            member = member,
+            email = member.email,
+            reason = request.reason,
+            detail = request.detail
+        )
         unsubscriptionDomainService.saveUnsubscription(unsubscription)
+
+        member.changeMemberStatus(MemberStatus.DELETED)
+        member.changeEmail(null)
+
+        webHookService.sendUnsubscribeMessage(member, unsubscription)
     }
 
 

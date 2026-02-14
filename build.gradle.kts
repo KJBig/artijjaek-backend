@@ -41,6 +41,12 @@ subprojects {
         plugin("kotlin-spring")
     }
 
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(17)
+        }
+    }
+
     dependencies {
         implementation("org.springframework.boot:spring-boot-starter-validation")
         implementation("com.fasterxml.jackson.module:jackson-module-kotlin")

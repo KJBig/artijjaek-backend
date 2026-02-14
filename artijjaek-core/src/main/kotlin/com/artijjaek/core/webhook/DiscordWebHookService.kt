@@ -3,6 +3,8 @@ package com.artijjaek.core.webhook
 import com.artijjaek.core.common.mail.dto.ArticleAlertDto
 import com.artijjaek.core.domain.category.entity.Category
 import com.artijjaek.core.domain.inquiry.entity.Inquiry
+import com.artijjaek.core.domain.member.entity.Member
+import com.artijjaek.core.domain.unsubscription.entity.Unsubscription
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
@@ -21,6 +23,13 @@ class DiscordWebHookService(
 
     @Value("\${discord.webhook.category-allocation}")
     lateinit var DISCORD_CATEGORY_ALLOCATION_URL: String;
+
+    @Value("\${discord.webhook.new-subscribe}")
+    lateinit var DISCORD_NEW_SUBSCRIBE_URL: String;
+
+    @Value("\${discord.webhook.unsubscribe}")
+    lateinit var DISCORD_UNSUBSCRIBE_URL: String;
+
 
     @Async("asyncThreadPoolExecutor")
     override fun sendNewArticleMessage(newArticles: List<ArticleAlertDto>) {
@@ -97,6 +106,50 @@ class DiscordWebHookService(
             stringBuilder.append("- [${nowArticle.companyNameKr}] ${nowArticle.title} -> ${nowCategory!!.name}")
                 .append("\n")
         }
+        return stringBuilder.toString()
+    }
+
+    @Async("asyncThreadPoolExecutor")
+    override fun sendNewSubscribeMessage(newMember: Member) {
+        val message = WebHookMessage(buildNewSubscribeMessage(newMember))
+        discordWebHookConnector.sendMessageForDiscord(message, DISCORD_NEW_SUBSCRIBE_URL)
+    }
+
+    private fun buildNewSubscribeMessage(member: Member): String {
+        val stringBuilder = StringBuilder()
+        val prefix = """
+            🔔 **새 구독 알림**
+            
+            📅 ${LocalDateTime.now()}
+
+
+        """.trimIndent()
+        stringBuilder.append(prefix)
+        stringBuilder.append("Email : ").append(member.email).append("\n")
+        stringBuilder.append("Nickname : ").append(member.nickname).append("\n")
+        return stringBuilder.toString()
+    }
+
+    @Async("asyncThreadPoolExecutor")
+    override fun sendUnsubscribeMessage(member: Member, unsubscription: Unsubscription) {
+        val message = WebHookMessage(buildUnsubscribeMessage(member, unsubscription))
+        discordWebHookConnector.sendMessageForDiscord(message, DISCORD_UNSUBSCRIBE_URL)
+    }
+
+    private fun buildUnsubscribeMessage(member: Member, unsubscription: Unsubscription): String {
+        val stringBuilder = StringBuilder()
+        val prefix = """
+            🔔 **구독 해지 알림**
+            
+            📅 ${LocalDateTime.now()}
+
+
+        """.trimIndent()
+        stringBuilder.append(prefix)
+        stringBuilder.append("Email : ").append(member.email).append("\n")
+        stringBuilder.append("Nickname : ").append(member.nickname).append("\n")
+        stringBuilder.append("Reason : ").append(unsubscription.reason).append("\n")
+        stringBuilder.append("Detail : ").append(unsubscription.detail).append("\n")
         return stringBuilder.toString()
     }
 }
