@@ -22,13 +22,10 @@ import com.artijjaek.core.domain.unsubscription.entity.Unsubscription
 import com.artijjaek.core.domain.unsubscription.enums.UnSubscriptionReason
 import com.artijjaek.core.domain.unsubscription.service.UnsubscriptionDomainService
 import com.artijjaek.core.webhook.WebHookService
-import io.mockk.every
+import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
-import io.mockk.justRun
-import io.mockk.mockk
-import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.DisplayName
@@ -416,12 +413,14 @@ class MemberServiceTest {
             detail = "reason detail"
         )
 
-        val member = Member(
-            id = 1L,
-            email = email,
-            nickname = nickname,
-            uuidToken = uuIdToken,
-            memberStatus = MemberStatus.ACTIVE
+        val member = spyk(
+            Member(
+                id = 1L,
+                email = email,
+                nickname = nickname,
+                uuidToken = uuIdToken,
+                memberStatus = MemberStatus.ACTIVE
+            )
         )
 
         every { memberDomainService.findByEmailAndMemberStatus(any(), any()) }.returns(member)
@@ -435,6 +434,8 @@ class MemberServiceTest {
 
         // then
         verify { memberDomainService.findByEmailAndMemberStatus(email, MemberStatus.ACTIVE) }
+        verify { member.changeMemberStatus(MemberStatus.DELETED) }
+        verify { member.changeEmail(null) }
         verify { unsubscriptionDomainService.saveUnsubscription(any<Unsubscription>()) }
         verify { webHookService.sendUnsubscribeMessage(any(), any()) }
     }
