@@ -356,9 +356,10 @@ class MailService(
                                       </div>
             
                                       <ul style="margin:0;padding:0 0 0 18px;color:rgb(120,119,116);font-size:14px;line-height:1.7;">
-                                        <li style="margin:6px 0;">${memberData.nickname}님이 설정한 <strong>기업 블로그</strong>에서 <strong>선택한 카테고리</strong> 아티클이 올라오면 수집해요.</li>
-                                        <li style="margin:6px 0;"><strong>매일 점심 12시</strong>에 아티클 목록을 모아 <strong>이메일로 한 번에</strong> 보내드려요.</li>
+                                        <li style="margin:6px 0;">${memberData.nickname}님이 설정한 <strong>기업 블로그</strong>에서 <strong>선택한 카테고리</strong>의 아티클이 올라오는지 확인할게요.</li>
+                                        <li style="margin:6px 0;">아티클이 올라온 다음 날 <strong>점심 12시</strong>에 아티클 목록을 모아 <strong>이메일로 한 번에</strong> 보내드려요.</li>
                                         <li style="margin:6px 0;">이메일은 마스코트 <strong>티짹이</strong>가 전달할 거예요.</li>
+                                        <li style="margin:6px 0;"><strong>새로운 아티클이 올라올 때만</strong> 메일이 발송되니, 티짹이가 오지 않는 날은 조금만 기다려 주세요!</li>
                                       </ul>
                                     </td>
                                   </tr>
