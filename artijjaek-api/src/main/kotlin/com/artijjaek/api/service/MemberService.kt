@@ -96,6 +96,8 @@ class MemberService(
             throw ApplicationException(MEMBER_TOKEN_NOT_MATCH_ERROR)
         }
 
+        member.changeNickname(request.nickname)
+
         // 구독 회사 변경
         companySubscriptionDomainService.deleteAllByMemberId(member.id!!)
         val companies: List<Company> = companyDomainService.findAllOrByIds(request.companyIds)
