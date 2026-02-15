@@ -35,4 +35,8 @@ class Member(
         this.email = email
     }
 
+    fun changeNickname(nickname: String) {
+        this.nickname = nickname
+    }
+
 }
