@@ -281,12 +281,14 @@ class MemberServiceTest {
             companyIds = mutableListOf(1),
         )
 
-        val member = Member(
-            id = 1L,
-            email = email,
-            nickname = nickname,
-            uuidToken = uuIdToken,
-            memberStatus = MemberStatus.ACTIVE
+        val member = spyk(
+            Member(
+                id = 1L,
+                email = email,
+                nickname = nickname,
+                uuidToken = uuIdToken,
+                memberStatus = MemberStatus.ACTIVE
+            )
         )
 
         val company = Company(
@@ -306,10 +308,10 @@ class MemberServiceTest {
         )
 
         every { memberDomainService.findByEmailAndMemberStatus(email, MemberStatus.ACTIVE) }.returns(member)
-        justRun { companySubscriptionDomainService.deleteAllByMemberId(member.id!!) }
+        justRun { companySubscriptionDomainService.deleteAllByMemberId(any()) }
         every { companyDomainService.findAllOrByIds(request.companyIds) }.returns(listOf(company))
         justRun { companySubscriptionDomainService.saveAll(any()) }
-        justRun { categorySubscriptionDomainService.deleteAllByMemberId(member.id!!) }
+        justRun { categorySubscriptionDomainService.deleteAllByMemberId(any()) }
         every { categoryDomainService.findAllOrByIds(request.categoryIds) }.returns(listOf(category))
         justRun { categorySubscriptionDomainService.saveAll(any()) }
 
@@ -318,6 +320,7 @@ class MemberServiceTest {
 
 
         // then
+        verify { member.changeNickname(any()) }
         verify { memberDomainService.findByEmailAndMemberStatus(email, MemberStatus.ACTIVE) }
         verify { companySubscriptionDomainService.deleteAllByMemberId(any<Long>()) }
         verify { companyDomainService.findAllOrByIds(request.companyIds) }
