@@ -35,6 +35,7 @@ enum class ErrorCode(val code: String, val httpStatus: Int, val message: String)
     JWT_EXPIRATION_ERROR("REE-3", SC_UNAUTHORIZED, "만료된 토큰입니다."),
     JWT_INVALIDATE_ERROR("REE-4", SC_UNAUTHORIZED, "잘못된 토큰입니다."),
     JWT_NOT_MATCH_ERROR("REE-5", SC_UNAUTHORIZED, "토큰이 일치하지 않습니다."),
+    REQUEST_VALIDATION_ERROR("REE-6", SC_BAD_REQUEST, "요청값이 올바르지 않습니다."),
 
     // Server Error
     INTERNAL_SERVER_ERROR("SVE-1", SC_INTERNAL_SERVER_ERROR, "내부 서버 에러입니다.")

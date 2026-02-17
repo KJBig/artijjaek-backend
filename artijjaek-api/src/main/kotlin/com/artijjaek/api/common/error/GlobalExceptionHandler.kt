@@ -6,6 +6,8 @@ import com.artijjaek.core.common.error.ErrorResponse
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.http.converter.HttpMessageNotReadableException
+import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.servlet.resource.NoResourceFoundException
@@ -39,6 +41,57 @@ class GlobalExceptionHandler {
         return ResponseEntity
             .status(httpStatus)
             .body(ErrorResponse(code = exception.code, message = exception.message))
+    }
+
+    /**
+     * == Validation Exception ==
+     *
+     * @return BAD_REQUEST
+     * @throws MethodArgumentNotValidException
+     */
+    @ExceptionHandler(MethodArgumentNotValidException::class)
+    fun handleMethodArgumentNotValidException(
+        exception: MethodArgumentNotValidException
+    ): ResponseEntity<ErrorResponse> {
+        log.error(
+            LOG_FORMAT,
+            "MethodArgumentNotValidException",
+            exception.javaClass.simpleName,
+            exception.message,
+            exception.stackTrace
+        )
+
+        val errorCode = ErrorCode.REQUEST_VALIDATION_ERROR
+        val errorMessage = exception.bindingResult.fieldErrors.firstOrNull()?.defaultMessage ?: errorCode.message
+
+        return ResponseEntity
+            .status(errorCode.httpStatus)
+            .body(ErrorResponse(code = errorCode.code, message = errorMessage))
+    }
+
+    /**
+     * == Invalid Request Body Exception ==
+     *
+     * @return BAD_REQUEST
+     * @throws HttpMessageNotReadableException
+     */
+    @ExceptionHandler(HttpMessageNotReadableException::class)
+    fun handleHttpMessageNotReadableException(
+        exception: HttpMessageNotReadableException
+    ): ResponseEntity<ErrorResponse> {
+        log.error(
+            LOG_FORMAT,
+            "HttpMessageNotReadableException",
+            exception.javaClass.simpleName,
+            exception.message,
+            exception.stackTrace
+        )
+
+        val errorCode = ErrorCode.REQUEST_VALIDATION_ERROR
+
+        return ResponseEntity
+            .status(errorCode.httpStatus)
+            .body(ErrorResponse(code = errorCode.code, message = errorCode.message))
     }
 
     /**
