@@ -7,6 +7,7 @@ import com.artijjaek.api.service.InquiryService
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.justRun
+import io.mockk.verify
 import org.junit.jupiter.api.DisplayName
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
@@ -57,6 +58,82 @@ class InquiryControllerV1Test {
         mvcResult
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.isSuccess").value(true))
+    }
+
+    @Test
+    @DisplayName("문의하기 이메일 형식 검증 실패시 400")
+    fun postInquiryInvalidEmailValidationFailTest() {
+        // given
+        val request = InquiryRequest(
+            email = "invalid-email",
+            content = "some inquiry content"
+        )
+
+        // when
+        val mvcResult = mockMvc.perform(
+            post("/api/v1/inquiry")
+                .with(csrf())
+                .contentType(APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))
+        )
+
+        // then
+        mvcResult
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.isSuccess").value(false))
+        verify(exactly = 0) { inquiryService.saveInquiry(any<InquiryRequest>()) }
+    }
+
+    @Test
+    @DisplayName("문의하기 이메일 길이 검증 실패시 400")
+    fun postInquiryEmailLengthValidationFailTest() {
+        // given
+        val request = InquiryRequest(
+            email = buildOverLengthEmail(),
+            content = "some inquiry content"
+        )
+
+        // when
+        val mvcResult = mockMvc.perform(
+            post("/api/v1/inquiry")
+                .with(csrf())
+                .contentType(APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))
+        )
+
+        // then
+        mvcResult
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.isSuccess").value(false))
+        verify(exactly = 0) { inquiryService.saveInquiry(any<InquiryRequest>()) }
+    }
+
+    @Test
+    @DisplayName("문의하기 내용 비어있으면 400")
+    fun postInquiryEmptyContentValidationFailTest() {
+        // given
+        val request = InquiryRequest(
+            email = "test@example.com",
+            content = ""
+        )
+
+        // when
+        val mvcResult = mockMvc.perform(
+            post("/api/v1/inquiry")
+                .with(csrf())
+                .contentType(APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))
+        )
+
+        // then
+        mvcResult
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.isSuccess").value(false))
+        verify(exactly = 0) { inquiryService.saveInquiry(any<InquiryRequest>()) }
+    }
+
+    private fun buildOverLengthEmail(): String {
+        return "${"a".repeat(250)}@a.com"
     }
 
 }
