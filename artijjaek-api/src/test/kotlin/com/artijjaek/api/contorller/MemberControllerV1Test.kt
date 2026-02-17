@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
 import io.mockk.justRun
+import io.mockk.verify
 import org.junit.jupiter.api.DisplayName
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
@@ -67,6 +68,164 @@ class MemberControllerV1Test {
         mvcResult
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.isSuccess").value(true))
+    }
+
+    @Test
+    @DisplayName("구독하기 이메일 형식 검증 실패시 400")
+    fun registerMemberValidationFailTest() {
+        // given
+        val invalidRequest = RegisterMemberRequest(
+            email = "invalid-email",
+            nickname = "nickname",
+            categoryIds = mutableListOf(1L),
+            companyIds = mutableListOf(1L)
+        )
+
+        // when
+        val mvcResult = mockMvc.perform(
+            post("/api/v1/member/register")
+                .with(csrf())
+                .contentType(APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidRequest))
+        )
+
+        // then
+        mvcResult
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.isSuccess").value(false))
+        verify(exactly = 0) { memberService.register(any<RegisterMemberRequest>()) }
+    }
+
+    @Test
+    @DisplayName("구독하기 이메일 길이 검증 실패시 400")
+    fun registerMemberEmailLengthValidationFailTest() {
+        // given
+        val invalidRequest = RegisterMemberRequest(
+            email = buildOverLengthEmail(),
+            nickname = "nickname",
+            categoryIds = mutableListOf(1L),
+            companyIds = mutableListOf(1L)
+        )
+
+        // when
+        val mvcResult = mockMvc.perform(
+            post("/api/v1/member/register")
+                .with(csrf())
+                .contentType(APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidRequest))
+        )
+
+        // then
+        mvcResult
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.isSuccess").value(false))
+        verify(exactly = 0) { memberService.register(any<RegisterMemberRequest>()) }
+    }
+
+    @Test
+    @DisplayName("구독하기 닉네임 길이 검증 실패시 400")
+    fun registerMemberNicknameLengthValidationFailTest() {
+        // given
+        val invalidRequest = RegisterMemberRequest(
+            email = "test@example.com",
+            nickname = "n".repeat(256),
+            categoryIds = mutableListOf(1L),
+            companyIds = mutableListOf(1L)
+        )
+
+        // when
+        val mvcResult = mockMvc.perform(
+            post("/api/v1/member/register")
+                .with(csrf())
+                .contentType(APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidRequest))
+        )
+
+        // then
+        mvcResult
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.isSuccess").value(false))
+        verify(exactly = 0) { memberService.register(any<RegisterMemberRequest>()) }
+    }
+
+    @Test
+    @DisplayName("구독하기 categoryIds 빈 목록 요청시 400")
+    fun registerMemberCategoryIdsValidationFailTest() {
+        // given
+        val invalidRequest = RegisterMemberRequest(
+            email = "test@example.com",
+            nickname = "nickname",
+            categoryIds = emptyList(),
+            companyIds = mutableListOf(1L)
+        )
+
+        // when
+        val mvcResult = mockMvc.perform(
+            post("/api/v1/member/register")
+                .with(csrf())
+                .contentType(APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidRequest))
+        )
+
+        // then
+        mvcResult
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.isSuccess").value(false))
+        verify(exactly = 0) { memberService.register(any<RegisterMemberRequest>()) }
+    }
+
+    @Test
+    @DisplayName("구독하기 companyIds 빈 목록 요청시 400")
+    fun registerMemberCompanyIdsValidationFailTest() {
+        // given
+        val invalidRequest = RegisterMemberRequest(
+            email = "test@example.com",
+            nickname = "nickname",
+            categoryIds = mutableListOf(1L),
+            companyIds = emptyList()
+        )
+
+        // when
+        val mvcResult = mockMvc.perform(
+            post("/api/v1/member/register")
+                .with(csrf())
+                .contentType(APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidRequest))
+        )
+
+        // then
+        mvcResult
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.isSuccess").value(false))
+        verify(exactly = 0) { memberService.register(any<RegisterMemberRequest>()) }
+    }
+
+    @Test
+    @DisplayName("구독하기 닉네임 공백 요청시 400")
+    fun registerMemberBlankNicknameValidationFailTest() {
+        // given
+        val invalidRequest = """
+            {
+              "email": "test@example.com",
+              "nickname": "   ",
+              "categoryIds": [1],
+              "companyIds": [1]
+            }
+        """.trimIndent()
+
+        // when
+        val mvcResult = mockMvc.perform(
+            post("/api/v1/member/register")
+                .with(csrf())
+                .contentType(APPLICATION_JSON)
+                .content(invalidRequest)
+        )
+
+        // then
+        mvcResult
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.isSuccess").value(false))
+        verify(exactly = 0) { memberService.register(any()) }
     }
 
     @Test
@@ -138,6 +297,199 @@ class MemberControllerV1Test {
     }
 
     @Test
+    @DisplayName("구독 변경 token null 요청시 400")
+    fun changeSubscriptionTokenNullValidationFailTest() {
+        // given
+        val invalidRequest = """
+            {
+              "email": "test@example.com",
+              "token": null,
+              "nickname": "nickname",
+              "categoryIds": [1],
+              "companyIds": [1]
+            }
+        """.trimIndent()
+
+        // when
+        val mvcResult = mockMvc.perform(
+            put("/api/v1/member/subscription")
+                .with(csrf())
+                .contentType(APPLICATION_JSON)
+                .content(invalidRequest)
+        )
+
+        // then
+        mvcResult
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.isSuccess").value(false))
+        verify(exactly = 0) { memberService.changeSubscription(any()) }
+    }
+
+    @Test
+    @DisplayName("구독 변경 이메일 형식 검증 실패시 400")
+    fun changeSubscriptionInvalidEmailValidationFailTest() {
+        // given
+        val invalidRequest = SubscriptionChangeRequest(
+            email = "invalid-email",
+            token = "some-uuid-token",
+            nickname = "nickname",
+            categoryIds = mutableListOf(1L),
+            companyIds = mutableListOf(1L)
+        )
+
+        // when
+        val mvcResult = mockMvc.perform(
+            put("/api/v1/member/subscription")
+                .with(csrf())
+                .contentType(APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidRequest))
+        )
+
+        // then
+        mvcResult
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.isSuccess").value(false))
+        verify(exactly = 0) { memberService.changeSubscription(any<SubscriptionChangeRequest>()) }
+    }
+
+    @Test
+    @DisplayName("구독 변경 이메일 길이 검증 실패시 400")
+    fun changeSubscriptionEmailLengthValidationFailTest() {
+        // given
+        val invalidRequest = SubscriptionChangeRequest(
+            email = buildOverLengthEmail(),
+            token = "some-uuid-token",
+            nickname = "nickname",
+            categoryIds = mutableListOf(1L),
+            companyIds = mutableListOf(1L)
+        )
+
+        // when
+        val mvcResult = mockMvc.perform(
+            put("/api/v1/member/subscription")
+                .with(csrf())
+                .contentType(APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidRequest))
+        )
+
+        // then
+        mvcResult
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.isSuccess").value(false))
+        verify(exactly = 0) { memberService.changeSubscription(any<SubscriptionChangeRequest>()) }
+    }
+
+    @Test
+    @DisplayName("구독 변경 닉네임 길이 검증 실패시 400")
+    fun changeSubscriptionNicknameLengthValidationFailTest() {
+        // given
+        val invalidRequest = SubscriptionChangeRequest(
+            email = "test@example.com",
+            token = "some-uuid-token",
+            nickname = "n".repeat(256),
+            categoryIds = mutableListOf(1L),
+            companyIds = mutableListOf(1L)
+        )
+
+        // when
+        val mvcResult = mockMvc.perform(
+            put("/api/v1/member/subscription")
+                .with(csrf())
+                .contentType(APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidRequest))
+        )
+
+        // then
+        mvcResult
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.isSuccess").value(false))
+        verify(exactly = 0) { memberService.changeSubscription(any<SubscriptionChangeRequest>()) }
+    }
+
+    @Test
+    @DisplayName("구독 변경 닉네임 공백 요청시 400")
+    fun changeSubscriptionBlankNicknameValidationFailTest() {
+        // given
+        val invalidRequest = """
+            {
+              "email": "test@example.com",
+              "token": "some-uuid-token",
+              "nickname": "   ",
+              "categoryIds": [1],
+              "companyIds": [1]
+            }
+        """.trimIndent()
+
+        // when
+        val mvcResult = mockMvc.perform(
+            put("/api/v1/member/subscription")
+                .with(csrf())
+                .contentType(APPLICATION_JSON)
+                .content(invalidRequest)
+        )
+
+        // then
+        mvcResult
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.isSuccess").value(false))
+        verify(exactly = 0) { memberService.changeSubscription(any<SubscriptionChangeRequest>()) }
+    }
+
+    @Test
+    @DisplayName("구독 변경 categoryIds 빈 목록 요청시 400")
+    fun changeSubscriptionCategoryIdsValidationFailTest() {
+        // given
+        val invalidRequest = SubscriptionChangeRequest(
+            email = "test@example.com",
+            token = "some-uuid-token",
+            nickname = "nickname",
+            categoryIds = emptyList(),
+            companyIds = mutableListOf(1L)
+        )
+
+        // when
+        val mvcResult = mockMvc.perform(
+            put("/api/v1/member/subscription")
+                .with(csrf())
+                .contentType(APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidRequest))
+        )
+
+        // then
+        mvcResult
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.isSuccess").value(false))
+        verify(exactly = 0) { memberService.changeSubscription(any<SubscriptionChangeRequest>()) }
+    }
+
+    @Test
+    @DisplayName("구독 변경 companyIds 빈 목록 요청시 400")
+    fun changeSubscriptionCompanyIdsValidationFailTest() {
+        // given
+        val invalidRequest = SubscriptionChangeRequest(
+            email = "test@example.com",
+            token = "some-uuid-token",
+            nickname = "nickname",
+            categoryIds = mutableListOf(1L),
+            companyIds = emptyList()
+        )
+
+        // when
+        val mvcResult = mockMvc.perform(
+            put("/api/v1/member/subscription")
+                .with(csrf())
+                .contentType(APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidRequest))
+        )
+
+        // then
+        mvcResult
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.isSuccess").value(false))
+        verify(exactly = 0) { memberService.changeSubscription(any<SubscriptionChangeRequest>()) }
+    }
+
+    @Test
     @DisplayName("구독 해지")
     fun cancelSubscriptionTest() {
         // given
@@ -165,6 +517,10 @@ class MemberControllerV1Test {
         mvcResult
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.isSuccess").value(true))
+    }
+
+    private fun buildOverLengthEmail(): String {
+        return "${"a".repeat(250)}@a.com"
     }
 
 }
