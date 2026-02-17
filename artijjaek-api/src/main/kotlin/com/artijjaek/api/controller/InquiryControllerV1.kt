@@ -3,6 +3,7 @@ package com.artijjaek.api.controller
 import com.artijjaek.api.dto.common.SuccessResponse
 import com.artijjaek.api.dto.request.InquiryRequest
 import com.artijjaek.api.service.InquiryService
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -16,7 +17,7 @@ class InquiryControllerV1(
 ) {
 
     @PostMapping("")
-    fun postInquiry(@RequestBody request: InquiryRequest): ResponseEntity<SuccessResponse> {
+    fun postInquiry(@Valid @RequestBody request: InquiryRequest): ResponseEntity<SuccessResponse> {
         inquiryService.saveInquiry(request)
         return ResponseEntity.ok(SuccessResponse())
     }
