@@ -17,6 +17,7 @@ class MailService(
 
     private val log = LoggerFactory.getLogger(MailService::class.java)
 
+    @Async("asyncEmailThreadPoolExecutor")
     fun sendArticleMail(memberData: MemberAlertDto, articleDatas: List<ArticleAlertDto>) {
         val mimeMessage = javaMailSender.createMimeMessage()
         val today = LocalDate.now()
