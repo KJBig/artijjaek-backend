@@ -157,9 +157,9 @@ class MailService(
 
             mimeMessageHelper.setText(content, true)
             javaMailSender.send(mimeMessage)
-            log.info("신규 아티클 메일 발송 성공!")
+            log.info("신규 아티클 메일 발송 성공! : ${memberData.email} ")
         } catch (e: Exception) {
-            log.error("신규 아티클 메일 발송 실패!", e)
+            log.error("신규 아티클 메일 발송 실패! ${memberData.email} == ", e)
             throw RuntimeException(e)
         }
     }

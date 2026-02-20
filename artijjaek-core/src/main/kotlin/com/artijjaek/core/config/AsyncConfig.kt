@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.scheduling.annotation.EnableAsync
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import java.util.concurrent.Executor
+import java.util.concurrent.ThreadPoolExecutor
 
 @Configuration
 @EnableAsync
@@ -24,9 +25,10 @@ class AsyncConfig {
     @Bean(name = ["asyncEmailThreadPoolExecutor"])
     fun getEmailExecutor(): Executor {
         val executor = ThreadPoolTaskExecutor()
-        executor.setCorePoolSize(30)
-        executor.setMaxPoolSize(60)
-        executor.setQueueCapacity(600)
+        executor.setCorePoolSize(2)
+        executor.setMaxPoolSize(4)
+        executor.setQueueCapacity(1000)
+        executor.setRejectedExecutionHandler(ThreadPoolExecutor.CallerRunsPolicy())
         executor.setThreadNamePrefix("Artijjaek-Email-Thread-")
         executor.initialize()
         return executor
