@@ -25,8 +25,8 @@ class AsyncConfig {
     @Bean(name = ["asyncEmailThreadPoolExecutor"])
     fun getEmailExecutor(): Executor {
         val executor = ThreadPoolTaskExecutor()
-        executor.setCorePoolSize(5)
-        executor.setMaxPoolSize(10)
+        executor.setCorePoolSize(2)
+        executor.setMaxPoolSize(4)
         executor.setQueueCapacity(1000)
         executor.setRejectedExecutionHandler(ThreadPoolExecutor.CallerRunsPolicy())
         executor.setThreadNamePrefix("Artijjaek-Email-Thread-")
