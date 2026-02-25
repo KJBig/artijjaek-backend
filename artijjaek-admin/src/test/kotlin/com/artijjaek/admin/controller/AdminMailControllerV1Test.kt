@@ -2,6 +2,7 @@ package com.artijjaek.admin.controller
 
 import com.artijjaek.admin.common.auth.AuthAdminIdArgumentResolver
 import com.artijjaek.admin.config.security.WebConfig
+import com.artijjaek.admin.dto.request.PostArticleMailRequest
 import com.artijjaek.admin.dto.request.PostWelcomeMailRequest
 import com.artijjaek.admin.service.AdminMailService
 import com.ninjasquad.springmockk.MockkBean
@@ -60,5 +61,38 @@ class AdminMailControllerV1Test {
             .andExpect(jsonPath("$.isSuccess").value(true))
             .andExpect(jsonPath("$.message").value("요청성공"))
         verify(exactly = 1) { adminMailService.sendWelcomeMail(request) }
+    }
+
+    @Test
+    @WithMockUser(username = "1")
+    @DisplayName("특정 회원들에게 특정 아티클 목록 이메일을 수동 발송한다")
+    fun postArticleMailTest() {
+        // given
+        val request = PostArticleMailRequest(
+            memberIds = listOf(1L, 2L, 3L),
+            articleIds = listOf(10L, 11L)
+        )
+        every { adminMailService.sendArticleMail(request) } returns Unit
+
+        // when
+        val mvcResult = mockMvc.perform(
+            post("/admin/v1/mail/article")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "memberIds": [1, 2, 3],
+                      "articleIds": [10, 11]
+                    }
+                    """.trimIndent()
+                )
+        )
+
+        // then
+        mvcResult
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.isSuccess").value(true))
+            .andExpect(jsonPath("$.message").value("요청성공"))
+        verify(exactly = 1) { adminMailService.sendArticleMail(request) }
     }
 }

@@ -1,6 +1,7 @@
 package com.artijjaek.admin.controller
 
 import com.artijjaek.admin.dto.common.SuccessResponse
+import com.artijjaek.admin.dto.request.PostArticleMailRequest
 import com.artijjaek.admin.dto.request.PostWelcomeMailRequest
 import com.artijjaek.admin.service.AdminMailService
 import org.springframework.http.ResponseEntity
@@ -20,6 +21,14 @@ class AdminMailControllerV1(
         @RequestBody request: PostWelcomeMailRequest,
     ): ResponseEntity<SuccessResponse> {
         adminMailService.sendWelcomeMail(request)
+        return ResponseEntity.ok(SuccessResponse())
+    }
+
+    @PostMapping("/article")
+    fun postArticleMail(
+        @RequestBody request: PostArticleMailRequest,
+    ): ResponseEntity<SuccessResponse> {
+        adminMailService.sendArticleMail(request)
         return ResponseEntity.ok(SuccessResponse())
     }
 }

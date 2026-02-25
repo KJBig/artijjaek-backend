@@ -14,6 +14,10 @@ import org.springframework.stereotype.Service
 class ArticleDomainService(
     private val articleRepository: ArticleRepository,
 ) {
+    fun findAllByIdsWithCompany(articleIds: List<Long>): List<Article> {
+        return articleRepository.findAllByIdsWithCompany(articleIds)
+    }
+
     fun findById(articleId: Long): Article? {
         return articleRepository.findById(articleId).orElse(null)
     }
