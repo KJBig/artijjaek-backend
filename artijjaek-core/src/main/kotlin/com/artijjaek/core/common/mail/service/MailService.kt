@@ -27,8 +27,8 @@ class MailService(
 
             // 수신자/제목
             mimeMessageHelper.setTo(memberData.email!!)
-            mimeMessageHelper.setFrom("noreply@artijjaek.kr", "아티짹")
-            mimeMessageHelper.setReplyTo("noreply@artijjaek.kr")
+            mimeMessageHelper.setFrom("artijjaek.dev@gmail.com", "아티짹")
+            mimeMessageHelper.setReplyTo("artijjaek.dev@gmail.com")
             mimeMessageHelper.setSubject("[아티짹] ${today} 아티클 목록")
 
             val dayOfWeekShort = getDayOfWeekShort(LocalDate.now())
@@ -263,8 +263,8 @@ class MailService(
 
             // 수신자/제목
             mimeMessageHelper.setTo(memberData.email!!)
-            mimeMessageHelper.setFrom("noreply@artijjaek.kr", "아티짹")
-            mimeMessageHelper.setReplyTo("noreply@artijjaek.kr")
+            mimeMessageHelper.setFrom("artijjaek.dev@gmail.com", "아티짹")
+            mimeMessageHelper.setReplyTo("artijjaek.dev@gmail.com")
             mimeMessageHelper.setSubject("[아티짹] 환영합니다 ${memberData.nickname}님!")
 
             val content = """
