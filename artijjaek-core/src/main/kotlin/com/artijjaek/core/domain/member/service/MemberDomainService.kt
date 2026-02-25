@@ -1,5 +1,6 @@
 package com.artijjaek.core.domain.member.service
 
+import com.artijjaek.core.domain.member.dto.DailyNewSubscriberCount
 import com.artijjaek.core.domain.member.entity.Member
 import com.artijjaek.core.domain.member.enums.MemberSortBy
 import com.artijjaek.core.domain.member.enums.MemberStatus
@@ -8,6 +9,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
+import java.time.LocalDateTime
 
 @Service
 class MemberDomainService(
@@ -50,6 +52,13 @@ class MemberDomainService(
 
     fun countByMemberStatus(memberStatus: MemberStatus?): Long {
         return memberRepository.countByMemberStatus(memberStatus)
+    }
+
+    fun countDailyNewSubscribers(
+        startDateTime: LocalDateTime,
+        endDateTimeExclusive: LocalDateTime,
+    ): List<DailyNewSubscriberCount> {
+        return memberRepository.countDailyNewSubscribers(startDateTime, endDateTimeExclusive)
     }
 
 }

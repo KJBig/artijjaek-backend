@@ -5,6 +5,8 @@ import com.artijjaek.admin.dto.request.PutMemberRequest
 import com.artijjaek.admin.enums.MemberListSearchType
 import com.artijjaek.admin.enums.MemberListSortBy
 import com.artijjaek.admin.enums.MemberStatusFilter
+import com.artijjaek.core.common.error.ApplicationException
+import com.artijjaek.core.domain.member.dto.DailyNewSubscriberCount
 import com.artijjaek.core.domain.category.entity.Category
 import com.artijjaek.core.domain.category.enums.PublishType
 import com.artijjaek.core.domain.category.service.CategoryDomainService
@@ -31,6 +33,7 @@ import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.test.context.ActiveProfiles
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 @ActiveProfiles("test")
@@ -357,6 +360,48 @@ class AdminMemberServiceTest {
                 emailKeyword = "john",
                 sortBy = MemberSortBy.STATUS,
                 sortDirection = Sort.Direction.DESC
+            )
+        }
+    }
+
+    @Test
+    @DisplayName("일자별 신규 구독자 수를 조회할 때 빈 날짜는 0으로 채운다")
+    fun getDailyNewSubscriberCountsTest() {
+        // given
+        every {
+            memberDomainService.countDailyNewSubscribers(
+                startDateTime = LocalDate.of(2026, 2, 1).atStartOfDay(),
+                endDateTimeExclusive = LocalDate.of(2026, 2, 4).atStartOfDay()
+            )
+        } returns listOf(
+            DailyNewSubscriberCount(date = LocalDate.of(2026, 2, 1), count = 3),
+            DailyNewSubscriberCount(date = LocalDate.of(2026, 2, 3), count = 1)
+        )
+
+        // when
+        val result = adminMemberService.getDailyNewSubscriberCounts(
+            startDate = LocalDate.of(2026, 2, 1),
+            endDate = LocalDate.of(2026, 2, 3)
+        )
+
+        // then
+        assertThat(result).hasSize(3)
+        assertThat(result[0].date).isEqualTo(LocalDate.of(2026, 2, 1))
+        assertThat(result[0].subscriberCount).isEqualTo(3)
+        assertThat(result[1].date).isEqualTo(LocalDate.of(2026, 2, 2))
+        assertThat(result[1].subscriberCount).isEqualTo(0)
+        assertThat(result[2].date).isEqualTo(LocalDate.of(2026, 2, 3))
+        assertThat(result[2].subscriberCount).isEqualTo(1)
+    }
+
+    @Test
+    @DisplayName("시작일이 종료일보다 늦으면 예외가 발생한다")
+    fun getDailyNewSubscriberCountsWithInvalidDateRangeTest() {
+        // when & then
+        org.junit.jupiter.api.assertThrows<ApplicationException> {
+            adminMemberService.getDailyNewSubscriberCounts(
+                startDate = LocalDate.of(2026, 2, 4),
+                endDate = LocalDate.of(2026, 2, 3)
             )
         }
     }

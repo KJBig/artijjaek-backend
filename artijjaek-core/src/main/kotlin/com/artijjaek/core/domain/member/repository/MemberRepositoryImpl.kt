@@ -1,5 +1,6 @@
 package com.artijjaek.core.domain.member.repository
 
+import com.artijjaek.core.domain.member.dto.DailyNewSubscriberCount
 import com.artijjaek.core.domain.member.entity.Member
 import com.artijjaek.core.domain.member.entity.QMember.member
 import com.artijjaek.core.domain.member.enums.MemberSortBy
@@ -7,11 +8,14 @@ import com.artijjaek.core.domain.member.enums.MemberStatus
 import com.querydsl.core.types.Order
 import com.querydsl.core.types.OrderSpecifier
 import com.querydsl.core.types.dsl.BooleanExpression
+import com.querydsl.core.types.dsl.Expressions
 import com.querydsl.jpa.impl.JPAQueryFactory
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.support.PageableExecutionUtils
+import java.sql.Date
+import java.time.LocalDateTime
 
 class MemberRepositoryImpl(
     private val jpaQueryFactory: JPAQueryFactory,
@@ -62,6 +66,32 @@ class MemberRepositoryImpl(
             .from(member)
             .where(memberStatusEq(memberStatus))
             .fetchOne() ?: 0L
+    }
+
+    override fun countDailyNewSubscribers(
+        startDateTime: LocalDateTime,
+        endDateTimeExclusive: LocalDateTime,
+    ): List<DailyNewSubscriberCount> {
+        val createdDate = Expressions.dateTemplate(Date::class.java, "date({0})", member.createdAt)
+        val memberCount = member.id.count()
+
+        return jpaQueryFactory
+            .select(createdDate, memberCount)
+            .from(member)
+            .where(member.createdAt.goe(startDateTime).and(member.createdAt.lt(endDateTimeExclusive)))
+            .groupBy(createdDate)
+            .orderBy(createdDate.asc())
+            .fetch()
+            .mapNotNull { tuple ->
+                val sqlDate = tuple.get(createdDate)
+                val count = tuple.get(memberCount)
+
+                if (sqlDate == null || count == null) {
+                    null
+                } else {
+                    DailyNewSubscriberCount(date = sqlDate.toLocalDate(), count = count)
+                }
+            }
     }
 
     private fun memberStatusEq(memberStatus: MemberStatus?): BooleanExpression? {
