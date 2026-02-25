@@ -4,6 +4,7 @@ import com.artijjaek.admin.dto.common.SuccessDataResponse
 import com.artijjaek.admin.dto.common.SuccessResponse
 import com.artijjaek.admin.dto.request.PostArticleRequest
 import com.artijjaek.admin.dto.request.PutArticleRequest
+import com.artijjaek.admin.dto.response.ArticleDailyCollectedResponse
 import com.artijjaek.admin.dto.response.ArticleDetailResponse
 import com.artijjaek.admin.dto.response.ArticleListPageResponse
 import com.artijjaek.admin.dto.response.PostArticleResponse
@@ -11,6 +12,7 @@ import com.artijjaek.admin.enums.ArticleListSortBy
 import com.artijjaek.admin.service.AdminArticleService
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
+import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.time.LocalDate
 
 @RestController
 @RequestMapping("/admin/v1/article")
@@ -68,6 +71,15 @@ class AdminArticleControllerV1(
             sortBy = sortBy,
             sortDirection = sortDirection
         )
+        return ResponseEntity.ok(SuccessDataResponse(response))
+    }
+
+    @GetMapping("/collected/new/daily")
+    fun getDailyCollectedArticleCounts(
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate,
+    ): ResponseEntity<SuccessDataResponse<List<ArticleDailyCollectedResponse>>> {
+        val response = adminArticleService.getDailyCollectedArticleCounts(startDate, endDate)
         return ResponseEntity.ok(SuccessDataResponse(response))
     }
 }
