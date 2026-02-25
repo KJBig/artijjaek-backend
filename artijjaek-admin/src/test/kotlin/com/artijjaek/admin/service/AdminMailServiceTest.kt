@@ -7,7 +7,6 @@ import com.artijjaek.core.common.error.ApplicationException
 import com.artijjaek.core.common.error.ErrorCode.ARTICLE_NOT_FOUND_ERROR
 import com.artijjaek.core.common.error.ErrorCode.MEMBER_EMAIL_NOT_FOUND_ERROR
 import com.artijjaek.core.common.error.ErrorCode.MEMBER_NOT_FOUND_ERROR
-import com.artijjaek.core.common.error.ErrorCode.REQUEST_VALIDATION_ERROR
 import com.artijjaek.core.common.mail.service.MailService
 import com.artijjaek.core.domain.article.entity.Article
 import com.artijjaek.core.domain.article.service.ArticleDomainService
@@ -242,25 +241,4 @@ class AdminMailServiceTest {
         verify(exactly = 2) { mailService.sendNoticeMail(any(), "신규 회사 추가 안내", "구독 가능한 회사가 추가되었습니다.") }
     }
 
-    @Test
-    @DisplayName("공지사항 제목 또는 내용이 비어있으면 예외가 발생한다")
-    fun sendNoticeMailWithBlankTitleOrContentTest() {
-        // given
-        val request = PostNoticeMailRequest(
-            memberIds = listOf(1L),
-            title = " ",
-            content = " "
-        )
-
-        // when
-        val exception = assertThrows<ApplicationException> {
-            adminMailService.sendNoticeMail(request)
-        }
-
-        // then
-        assertThat(exception.code).isEqualTo(REQUEST_VALIDATION_ERROR.code)
-        assertThat(exception.message).isEqualTo(REQUEST_VALIDATION_ERROR.message)
-        verify(exactly = 0) { memberDomainService.findById(any()) }
-        verify(exactly = 0) { mailService.sendNoticeMail(any(), any(), any()) }
-    }
 }

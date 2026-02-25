@@ -131,4 +131,28 @@ class AdminMailControllerV1Test {
             .andExpect(jsonPath("$.message").value("요청성공"))
         verify(exactly = 1) { adminMailService.sendNoticeMail(request) }
     }
+
+    @Test
+    @WithMockUser(username = "1")
+    @DisplayName("공지사항 이메일 요청값이 비어있으면 400 응답을 반환한다")
+    fun postNoticeMailBadRequestTest() {
+        // when
+        val mvcResult = mockMvc.perform(
+            post("/admin/v1/mail/notice")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "memberIds": [],
+                      "title": " ",
+                      "content": ""
+                    }
+                    """.trimIndent()
+                )
+        )
+
+        // then
+        mvcResult.andExpect(status().isBadRequest)
+        verify(exactly = 0) { adminMailService.sendNoticeMail(any()) }
+    }
 }

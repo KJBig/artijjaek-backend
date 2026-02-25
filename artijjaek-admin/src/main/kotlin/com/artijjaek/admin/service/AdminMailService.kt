@@ -64,10 +64,6 @@ class AdminMailService(
         val title = request.title.trim()
         val content = request.content.trim()
 
-        if (title.isBlank() || content.isBlank()) {
-            throw ApplicationException(REQUEST_VALIDATION_ERROR)
-        }
-
         request.memberIds.distinct().forEach { memberId ->
             val member = memberDomainService.findById(memberId)
                 ?: throw ApplicationException(MEMBER_NOT_FOUND_ERROR)

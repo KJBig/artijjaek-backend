@@ -5,6 +5,7 @@ import com.artijjaek.admin.dto.request.PostArticleMailRequest
 import com.artijjaek.admin.dto.request.PostNoticeMailRequest
 import com.artijjaek.admin.dto.request.PostWelcomeMailRequest
 import com.artijjaek.admin.service.AdminMailService
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -35,7 +36,7 @@ class AdminMailControllerV1(
 
     @PostMapping("/notice")
     fun postNoticeMail(
-        @RequestBody request: PostNoticeMailRequest,
+        @Valid @RequestBody request: PostNoticeMailRequest,
     ): ResponseEntity<SuccessResponse> {
         adminMailService.sendNoticeMail(request)
         return ResponseEntity.ok(SuccessResponse())
