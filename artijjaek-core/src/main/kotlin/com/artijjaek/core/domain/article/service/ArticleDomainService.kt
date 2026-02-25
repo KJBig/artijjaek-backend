@@ -1,5 +1,6 @@
 package com.artijjaek.core.domain.article.service
 
+import com.artijjaek.core.domain.article.dto.DailyCollectedArticleCount
 import com.artijjaek.core.domain.article.entity.Article
 import com.artijjaek.core.domain.article.enums.ArticleSortBy
 import com.artijjaek.core.domain.article.repository.ArticleRepository
@@ -9,6 +10,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
+import java.time.LocalDateTime
 
 @Service
 class ArticleDomainService(
@@ -62,5 +64,12 @@ class ArticleDomainService(
 
     fun findExistByUrls(company: Company, articleUrls: List<String>): List<Article> {
         return articleRepository.findExistByUrls(company, articleUrls)
+    }
+
+    fun countDailyCollectedArticles(
+        startDateTime: LocalDateTime,
+        endDateTimeExclusive: LocalDateTime,
+    ): List<DailyCollectedArticleCount> {
+        return articleRepository.countDailyCollectedArticles(startDateTime, endDateTimeExclusive)
     }
 }

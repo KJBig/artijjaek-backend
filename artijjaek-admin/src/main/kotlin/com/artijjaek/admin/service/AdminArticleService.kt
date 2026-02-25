@@ -3,6 +3,7 @@ package com.artijjaek.admin.service
 import com.artijjaek.admin.dto.request.PostArticleRequest
 import com.artijjaek.admin.dto.request.PutArticleRequest
 import com.artijjaek.admin.dto.response.ArticleCategoryResponse
+import com.artijjaek.admin.dto.response.ArticleDailyCollectedResponse
 import com.artijjaek.admin.dto.response.ArticleDetailResponse
 import com.artijjaek.admin.dto.response.ArticleListPageResponse
 import com.artijjaek.admin.dto.response.ArticleCompanyResponse
@@ -13,6 +14,7 @@ import com.artijjaek.core.common.error.ApplicationException
 import com.artijjaek.core.common.error.ErrorCode.ARTICLE_NOT_FOUND_ERROR
 import com.artijjaek.core.common.error.ErrorCode.CATEGORY_NOT_FOUND_ERROR
 import com.artijjaek.core.common.error.ErrorCode.COMPANY_NOT_FOUND_ERROR
+import com.artijjaek.core.common.error.ErrorCode.REQUEST_VALIDATION_ERROR
 import com.artijjaek.core.domain.article.entity.Article
 import com.artijjaek.core.domain.article.enums.ArticleSortBy
 import com.artijjaek.core.domain.article.service.ArticleDomainService
@@ -23,6 +25,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
 
 @Service
 class AdminArticleService(
@@ -142,6 +145,30 @@ class AdminArticleService(
             hasNext = articlePage.hasNext(),
             content = content
         )
+    }
+
+    @Transactional(readOnly = true)
+    fun getDailyCollectedArticleCounts(
+        startDate: LocalDate,
+        endDate: LocalDate,
+    ): List<ArticleDailyCollectedResponse> {
+        if (startDate.isAfter(endDate)) {
+            throw ApplicationException(REQUEST_VALIDATION_ERROR)
+        }
+
+        val dailyCountMap = articleDomainService.countDailyCollectedArticles(
+            startDateTime = startDate.atStartOfDay(),
+            endDateTimeExclusive = endDate.plusDays(1).atStartOfDay(),
+        ).associate { it.date to it.count }
+
+        return startDate.datesUntil(endDate.plusDays(1))
+            .map { date ->
+                ArticleDailyCollectedResponse(
+                    date = date,
+                    articleCount = dailyCountMap[date] ?: 0L
+                )
+            }
+            .toList()
     }
 
     private fun ArticleListSortBy.toArticleSortBy(): ArticleSortBy {
