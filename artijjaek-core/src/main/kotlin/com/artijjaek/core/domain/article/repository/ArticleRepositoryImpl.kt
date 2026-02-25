@@ -23,6 +23,17 @@ class ArticleRepositoryImpl(
     private val jpaQueryFactory: JPAQueryFactory,
 ) : ArticleRepositoryCustom {
 
+    override fun findAllByIdsWithCompany(articleIds: List<Long>): List<Article> {
+        if (articleIds.isEmpty()) {
+            return emptyList()
+        }
+
+        return jpaQueryFactory.selectFrom(article)
+            .leftJoin(article.company, company).fetchJoin()
+            .where(article.id.`in`(articleIds))
+            .fetch()
+    }
+
     override fun findWithCondition(
         pageable: Pageable,
         companyId: Long?,

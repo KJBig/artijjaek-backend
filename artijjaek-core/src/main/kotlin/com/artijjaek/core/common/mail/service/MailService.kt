@@ -421,4 +421,68 @@ class MailService(
         }
     }
 
+    @Async("asyncEmailThreadPoolExecutor")
+    fun sendNoticeMail(memberData: MemberAlertDto, title: String, content: String) {
+        val mimeMessage = javaMailSender.createMimeMessage()
+
+        try {
+            val mimeMessageHelper = MimeMessageHelper(mimeMessage, false, "UTF-8")
+            val safeTitle = cleanText(title)
+            val safeContent = content.lines()
+                .joinToString("<br/>") { cleanText(it) }
+
+            mimeMessageHelper.setTo(memberData.email!!)
+            mimeMessageHelper.setFrom("artijjaek.dev@gmail.com", "아티짹")
+            mimeMessageHelper.setReplyTo("artijjaek.dev@gmail.com")
+            mimeMessageHelper.setSubject("[아티짹] $safeTitle")
+
+            val body = """
+                <!DOCTYPE html>
+                <html lang="ko">
+                <head>
+                  <meta charset="UTF-8" />
+                  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                  <title>$safeTitle</title>
+                </head>
+                <body style="margin:0;padding:0;background-color:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
+                  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#ffffff;padding:20px 0;">
+                    <tr>
+                      <td align="center" style="padding:0 12px;">
+                        <table role="presentation" width="800" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:800px;border-collapse:separate;border-spacing:0;">
+                          <tr>
+                            <td style="border:1px solid #e1e5e9;border-radius:12px;overflow:hidden;background-color:#ffffff;">
+                              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
+                                <tr>
+                                  <td align="center" style="padding:24px;background:#667eea;background-image:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#ffffff;">
+                                    <div style="margin:0;font-size:24px;font-weight:700;line-height:1.3;">공지사항 안내</div>
+                                  </td>
+                                </tr>
+                              </table>
+                              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;background-color:#f7f6f3;">
+                                <tr>
+                                  <td style="padding:24px;">
+                                    <div style="margin:0 0 12px 0;color:rgb(55,53,47);font-size:20px;font-weight:800;line-height:1.4;">$safeTitle</div>
+                                    <div style="margin:0;color:rgb(120,119,116);font-size:14px;line-height:1.8;">$safeContent</div>
+                                  </td>
+                                </tr>
+                              </table>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </body>
+                </html>
+            """.trimIndent()
+
+            mimeMessageHelper.setText(body, true)
+            javaMailSender.send(mimeMessage)
+            log.info("공지사항 메일 발송 성공! : {}", memberData.email)
+        } catch (e: Exception) {
+            log.error("공지사항 메일 발송 실패! : {}", memberData.email, e)
+            throw RuntimeException(e)
+        }
+    }
+
 }

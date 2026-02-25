@@ -9,6 +9,8 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 
 interface ArticleRepositoryCustom {
+    fun findAllByIdsWithCompany(articleIds: List<Long>): List<Article>
+
     fun findWithCondition(
         pageable: Pageable,
         companyId: Long?,
