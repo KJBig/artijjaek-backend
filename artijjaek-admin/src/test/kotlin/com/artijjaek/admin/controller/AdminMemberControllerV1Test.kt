@@ -4,6 +4,7 @@ import com.artijjaek.admin.common.auth.AuthAdminIdArgumentResolver
 import com.artijjaek.admin.config.security.WebConfig
 import com.artijjaek.admin.dto.request.PatchMemberStatusRequest
 import com.artijjaek.admin.dto.request.PutMemberRequest
+import com.artijjaek.admin.dto.response.MemberDailyNewSubscriberResponse
 import com.artijjaek.admin.dto.response.MemberDetailResponse
 import com.artijjaek.admin.dto.response.MemberListPageResponse
 import com.artijjaek.admin.dto.response.MemberSimpleResponse
@@ -34,6 +35,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.http.MediaType
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 @ActiveProfiles("test")
@@ -297,6 +299,48 @@ class AdminMemberControllerV1Test {
             .andExpect(jsonPath("$.message").value("요청성공"))
 
         verify(exactly = 1) { adminMemberService.updateMember(1L, request) }
+    }
+
+    @Test
+    @WithMockUser(username = "1")
+    @DisplayName("일자별 신규 구독자 수를 조회한다")
+    fun getDailyNewSubscriberCountsTest() {
+        // given
+        val response = listOf(
+            MemberDailyNewSubscriberResponse(
+                date = LocalDate.of(2026, 2, 1),
+                subscriberCount = 3
+            ),
+            MemberDailyNewSubscriberResponse(
+                date = LocalDate.of(2026, 2, 2),
+                subscriberCount = 0
+            )
+        )
+        every {
+            adminMemberService.getDailyNewSubscriberCounts(
+                startDate = LocalDate.of(2026, 2, 1),
+                endDate = LocalDate.of(2026, 2, 2)
+            )
+        } returns response
+
+        // when & then
+        mockMvc.perform(
+            get("/admin/v1/member/subscriber/new/daily")
+                .param("startDate", "2026-02-01")
+                .param("endDate", "2026-02-02")
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.isSuccess").value(true))
+            .andExpect(jsonPath("$.data[0].date").value("2026-02-01"))
+            .andExpect(jsonPath("$.data[0].subscriberCount").value(3))
+            .andExpect(jsonPath("$.data[1].subscriberCount").value(0))
+
+        verify(exactly = 1) {
+            adminMemberService.getDailyNewSubscriberCounts(
+                startDate = LocalDate.of(2026, 2, 1),
+                endDate = LocalDate.of(2026, 2, 2)
+            )
+        }
     }
 
     private fun createMemberListResponse(): MemberListPageResponse {

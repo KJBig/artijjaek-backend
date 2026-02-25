@@ -1,11 +1,13 @@
 package com.artijjaek.core.domain.member.repository
 
+import com.artijjaek.core.domain.member.dto.DailyNewSubscriberCount
 import com.artijjaek.core.domain.member.entity.Member
 import com.artijjaek.core.domain.member.enums.MemberSortBy
 import com.artijjaek.core.domain.member.enums.MemberStatus
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
+import java.time.LocalDateTime
 
 interface MemberRepositoryCustom {
     fun findWithCondition(
@@ -18,4 +20,9 @@ interface MemberRepositoryCustom {
     ): Page<Member>
 
     fun countByMemberStatus(memberStatus: MemberStatus?): Long
+
+    fun countDailyNewSubscribers(
+        startDateTime: LocalDateTime,
+        endDateTimeExclusive: LocalDateTime,
+    ): List<DailyNewSubscriberCount>
 }

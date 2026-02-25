@@ -4,6 +4,7 @@ import com.artijjaek.admin.dto.common.SuccessDataResponse
 import com.artijjaek.admin.dto.common.SuccessResponse
 import com.artijjaek.admin.dto.request.PatchMemberStatusRequest
 import com.artijjaek.admin.dto.request.PutMemberRequest
+import com.artijjaek.admin.dto.response.MemberDailyNewSubscriberResponse
 import com.artijjaek.admin.dto.response.MemberDetailResponse
 import com.artijjaek.admin.dto.response.MemberListPageResponse
 import com.artijjaek.admin.enums.MemberListSearchType
@@ -12,6 +13,7 @@ import com.artijjaek.admin.enums.MemberStatusFilter
 import com.artijjaek.admin.service.AdminMemberService
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
+import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.time.LocalDate
 
 @RestController
 @RequestMapping("/admin/v1/member")
@@ -71,6 +74,15 @@ class AdminMemberControllerV1(
             sortBy = sortBy,
             sortDirection = sortDirection
         )
+        return ResponseEntity.ok(SuccessDataResponse(response))
+    }
+
+    @GetMapping("/subscriber/new/daily")
+    fun getDailyNewSubscriberCounts(
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate,
+    ): ResponseEntity<SuccessDataResponse<List<MemberDailyNewSubscriberResponse>>> {
+        val response = adminMemberService.getDailyNewSubscriberCounts(startDate, endDate)
         return ResponseEntity.ok(SuccessDataResponse(response))
     }
 }

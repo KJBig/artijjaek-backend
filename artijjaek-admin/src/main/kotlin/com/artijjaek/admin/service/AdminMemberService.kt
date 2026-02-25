@@ -22,6 +22,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
 
 @Service
 class AdminMemberService(
@@ -157,6 +158,30 @@ class AdminMemberService(
             statusCount = memberStatusCountResponse,
             content = content
         )
+    }
+
+    @Transactional(readOnly = true)
+    fun getDailyNewSubscriberCounts(
+        startDate: LocalDate,
+        endDate: LocalDate,
+    ): List<MemberDailyNewSubscriberResponse> {
+        if (startDate.isAfter(endDate)) {
+            throw ApplicationException(REQUEST_VALIDATION_ERROR)
+        }
+
+        val dailyCountMap = memberDomainService.countDailyNewSubscribers(
+            startDateTime = startDate.atStartOfDay(),
+            endDateTimeExclusive = endDate.plusDays(1).atStartOfDay(),
+        ).associate { it.date to it.count }
+
+        return startDate.datesUntil(endDate.plusDays(1))
+            .map { date ->
+                MemberDailyNewSubscriberResponse(
+                    date = date,
+                    subscriberCount = dailyCountMap[date] ?: 0L
+                )
+            }
+            .toList()
     }
 
     private fun MemberStatusFilter.toMemberStatus(): MemberStatus? {

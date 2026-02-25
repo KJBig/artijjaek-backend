@@ -6,6 +6,7 @@ import com.artijjaek.admin.dto.request.PostArticleRequest
 import com.artijjaek.admin.dto.request.PutArticleRequest
 import com.artijjaek.admin.dto.response.ArticleCategoryResponse
 import com.artijjaek.admin.dto.response.ArticleCompanyResponse
+import com.artijjaek.admin.dto.response.ArticleDailyCollectedResponse
 import com.artijjaek.admin.dto.response.ArticleDetailResponse
 import com.artijjaek.admin.dto.response.ArticleListPageResponse
 import com.artijjaek.admin.dto.response.ArticleSimpleResponse
@@ -32,6 +33,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.http.MediaType
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 @ActiveProfiles("test")
@@ -224,6 +226,48 @@ class AdminArticleControllerV1Test {
                 title = "개발자",
                 sortBy = ArticleListSortBy.REGISTER_DATE,
                 sortDirection = Sort.Direction.DESC
+            )
+        }
+    }
+
+    @Test
+    @WithMockUser(username = "1")
+    @DisplayName("일자별 신규 수집 아티클 수를 조회한다")
+    fun getDailyCollectedArticleCountsTest() {
+        // given
+        val response = listOf(
+            ArticleDailyCollectedResponse(
+                date = LocalDate.of(2026, 2, 1),
+                articleCount = 5
+            ),
+            ArticleDailyCollectedResponse(
+                date = LocalDate.of(2026, 2, 2),
+                articleCount = 0
+            )
+        )
+        every {
+            adminArticleService.getDailyCollectedArticleCounts(
+                startDate = LocalDate.of(2026, 2, 1),
+                endDate = LocalDate.of(2026, 2, 2)
+            )
+        } returns response
+
+        // when & then
+        mockMvc.perform(
+            get("/admin/v1/article/collected/new/daily")
+                .param("startDate", "2026-02-01")
+                .param("endDate", "2026-02-02")
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.isSuccess").value(true))
+            .andExpect(jsonPath("$.data[0].date").value("2026-02-01"))
+            .andExpect(jsonPath("$.data[0].articleCount").value(5))
+            .andExpect(jsonPath("$.data[1].articleCount").value(0))
+
+        verify(exactly = 1) {
+            adminArticleService.getDailyCollectedArticleCounts(
+                startDate = LocalDate.of(2026, 2, 1),
+                endDate = LocalDate.of(2026, 2, 2)
             )
         }
     }
