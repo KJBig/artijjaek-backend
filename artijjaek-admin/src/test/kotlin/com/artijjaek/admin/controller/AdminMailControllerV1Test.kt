@@ -3,6 +3,7 @@ package com.artijjaek.admin.controller
 import com.artijjaek.admin.common.auth.AuthAdminIdArgumentResolver
 import com.artijjaek.admin.config.security.WebConfig
 import com.artijjaek.admin.dto.request.PostArticleMailRequest
+import com.artijjaek.admin.dto.request.PostNoticeMailRequest
 import com.artijjaek.admin.dto.request.PostWelcomeMailRequest
 import com.artijjaek.admin.service.AdminMailService
 import com.ninjasquad.springmockk.MockkBean
@@ -94,5 +95,40 @@ class AdminMailControllerV1Test {
             .andExpect(jsonPath("$.isSuccess").value(true))
             .andExpect(jsonPath("$.message").value("요청성공"))
         verify(exactly = 1) { adminMailService.sendArticleMail(request) }
+    }
+
+    @Test
+    @WithMockUser(username = "1")
+    @DisplayName("특정 회원들에게 공지사항 이메일을 수동 발송한다")
+    fun postNoticeMailTest() {
+        // given
+        val request = PostNoticeMailRequest(
+            memberIds = listOf(1L, 2L, 3L),
+            title = "구독 가능한 회사가 추가되었습니다.",
+            content = "카카오엔터프라이즈 블로그가 추가되었습니다.\n구독 설정에서 선택해주세요."
+        )
+        every { adminMailService.sendNoticeMail(request) } returns Unit
+
+        // when
+        val mvcResult = mockMvc.perform(
+            post("/admin/v1/mail/notice")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "memberIds": [1, 2, 3],
+                      "title": "구독 가능한 회사가 추가되었습니다.",
+                      "content": "카카오엔터프라이즈 블로그가 추가되었습니다.\n구독 설정에서 선택해주세요."
+                    }
+                    """.trimIndent()
+                )
+        )
+
+        // then
+        mvcResult
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.isSuccess").value(true))
+            .andExpect(jsonPath("$.message").value("요청성공"))
+        verify(exactly = 1) { adminMailService.sendNoticeMail(request) }
     }
 }

@@ -1,6 +1,7 @@
 package com.artijjaek.admin.service
 
 import com.artijjaek.admin.dto.request.PostArticleMailRequest
+import com.artijjaek.admin.dto.request.PostNoticeMailRequest
 import com.artijjaek.admin.dto.request.PostWelcomeMailRequest
 import com.artijjaek.core.common.error.ApplicationException
 import com.artijjaek.core.common.error.ErrorCode.*
@@ -55,6 +56,27 @@ class AdminMailService(
             }
 
             mailService.sendArticleMail(MemberAlertDto.from(member), articleAlertDtos)
+        }
+    }
+
+    @Transactional(readOnly = true)
+    fun sendNoticeMail(request: PostNoticeMailRequest) {
+        val title = request.title.trim()
+        val content = request.content.trim()
+
+        if (title.isBlank() || content.isBlank()) {
+            throw ApplicationException(REQUEST_VALIDATION_ERROR)
+        }
+
+        request.memberIds.distinct().forEach { memberId ->
+            val member = memberDomainService.findById(memberId)
+                ?: throw ApplicationException(MEMBER_NOT_FOUND_ERROR)
+
+            if (member.email.isNullOrBlank()) {
+                throw ApplicationException(MEMBER_EMAIL_NOT_FOUND_ERROR)
+            }
+
+            mailService.sendNoticeMail(MemberAlertDto.from(member), title, content)
         }
     }
 }

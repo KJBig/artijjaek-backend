@@ -1,11 +1,13 @@
 package com.artijjaek.admin.service
 
 import com.artijjaek.admin.dto.request.PostArticleMailRequest
+import com.artijjaek.admin.dto.request.PostNoticeMailRequest
 import com.artijjaek.admin.dto.request.PostWelcomeMailRequest
 import com.artijjaek.core.common.error.ApplicationException
 import com.artijjaek.core.common.error.ErrorCode.ARTICLE_NOT_FOUND_ERROR
 import com.artijjaek.core.common.error.ErrorCode.MEMBER_EMAIL_NOT_FOUND_ERROR
 import com.artijjaek.core.common.error.ErrorCode.MEMBER_NOT_FOUND_ERROR
+import com.artijjaek.core.common.error.ErrorCode.REQUEST_VALIDATION_ERROR
 import com.artijjaek.core.common.mail.service.MailService
 import com.artijjaek.core.domain.article.entity.Article
 import com.artijjaek.core.domain.article.service.ArticleDomainService
@@ -202,5 +204,63 @@ class AdminMailServiceTest {
         assertThat(exception.message).isEqualTo(ARTICLE_NOT_FOUND_ERROR.message)
         verify(exactly = 0) { memberDomainService.findById(any()) }
         verify(exactly = 0) { mailService.sendArticleMail(any(), any()) }
+    }
+
+    @Test
+    @DisplayName("특정 회원들에게 공지사항 이메일을 발송한다")
+    fun sendNoticeMailTest() {
+        // given
+        val firstMember = Member(
+            id = 1L,
+            email = "first@test.com",
+            nickname = "first",
+            uuidToken = "token-1",
+            memberStatus = MemberStatus.ACTIVE
+        )
+        val secondMember = Member(
+            id = 2L,
+            email = "second@test.com",
+            nickname = "second",
+            uuidToken = "token-2",
+            memberStatus = MemberStatus.ACTIVE
+        )
+        val request = PostNoticeMailRequest(
+            memberIds = listOf(1L, 2L, 1L),
+            title = "신규 회사 추가 안내",
+            content = "구독 가능한 회사가 추가되었습니다."
+        )
+        every { memberDomainService.findById(1L) } returns firstMember
+        every { memberDomainService.findById(2L) } returns secondMember
+        justRun { mailService.sendNoticeMail(any(), any(), any()) }
+
+        // when
+        adminMailService.sendNoticeMail(request)
+
+        // then
+        verify(exactly = 1) { memberDomainService.findById(1L) }
+        verify(exactly = 1) { memberDomainService.findById(2L) }
+        verify(exactly = 2) { mailService.sendNoticeMail(any(), "신규 회사 추가 안내", "구독 가능한 회사가 추가되었습니다.") }
+    }
+
+    @Test
+    @DisplayName("공지사항 제목 또는 내용이 비어있으면 예외가 발생한다")
+    fun sendNoticeMailWithBlankTitleOrContentTest() {
+        // given
+        val request = PostNoticeMailRequest(
+            memberIds = listOf(1L),
+            title = " ",
+            content = " "
+        )
+
+        // when
+        val exception = assertThrows<ApplicationException> {
+            adminMailService.sendNoticeMail(request)
+        }
+
+        // then
+        assertThat(exception.code).isEqualTo(REQUEST_VALIDATION_ERROR.code)
+        assertThat(exception.message).isEqualTo(REQUEST_VALIDATION_ERROR.message)
+        verify(exactly = 0) { memberDomainService.findById(any()) }
+        verify(exactly = 0) { mailService.sendNoticeMail(any(), any(), any()) }
     }
 }

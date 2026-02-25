@@ -2,6 +2,7 @@ package com.artijjaek.admin.controller
 
 import com.artijjaek.admin.dto.common.SuccessResponse
 import com.artijjaek.admin.dto.request.PostArticleMailRequest
+import com.artijjaek.admin.dto.request.PostNoticeMailRequest
 import com.artijjaek.admin.dto.request.PostWelcomeMailRequest
 import com.artijjaek.admin.service.AdminMailService
 import org.springframework.http.ResponseEntity
@@ -29,6 +30,14 @@ class AdminMailControllerV1(
         @RequestBody request: PostArticleMailRequest,
     ): ResponseEntity<SuccessResponse> {
         adminMailService.sendArticleMail(request)
+        return ResponseEntity.ok(SuccessResponse())
+    }
+
+    @PostMapping("/notice")
+    fun postNoticeMail(
+        @RequestBody request: PostNoticeMailRequest,
+    ): ResponseEntity<SuccessResponse> {
+        adminMailService.sendNoticeMail(request)
         return ResponseEntity.ok(SuccessResponse())
     }
 }
