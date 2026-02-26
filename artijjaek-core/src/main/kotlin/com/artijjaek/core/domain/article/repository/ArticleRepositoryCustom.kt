@@ -1,5 +1,6 @@
 package com.artijjaek.core.domain.article.repository
 
+import com.artijjaek.core.domain.article.dto.DailyCollectedArticleCount
 import com.artijjaek.core.domain.article.entity.Article
 import com.artijjaek.core.domain.article.enums.ArticleSortBy
 import com.artijjaek.core.domain.category.entity.Category
@@ -7,6 +8,7 @@ import com.artijjaek.core.domain.company.entity.Company
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
+import java.time.LocalDateTime
 
 interface ArticleRepositoryCustom {
     fun findAllByIdsWithCompany(articleIds: List<Long>): List<Article>
@@ -24,4 +26,8 @@ interface ArticleRepositoryCustom {
     fun findTodayByCompaniesAndCategories(companies: List<Company>, categories: List<Category>): List<Article>
     fun allocateCategory(targetArticle: Article, category: Category)
     fun findExistByUrls(company: Company, articleUrls: List<String>): List<Article>
+    fun countDailyCollectedArticles(
+        startDateTime: LocalDateTime,
+        endDateTimeExclusive: LocalDateTime,
+    ): List<DailyCollectedArticleCount>
 }

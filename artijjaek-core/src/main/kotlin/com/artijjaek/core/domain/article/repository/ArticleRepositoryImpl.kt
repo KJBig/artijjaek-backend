@@ -1,5 +1,6 @@
 package com.artijjaek.core.domain.article.repository
 
+import com.artijjaek.core.domain.article.dto.DailyCollectedArticleCount
 import com.artijjaek.core.domain.article.entity.Article
 import com.artijjaek.core.domain.article.entity.QArticle.article
 import com.artijjaek.core.domain.article.enums.ArticleSortBy
@@ -10,7 +11,9 @@ import com.artijjaek.core.domain.company.entity.Company
 import com.querydsl.core.types.Order
 import com.querydsl.core.types.OrderSpecifier
 import com.querydsl.core.types.dsl.BooleanExpression
+import com.querydsl.core.types.dsl.Expressions
 import com.querydsl.jpa.impl.JPAQueryFactory
+import java.sql.Date
 import java.time.LocalDate
 import java.time.LocalDateTime
 import org.springframework.data.domain.Page
@@ -130,6 +133,32 @@ class ArticleRepositoryImpl(
                     .and(article.link.`in`(articleUrls))
             )
             .fetch()
+    }
+
+    override fun countDailyCollectedArticles(
+        startDateTime: LocalDateTime,
+        endDateTimeExclusive: LocalDateTime,
+    ): List<DailyCollectedArticleCount> {
+        val createdDate = Expressions.dateTemplate(Date::class.java, "date({0})", article.createdAt)
+        val articleCount = article.id.count()
+
+        return jpaQueryFactory
+            .select(createdDate, articleCount)
+            .from(article)
+            .where(article.createdAt.goe(startDateTime).and(article.createdAt.lt(endDateTimeExclusive)))
+            .groupBy(createdDate)
+            .orderBy(createdDate.asc())
+            .fetch()
+            .mapNotNull { tuple ->
+                val sqlDate = tuple.get(createdDate)
+                val count = tuple.get(articleCount)
+
+                if (sqlDate == null || count == null) {
+                    null
+                } else {
+                    DailyCollectedArticleCount(date = sqlDate.toLocalDate(), count = count)
+                }
+            }
     }
 
     private fun companyIdEq(companyId: Long?): BooleanExpression? {

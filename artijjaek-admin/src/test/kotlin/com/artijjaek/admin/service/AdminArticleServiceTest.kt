@@ -5,6 +5,7 @@ import com.artijjaek.admin.dto.request.PutArticleRequest
 import com.artijjaek.admin.enums.ArticleListSortBy
 import com.artijjaek.core.common.error.ApplicationException
 import com.artijjaek.core.common.error.ErrorCode
+import com.artijjaek.core.domain.article.dto.DailyCollectedArticleCount
 import com.artijjaek.core.domain.article.entity.Article
 import com.artijjaek.core.domain.article.enums.ArticleSortBy
 import com.artijjaek.core.domain.article.service.ArticleDomainService
@@ -27,6 +28,7 @@ import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.test.context.ActiveProfiles
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 @ActiveProfiles("test")
@@ -342,6 +344,48 @@ class AdminArticleServiceTest {
                 titleKeyword = "개발자",
                 sortBy = ArticleSortBy.CREATED_AT,
                 sortDirection = Sort.Direction.DESC
+            )
+        }
+    }
+
+    @Test
+    @DisplayName("일자별 신규 수집 아티클 수를 조회할 때 빈 날짜는 0으로 채운다")
+    fun getDailyCollectedArticleCountsTest() {
+        // given
+        every {
+            articleDomainService.countDailyCollectedArticles(
+                startDateTime = LocalDate.of(2026, 2, 1).atStartOfDay(),
+                endDateTimeExclusive = LocalDate.of(2026, 2, 4).atStartOfDay()
+            )
+        } returns listOf(
+            DailyCollectedArticleCount(date = LocalDate.of(2026, 2, 1), count = 5),
+            DailyCollectedArticleCount(date = LocalDate.of(2026, 2, 3), count = 2)
+        )
+
+        // when
+        val result = adminArticleService.getDailyCollectedArticleCounts(
+            startDate = LocalDate.of(2026, 2, 1),
+            endDate = LocalDate.of(2026, 2, 3)
+        )
+
+        // then
+        assertThat(result).hasSize(3)
+        assertThat(result[0].date).isEqualTo(LocalDate.of(2026, 2, 1))
+        assertThat(result[0].articleCount).isEqualTo(5)
+        assertThat(result[1].date).isEqualTo(LocalDate.of(2026, 2, 2))
+        assertThat(result[1].articleCount).isEqualTo(0)
+        assertThat(result[2].date).isEqualTo(LocalDate.of(2026, 2, 3))
+        assertThat(result[2].articleCount).isEqualTo(2)
+    }
+
+    @Test
+    @DisplayName("신규 수집 아티클 조회 시 시작일이 종료일보다 늦으면 예외가 발생한다")
+    fun getDailyCollectedArticleCountsWithInvalidDateRangeTest() {
+        // when & then
+        assertThrows<ApplicationException> {
+            adminArticleService.getDailyCollectedArticleCounts(
+                startDate = LocalDate.of(2026, 2, 4),
+                endDate = LocalDate.of(2026, 2, 3)
             )
         }
     }
