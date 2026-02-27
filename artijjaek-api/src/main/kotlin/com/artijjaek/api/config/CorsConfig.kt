@@ -18,7 +18,7 @@ class CorsConfig(
 
         val configuration = CorsConfiguration().apply {
             setAllowedOrigins(allowedOrigins)
-            allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
+            allowedMethods = listOf("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
             allowedHeaders = listOf("*")
             allowCredentials = true
         }
