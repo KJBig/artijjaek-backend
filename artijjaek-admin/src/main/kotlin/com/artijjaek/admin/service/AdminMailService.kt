@@ -21,7 +21,7 @@ class AdminMailService(
     private val emailOutboxEnqueueService: EmailOutboxEnqueueService,
 ) {
 
-    @Transactional(readOnly = true)
+    @Transactional
     fun sendWelcomeMail(request: PostWelcomeMailRequest) {
         request.memberIds.distinct().forEach { memberId ->
             val member = memberDomainService.findById(memberId)
@@ -35,7 +35,7 @@ class AdminMailService(
         }
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     fun sendArticleMail(request: PostArticleMailRequest) {
         val articleIds = request.articleIds.distinct()
         val articles = articleDomainService.findAllByIdsWithCompany(articleIds)
@@ -64,7 +64,7 @@ class AdminMailService(
         }
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     fun sendNoticeMail(request: PostNoticeMailRequest) {
         val title = request.title.trim()
         val content = request.content.trim()

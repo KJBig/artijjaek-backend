@@ -4,9 +4,11 @@ import com.artijjaek.core.common.mail.dto.ArticleAlertDto
 import com.artijjaek.core.common.mail.dto.MemberAlertDto
 import com.artijjaek.core.domain.mail.dto.*
 import com.artijjaek.core.domain.mail.entity.EmailOutbox
+import com.artijjaek.core.domain.mail.event.MailQueuedEvent
 import com.artijjaek.core.domain.mail.enums.EmailOutboxRequestedBy
 import com.artijjaek.core.domain.mail.enums.EmailOutboxType
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 
@@ -14,6 +16,7 @@ import java.time.LocalDate
 class EmailOutboxEnqueueService(
     private val emailOutboxDomainService: EmailOutboxDomainService,
     private val objectMapper: ObjectMapper,
+    private val applicationEventPublisher: ApplicationEventPublisher,
 ) {
     fun enqueueWelcomeMail(memberData: MemberAlertDto, requestedBy: EmailOutboxRequestedBy) {
         val payload = WelcomeMailPayload(member = memberSnapshot(memberData))
@@ -92,7 +95,8 @@ class EmailOutboxEnqueueService(
             payloadJson = objectMapper.writeValueAsString(payload),
             requestedBy = requestedBy
         )
-        emailOutboxDomainService.save(outbox)
+        val saved = emailOutboxDomainService.save(outbox)
+        applicationEventPublisher.publishEvent(MailQueuedEvent(saved.id!!))
     }
 
     private fun memberSnapshot(memberData: MemberAlertDto): MemberSnapshot {

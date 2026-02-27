@@ -5,7 +5,6 @@ import com.artijjaek.core.common.mail.dto.MemberAlertDto
 import org.slf4j.LoggerFactory
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mail.javamail.MimeMessageHelper
-import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -17,7 +16,6 @@ class MailService(
 
     private val log = LoggerFactory.getLogger(MailService::class.java)
 
-    @Async("asyncEmailThreadPoolExecutor")
     fun sendArticleMail(memberData: MemberAlertDto, articleDatas: List<ArticleAlertDto>) {
         val mimeMessage = javaMailSender.createMimeMessage()
         val today = LocalDate.now()
@@ -254,7 +252,6 @@ class MailService(
         }
     }
 
-    @Async("asyncEmailThreadPoolExecutor")
     fun sendSubscribeMail(memberData: MemberAlertDto) {
         val mimeMessage = javaMailSender.createMimeMessage()
 
@@ -421,7 +418,6 @@ class MailService(
         }
     }
 
-    @Async("asyncEmailThreadPoolExecutor")
     fun sendNoticeMail(memberData: MemberAlertDto, title: String, content: String) {
         val mimeMessage = javaMailSender.createMimeMessage()
 
