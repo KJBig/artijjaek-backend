@@ -7,7 +7,8 @@ import com.artijjaek.core.common.error.ApplicationException
 import com.artijjaek.core.common.error.ErrorCode.*
 import com.artijjaek.core.common.mail.dto.ArticleAlertDto
 import com.artijjaek.core.common.mail.dto.MemberAlertDto
-import com.artijjaek.core.common.mail.service.MailService
+import com.artijjaek.core.domain.mail.enums.EmailOutboxRequestedBy
+import com.artijjaek.core.domain.mail.service.EmailOutboxEnqueueService
 import com.artijjaek.core.domain.article.service.ArticleDomainService
 import com.artijjaek.core.domain.member.service.MemberDomainService
 import org.springframework.stereotype.Service
@@ -17,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional
 class AdminMailService(
     private val memberDomainService: MemberDomainService,
     private val articleDomainService: ArticleDomainService,
-    private val mailService: MailService,
+    private val emailOutboxEnqueueService: EmailOutboxEnqueueService,
 ) {
 
     @Transactional(readOnly = true)
@@ -30,7 +31,7 @@ class AdminMailService(
                 throw ApplicationException(MEMBER_EMAIL_NOT_FOUND_ERROR)
             }
 
-            mailService.sendSubscribeMail(MemberAlertDto.from(member))
+            emailOutboxEnqueueService.enqueueWelcomeMail(MemberAlertDto.from(member), EmailOutboxRequestedBy.ADMIN_API)
         }
     }
 
@@ -55,7 +56,11 @@ class AdminMailService(
                 throw ApplicationException(MEMBER_EMAIL_NOT_FOUND_ERROR)
             }
 
-            mailService.sendArticleMail(MemberAlertDto.from(member), articleAlertDtos)
+            emailOutboxEnqueueService.enqueueArticleMail(
+                memberData = MemberAlertDto.from(member),
+                articleDatas = articleAlertDtos,
+                requestedBy = EmailOutboxRequestedBy.ADMIN_API
+            )
         }
     }
 
@@ -72,7 +77,12 @@ class AdminMailService(
                 throw ApplicationException(MEMBER_EMAIL_NOT_FOUND_ERROR)
             }
 
-            mailService.sendNoticeMail(MemberAlertDto.from(member), title, content)
+            emailOutboxEnqueueService.enqueueNoticeMail(
+                memberData = MemberAlertDto.from(member),
+                title = title,
+                content = content,
+                requestedBy = EmailOutboxRequestedBy.ADMIN_API
+            )
         }
     }
 }

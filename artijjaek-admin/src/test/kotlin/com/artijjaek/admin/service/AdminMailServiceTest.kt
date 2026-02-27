@@ -7,12 +7,12 @@ import com.artijjaek.core.common.error.ApplicationException
 import com.artijjaek.core.common.error.ErrorCode.ARTICLE_NOT_FOUND_ERROR
 import com.artijjaek.core.common.error.ErrorCode.MEMBER_EMAIL_NOT_FOUND_ERROR
 import com.artijjaek.core.common.error.ErrorCode.MEMBER_NOT_FOUND_ERROR
-import com.artijjaek.core.common.mail.service.MailService
 import com.artijjaek.core.domain.article.entity.Article
 import com.artijjaek.core.domain.article.service.ArticleDomainService
 import com.artijjaek.core.domain.category.entity.Category
 import com.artijjaek.core.domain.category.enums.PublishType
 import com.artijjaek.core.domain.company.entity.Company
+import com.artijjaek.core.domain.mail.service.EmailOutboxEnqueueService
 import com.artijjaek.core.domain.member.entity.Member
 import com.artijjaek.core.domain.member.enums.MemberStatus
 import com.artijjaek.core.domain.member.service.MemberDomainService
@@ -43,7 +43,7 @@ class AdminMailServiceTest {
     lateinit var articleDomainService: ArticleDomainService
 
     @MockK
-    lateinit var mailService: MailService
+    lateinit var emailOutboxEnqueueService: EmailOutboxEnqueueService
 
     @Test
     @DisplayName("특정 회원들에게 환영 이메일을 발송한다")
@@ -67,7 +67,7 @@ class AdminMailServiceTest {
 
         every { memberDomainService.findById(1L) } returns firstMember
         every { memberDomainService.findById(2L) } returns secondMember
-        justRun { mailService.sendSubscribeMail(any()) }
+        justRun { emailOutboxEnqueueService.enqueueWelcomeMail(any(), any()) }
 
         // when
         adminMailService.sendWelcomeMail(request)
@@ -75,7 +75,7 @@ class AdminMailServiceTest {
         // then
         verify(exactly = 1) { memberDomainService.findById(1L) }
         verify(exactly = 1) { memberDomainService.findById(2L) }
-        verify(exactly = 2) { mailService.sendSubscribeMail(any()) }
+        verify(exactly = 2) { emailOutboxEnqueueService.enqueueWelcomeMail(any(), any()) }
     }
 
     @Test
@@ -93,7 +93,7 @@ class AdminMailServiceTest {
         // then
         assertThat(exception.code).isEqualTo(MEMBER_NOT_FOUND_ERROR.code)
         assertThat(exception.message).isEqualTo(MEMBER_NOT_FOUND_ERROR.message)
-        verify(exactly = 0) { mailService.sendSubscribeMail(any()) }
+        verify(exactly = 0) { emailOutboxEnqueueService.enqueueWelcomeMail(any(), any()) }
     }
 
     @Test
@@ -118,7 +118,7 @@ class AdminMailServiceTest {
         // then
         assertThat(exception.code).isEqualTo(MEMBER_EMAIL_NOT_FOUND_ERROR.code)
         assertThat(exception.message).isEqualTo(MEMBER_EMAIL_NOT_FOUND_ERROR.message)
-        verify(exactly = 0) { mailService.sendSubscribeMail(any()) }
+        verify(exactly = 0) { emailOutboxEnqueueService.enqueueWelcomeMail(any(), any()) }
     }
 
     @Test
@@ -172,7 +172,7 @@ class AdminMailServiceTest {
 
         every { articleDomainService.findAllByIdsWithCompany(listOf(101L, 102L)) } returns listOf(firstArticle, secondArticle)
         every { memberDomainService.findById(1L) } returns member
-        justRun { mailService.sendArticleMail(any(), any()) }
+        justRun { emailOutboxEnqueueService.enqueueArticleMail(any(), any(), any()) }
 
         // when
         adminMailService.sendArticleMail(request)
@@ -180,7 +180,7 @@ class AdminMailServiceTest {
         // then
         verify(exactly = 1) { articleDomainService.findAllByIdsWithCompany(listOf(101L, 102L)) }
         verify(exactly = 1) { memberDomainService.findById(1L) }
-        verify(exactly = 1) { mailService.sendArticleMail(any(), any()) }
+        verify(exactly = 1) { emailOutboxEnqueueService.enqueueArticleMail(any(), any(), any()) }
     }
 
     @Test
@@ -202,7 +202,7 @@ class AdminMailServiceTest {
         assertThat(exception.code).isEqualTo(ARTICLE_NOT_FOUND_ERROR.code)
         assertThat(exception.message).isEqualTo(ARTICLE_NOT_FOUND_ERROR.message)
         verify(exactly = 0) { memberDomainService.findById(any()) }
-        verify(exactly = 0) { mailService.sendArticleMail(any(), any()) }
+        verify(exactly = 0) { emailOutboxEnqueueService.enqueueArticleMail(any(), any(), any()) }
     }
 
     @Test
@@ -230,7 +230,7 @@ class AdminMailServiceTest {
         )
         every { memberDomainService.findById(1L) } returns firstMember
         every { memberDomainService.findById(2L) } returns secondMember
-        justRun { mailService.sendNoticeMail(any(), any(), any()) }
+        justRun { emailOutboxEnqueueService.enqueueNoticeMail(any(), any(), any(), any()) }
 
         // when
         adminMailService.sendNoticeMail(request)
@@ -238,7 +238,14 @@ class AdminMailServiceTest {
         // then
         verify(exactly = 1) { memberDomainService.findById(1L) }
         verify(exactly = 1) { memberDomainService.findById(2L) }
-        verify(exactly = 2) { mailService.sendNoticeMail(any(), "신규 회사 추가 안내", "구독 가능한 회사가 추가되었습니다.") }
+        verify(exactly = 2) {
+            emailOutboxEnqueueService.enqueueNoticeMail(
+                any(),
+                "신규 회사 추가 안내",
+                "구독 가능한 회사가 추가되었습니다.",
+                any()
+            )
+        }
     }
 
 }
