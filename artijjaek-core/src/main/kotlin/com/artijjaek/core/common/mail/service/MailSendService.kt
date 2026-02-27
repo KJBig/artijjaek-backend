@@ -10,11 +10,11 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 
 @Service
-class MailService(
+class MailSendService(
     private val javaMailSender: JavaMailSender,
 ) {
 
-    private val log = LoggerFactory.getLogger(MailService::class.java)
+    private val log = LoggerFactory.getLogger(MailSendService::class.java)
 
     fun sendArticleMail(memberData: MemberAlertDto, articleDatas: List<ArticleAlertDto>) {
         val mimeMessage = javaMailSender.createMimeMessage()

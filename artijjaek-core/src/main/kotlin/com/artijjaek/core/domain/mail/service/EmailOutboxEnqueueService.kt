@@ -2,7 +2,11 @@ package com.artijjaek.core.domain.mail.service
 
 import com.artijjaek.core.common.mail.dto.ArticleAlertDto
 import com.artijjaek.core.common.mail.dto.MemberAlertDto
-import com.artijjaek.core.domain.mail.dto.*
+import com.artijjaek.core.domain.mail.dto.ArticleMailPayload
+import com.artijjaek.core.domain.mail.dto.ArticleSnapshot
+import com.artijjaek.core.domain.mail.dto.MemberSnapshot
+import com.artijjaek.core.domain.mail.dto.NoticeMailPayload
+import com.artijjaek.core.domain.mail.dto.WelcomeMailPayload
 import com.artijjaek.core.domain.mail.entity.EmailOutbox
 import com.artijjaek.core.domain.mail.event.MailQueuedEvent
 import com.artijjaek.core.domain.mail.enums.EmailOutboxRequestedBy

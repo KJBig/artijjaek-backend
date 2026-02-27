@@ -16,6 +16,7 @@ class EmailOutboxWorkerCoordinator(
     private val emailOutboxDomainService: EmailOutboxDomainService,
     private val emailOutboxProcessor: EmailOutboxProcessor,
     private val retryWakeupScheduler: EmailOutboxRetryWakeupScheduler,
+    private val alertService: EmailOutboxAlertService,
 ) {
     private val log = LoggerFactory.getLogger(EmailOutboxWorkerCoordinator::class.java)
 
@@ -45,6 +46,7 @@ class EmailOutboxWorkerCoordinator(
         while (true) {
             val dueIds = emailOutboxDomainService.findDueIds(LocalDateTime.now(), 50)
             if (dueIds.isEmpty()) {
+                alertService.checkBacklog()
                 return
             }
 
@@ -55,6 +57,7 @@ class EmailOutboxWorkerCoordinator(
                 )
             }
             futures.forEach { it.join() }
+            alertService.checkBacklog()
             log.info("[EmailOutbox] processed batch size={}", dueIds.size)
         }
     }

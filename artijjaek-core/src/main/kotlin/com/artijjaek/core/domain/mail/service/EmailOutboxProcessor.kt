@@ -2,25 +2,30 @@ package com.artijjaek.core.domain.mail.service
 
 import com.artijjaek.core.common.mail.dto.ArticleAlertDto
 import com.artijjaek.core.common.mail.dto.MemberAlertDto
-import com.artijjaek.core.common.mail.service.MailService
+import com.artijjaek.core.common.mail.service.MailSendService
 import com.artijjaek.core.domain.mail.dto.ArticleMailPayload
 import com.artijjaek.core.domain.mail.dto.NoticeMailPayload
+import com.artijjaek.core.domain.mail.dto.ProcessResult
 import com.artijjaek.core.domain.mail.dto.WelcomeMailPayload
 import com.artijjaek.core.domain.mail.entity.EmailOutbox
 import com.artijjaek.core.domain.mail.enums.EmailOutboxStatus
 import com.artijjaek.core.domain.mail.enums.EmailOutboxType
+import com.artijjaek.core.domain.mail.enums.MailFailureType
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.LoggerFactory
+import org.springframework.mail.MailAuthenticationException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
+import java.util.*
 
 @Service
 class EmailOutboxProcessor(
     private val emailOutboxDomainService: EmailOutboxDomainService,
-    private val mailService: MailService,
+    private val mailSendService: MailSendService,
     private val objectMapper: ObjectMapper,
+    private val alertService: EmailOutboxAlertService,
 ) {
     private val log = LoggerFactory.getLogger(EmailOutboxProcessor::class.java)
 
@@ -36,9 +41,11 @@ class EmailOutboxProcessor(
         return try {
             send(outbox)
             markSuccess(outbox, now)
+            alertService.recordSuccess()
             ProcessResult(skipped = false, nextRetryAt = null)
         } catch (e: Exception) {
             val nextRetryAt = markFailure(outbox, e, now)
+            alertService.recordFailure()
             ProcessResult(skipped = false, nextRetryAt = nextRetryAt)
         }
     }
@@ -48,7 +55,7 @@ class EmailOutboxProcessor(
             EmailOutboxType.WELCOME -> {
                 val payload = objectMapper.readValue(outbox.payloadJson, WelcomeMailPayload::class.java)
                 val member = payload.member
-                mailService.sendSubscribeMail(
+                mailSendService.sendSubscribeMail(
                     MemberAlertDto(
                         email = member.email,
                         nickname = member.nickname,
@@ -69,7 +76,7 @@ class EmailOutboxProcessor(
                         companyNameKr = it.companyNameKr
                     )
                 }
-                mailService.sendArticleMail(
+                mailSendService.sendArticleMail(
                     MemberAlertDto(
                         email = member.email,
                         nickname = member.nickname,
@@ -82,7 +89,7 @@ class EmailOutboxProcessor(
             EmailOutboxType.NOTICE -> {
                 val payload = objectMapper.readValue(outbox.payloadJson, NoticeMailPayload::class.java)
                 val member = payload.member
-                mailService.sendNoticeMail(
+                mailSendService.sendNoticeMail(
                     MemberAlertDto(
                         email = member.email,
                         nickname = member.nickname,
@@ -105,15 +112,23 @@ class EmailOutboxProcessor(
 
     private fun markFailure(outbox: EmailOutbox, throwable: Throwable, now: LocalDateTime): LocalDateTime? {
         val failedAttempts = outbox.attemptCount + 1
-        outbox.attemptCount = failedAttempts
-        outbox.lastError = buildFailureMessage(throwable)
+        val failureType = classifyFailure(throwable)
 
-        if (failedAttempts >= outbox.maxAttempts) {
+        outbox.attemptCount = failedAttempts
+        outbox.lastError = buildFailureMessage(failureType, throwable)
+
+        if (failureType == MailFailureType.PERMANENT || failedAttempts >= outbox.maxAttempts) {
             outbox.status = EmailOutboxStatus.DEAD
             outbox.nextRetryAt = null
             emailOutboxDomainService.save(outbox)
+            alertService.notifyDead(outbox.id, outbox.lastError)
 
-            log.error("[EmailOutbox] moved to DEAD id={}, attempts={}, error={}", outbox.id, failedAttempts, outbox.lastError)
+            log.error(
+                "[EmailOutbox] moved to DEAD id={}, attempts={}, error={}",
+                outbox.id,
+                failedAttempts,
+                outbox.lastError
+            )
             return null
         }
 
@@ -141,14 +156,56 @@ class EmailOutboxProcessor(
         }
     }
 
-    private fun buildFailureMessage(throwable: Throwable): String {
+    private fun buildFailureMessage(failureType: MailFailureType, throwable: Throwable): String {
         val type = throwable::class.simpleName ?: "UnknownException"
         val message = throwable.message ?: "no message"
-        return "$type: $message".take(1000)
+        return "$failureType|$type: $message".take(1000)
+    }
+
+    private fun classifyFailure(throwable: Throwable): MailFailureType {
+        if (throwable is MailAuthenticationException) {
+            return MailFailureType.PERMANENT
+        }
+
+        val lowerMessage = collectMessages(throwable).lowercase(Locale.ROOT)
+
+        val permanentSignals = listOf(
+            "550",
+            "user unknown",
+            "invalid address",
+            "mailbox unavailable",
+            "address rejected",
+            "recipient address rejected",
+        )
+        if (permanentSignals.any { lowerMessage.contains(it) }) {
+            return MailFailureType.PERMANENT
+        }
+
+        val transientSignals = listOf(
+            "421",
+            "timeout",
+            "temporar",
+            "connection reset",
+            "could not connect",
+            "read timed out",
+        )
+        if (transientSignals.any { lowerMessage.contains(it) }) {
+            return MailFailureType.TRANSIENT
+        }
+
+        return MailFailureType.TRANSIENT
+    }
+
+    private fun collectMessages(throwable: Throwable): String {
+        val builder = StringBuilder()
+        var current: Throwable? = throwable
+        while (current != null) {
+            if (builder.isNotEmpty()) {
+                builder.append(" | ")
+            }
+            builder.append(current.message ?: current::class.simpleName ?: "unknown")
+            current = current.cause
+        }
+        return builder.toString()
     }
 }
-
-data class ProcessResult(
-    val skipped: Boolean,
-    val nextRetryAt: LocalDateTime?,
-)

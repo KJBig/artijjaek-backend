@@ -5,7 +5,7 @@ import com.artijjaek.api.dto.request.SubscriptionChangeRequest
 import com.artijjaek.api.dto.request.UnsubscriptionRequest
 import com.artijjaek.core.common.error.ApplicationException
 import com.artijjaek.core.common.error.ErrorCode
-import com.artijjaek.core.common.mail.service.MailService
+import com.artijjaek.core.common.mail.service.MailSendService
 import com.artijjaek.core.domain.category.entity.Category
 import com.artijjaek.core.domain.category.enums.PublishType
 import com.artijjaek.core.domain.category.service.CategoryDomainService
@@ -59,7 +59,7 @@ class MemberServiceTest {
     lateinit var unsubscriptionDomainService: UnsubscriptionDomainService
 
     @MockK
-    lateinit var mailService: MailService
+    lateinit var mailSendService: MailSendService
 
     @MockK
     lateinit var webHookService: WebHookService
@@ -105,7 +105,7 @@ class MemberServiceTest {
         justRun { companySubscriptionDomainService.saveAll(any()) }
         every { categoryDomainService.findAllOrByIds(request.categoryIds) }.returns(categories)
         justRun { categorySubscriptionDomainService.saveAll(any()) }
-        justRun { mailService.sendSubscribeMail(any()) }
+        justRun { mailSendService.sendSubscribeMail(any()) }
         justRun { webHookService.sendNewSubscribeMessage(any()) }
 
 
@@ -117,7 +117,7 @@ class MemberServiceTest {
         verify { memberDomainService.save(any()) }
         verify { companySubscriptionDomainService.saveAll(any()) }
         verify { categorySubscriptionDomainService.saveAll(any()) }
-        verify { mailService.sendSubscribeMail(any()) }
+        verify { mailSendService.sendSubscribeMail(any()) }
         verify { webHookService.sendNewSubscribeMessage(any()) }
     }
 
@@ -152,7 +152,7 @@ class MemberServiceTest {
         verify(exactly = 0) { memberDomainService.save(any()) }
         verify(exactly = 0) { companySubscriptionDomainService.saveAll(any()) }
         verify(exactly = 0) { categorySubscriptionDomainService.saveAll(any()) }
-        verify(exactly = 0) { mailService.sendSubscribeMail(any()) }
+        verify(exactly = 0) { mailSendService.sendSubscribeMail(any()) }
     }
 
     @Test

@@ -12,7 +12,9 @@ import com.artijjaek.core.domain.article.service.ArticleDomainService
 import com.artijjaek.core.domain.category.entity.Category
 import com.artijjaek.core.domain.category.enums.PublishType
 import com.artijjaek.core.domain.company.entity.Company
+import com.artijjaek.core.domain.mail.service.EmailOutboxDomainService
 import com.artijjaek.core.domain.mail.service.EmailOutboxEnqueueService
+import com.artijjaek.core.domain.mail.service.EmailOutboxWorkerCoordinator
 import com.artijjaek.core.domain.member.entity.Member
 import com.artijjaek.core.domain.member.enums.MemberStatus
 import com.artijjaek.core.domain.member.service.MemberDomainService
@@ -44,6 +46,12 @@ class AdminMailServiceTest {
 
     @MockK
     lateinit var emailOutboxEnqueueService: EmailOutboxEnqueueService
+
+    @MockK
+    lateinit var emailOutboxDomainService: EmailOutboxDomainService
+
+    @MockK
+    lateinit var emailOutboxWorkerCoordinator: EmailOutboxWorkerCoordinator
 
     @Test
     @DisplayName("특정 회원들에게 환영 이메일을 발송한다")

@@ -10,7 +10,7 @@ import com.artijjaek.api.dto.response.MemberDataResponse
 import com.artijjaek.core.common.error.ApplicationException
 import com.artijjaek.core.common.error.ErrorCode.*
 import com.artijjaek.core.common.mail.dto.MemberAlertDto
-import com.artijjaek.core.common.mail.service.MailService
+import com.artijjaek.core.common.mail.service.MailSendService
 import com.artijjaek.core.domain.category.entity.Category
 import com.artijjaek.core.domain.category.service.CategoryDomainService
 import com.artijjaek.core.domain.company.entity.Company
@@ -36,7 +36,7 @@ class MemberService(
     private val categoryDomainService: CategoryDomainService,
     private val categorySubscriptionDomainService: CategorySubscriptionDomainService,
     private val unsubscriptionDomainService: UnsubscriptionDomainService,
-    private val mailService: MailService,
+    private val mailSendService: MailSendService,
     private val webHookService: WebHookService,
 ) {
 
@@ -66,7 +66,7 @@ class MemberService(
         val categorySubscriptions = categories.map { CategorySubscription(member = newMember, category = it) }
         categorySubscriptionDomainService.saveAll(categorySubscriptions)
 
-        mailService.sendSubscribeMail(MemberAlertDto.from(newMember))
+        mailSendService.sendSubscribeMail(MemberAlertDto.from(newMember))
         webHookService.sendNewSubscribeMessage(newMember)
     }
 
