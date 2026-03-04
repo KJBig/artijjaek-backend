@@ -2,8 +2,9 @@ package com.artijjaek.batch.job
 
 import com.artijjaek.core.common.mail.dto.ArticleAlertDto
 import com.artijjaek.core.common.mail.dto.MemberAlertDto
-import com.artijjaek.core.common.mail.service.MailService
 import com.artijjaek.core.domain.article.service.ArticleDomainService
+import com.artijjaek.core.domain.mail.enums.EmailOutboxRequestedBy
+import com.artijjaek.core.domain.mail.queue.publisher.MailQueuePublisher
 import com.artijjaek.core.domain.member.entity.Member
 import com.artijjaek.core.domain.member.entity.MemberArticle
 import com.artijjaek.core.domain.member.service.MemberArticleDomainService
@@ -33,7 +34,7 @@ class TransportBatchConfig(
     private val companySubscriptionDomainService: CompanySubscriptionDomainService,
     private val categorySubscriptionDomainService: CategorySubscriptionDomainService,
     private val articleDomainService: ArticleDomainService,
-    private val mailService: MailService,
+    private val mailQueuePublisher: MailQueuePublisher,
 
     ) {
 
@@ -89,7 +90,11 @@ class TransportBatchConfig(
 
             val articles = todayArticles.map { ArticleAlertDto.from(it) }
 
-            mailService.sendArticleMail(MemberAlertDto.from(member), articles)
+            mailQueuePublisher.enqueueArticleMail(
+                memberData = MemberAlertDto.from(member),
+                articleDatas = articles,
+                requestedBy = EmailOutboxRequestedBy.BATCH
+            )
 
             todayArticles.stream().map { MemberArticle(member = member, article = it) }.toList()
         }

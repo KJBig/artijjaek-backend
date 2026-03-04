@@ -29,7 +29,8 @@ class JwtAuthenticationFilter(
 
     private fun resolveToken(request: HttpServletRequest): String? {
         val header = request.getHeader("Authorization") ?: return null
-        if (!header.startsWith("Bearer ")) return null
+        val hasBearerPrefix = header.startsWith("Bearer ")
+        if (!hasBearerPrefix) return null
         return header.removePrefix("Bearer ").trim()
     }
 
@@ -39,4 +40,3 @@ class JwtAuthenticationFilter(
         return UsernamePasswordAuthenticationToken(adminDetails, null, adminDetails.authorities)
     }
 }
-

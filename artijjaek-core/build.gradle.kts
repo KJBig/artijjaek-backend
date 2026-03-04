@@ -23,9 +23,6 @@ dependencies {
     // Http
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
-    // Mail
-    implementation("org.springframework.boot:spring-boot-starter-mail")
-
     // JWT
     implementation("io.jsonwebtoken:jjwt-api:0.12.5")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.5")

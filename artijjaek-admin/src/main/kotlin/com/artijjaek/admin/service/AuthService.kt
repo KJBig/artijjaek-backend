@@ -60,7 +60,8 @@ class AuthService(
             throw ApplicationException(ADMIN_NO_LOGIN_ERROR)
         }
 
-        if (!admin.refreshToken.equals(request.refreshToken)) {
+        val refreshTokenMatches = admin.refreshToken.equals(request.refreshToken)
+        if (!refreshTokenMatches) {
             throw ApplicationException(JWT_NOT_MATCH_ERROR)
         }
 

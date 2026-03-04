@@ -12,4 +12,6 @@ interface WebHookService {
     fun sendCategoryAllocateMessage(articles: List<ArticleAlertDto>, categories: Map<Int, Category>)
     fun sendNewSubscribeMessage(newMember: Member)
     fun sendUnsubscribeMessage(member: Member, unsubscription: Unsubscription)
+    fun sendMailErrorMessage(outboxId: Long?, errorMessage: String?)
+    fun sendMailAlertMessage(content: String)
 }
