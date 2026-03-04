@@ -3,6 +3,7 @@ package com.artijjaek.core.domain.mail.service
 import com.artijjaek.core.domain.mail.dto.DailyEmailSendAttemptCount
 import com.artijjaek.core.domain.mail.entity.EmailOutboxAttempt
 import com.artijjaek.core.domain.mail.entity.EmailOutbox
+import com.artijjaek.core.domain.mail.enums.EmailOutboxAttemptResult
 import com.artijjaek.core.domain.mail.enums.EmailOutboxRequestedBy
 import com.artijjaek.core.domain.mail.enums.EmailOutboxStatus
 import com.artijjaek.core.domain.mail.enums.EmailOutboxType
@@ -32,6 +33,22 @@ class EmailOutboxDomainService(
 
     fun saveAttempt(attempt: EmailOutboxAttempt): EmailOutboxAttempt {
         return emailOutboxAttemptRepository.save(attempt)
+    }
+
+    fun searchAttempts(
+        pageable: Pageable,
+        status: EmailOutboxAttemptResult?,
+        requestedBy: EmailOutboxRequestedBy?,
+        occurredAtFrom: LocalDateTime?,
+        occurredAtTo: LocalDateTime?,
+    ): Page<EmailOutboxAttempt> {
+        return emailOutboxAttemptRepository.search(
+            pageable = pageable,
+            status = status,
+            requestedBy = requestedBy,
+            occurredAtFrom = occurredAtFrom,
+            occurredAtTo = occurredAtTo
+        )
     }
 
     fun findDueIds(now: LocalDateTime, limit: Int): List<Long> {

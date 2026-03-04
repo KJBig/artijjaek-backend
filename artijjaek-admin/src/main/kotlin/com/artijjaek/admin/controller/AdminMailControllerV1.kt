@@ -9,8 +9,10 @@ import com.artijjaek.admin.dto.request.PostNoticeMailRequest
 import com.artijjaek.admin.dto.request.PostWelcomeMailRequest
 import com.artijjaek.admin.dto.response.MailDailyFailedCountResponse
 import com.artijjaek.admin.dto.response.MailDailySentCountResponse
+import com.artijjaek.admin.dto.response.MailOutboxAttemptPageResponse
 import com.artijjaek.admin.dto.response.MailOutboxPageResponse
 import com.artijjaek.admin.service.AdminMailService
+import com.artijjaek.core.domain.mail.enums.EmailOutboxAttemptResult
 import com.artijjaek.core.domain.mail.enums.EmailOutboxRequestedBy
 import com.artijjaek.core.domain.mail.enums.EmailOutboxStatus
 import com.artijjaek.core.domain.mail.enums.EmailOutboxType
@@ -77,6 +79,24 @@ class AdminMailControllerV1(
             recipientEmail = recipientEmail,
             requestedAtFrom = requestedAtFrom,
             requestedAtTo = requestedAtTo
+        )
+        return ResponseEntity.ok(SuccessDataResponse(response))
+    }
+
+    @GetMapping("/outbox/attempt/list")
+    fun getMailOutboxAttempts(
+        pageable: Pageable,
+        @RequestParam(required = false) status: EmailOutboxAttemptResult?,
+        @RequestParam(required = false) requestedBy: EmailOutboxRequestedBy?,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate?,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate?,
+    ): ResponseEntity<SuccessDataResponse<MailOutboxAttemptPageResponse>> {
+        val response = adminMailService.searchOutboxAttempts(
+            pageable = pageable,
+            status = status,
+            requestedBy = requestedBy,
+            startDate = startDate,
+            endDate = endDate
         )
         return ResponseEntity.ok(SuccessDataResponse(response))
     }

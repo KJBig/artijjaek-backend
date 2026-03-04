@@ -11,7 +11,9 @@ import com.artijjaek.core.domain.category.entity.Category
 import com.artijjaek.core.domain.category.enums.PublishType
 import com.artijjaek.core.domain.company.entity.Company
 import com.artijjaek.core.domain.mail.entity.EmailOutbox
+import com.artijjaek.core.domain.mail.entity.EmailOutboxAttempt
 import com.artijjaek.core.domain.mail.dto.DailyEmailSendAttemptCount
+import com.artijjaek.core.domain.mail.enums.EmailOutboxAttemptResult
 import com.artijjaek.core.domain.mail.enums.EmailOutboxRequestedBy
 import com.artijjaek.core.domain.mail.enums.EmailOutboxStatus
 import com.artijjaek.core.domain.mail.enums.EmailOutboxType
@@ -32,6 +34,8 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
 import org.springframework.test.context.ActiveProfiles
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -332,6 +336,91 @@ class AdminMailServiceTest {
                 startDate = LocalDate.of(2026, 2, 3),
                 endDate = LocalDate.of(2026, 2, 1),
                 requestedBy = null
+            )
+        }
+
+        assertThat(exception.code).isEqualTo(REQUEST_VALIDATION_ERROR.code)
+    }
+
+    @Test
+    @DisplayName("이메일 전송 시도 이력을 시도 시점 내림차순으로 조회한다")
+    fun searchOutboxAttemptsTest() {
+        // given
+        val pageable = PageRequest.of(0, 20)
+        val firstOutbox = EmailOutbox(
+            id = 101L,
+            mailType = EmailOutboxType.NOTICE,
+            recipientEmail = "a@test.com",
+            subject = "A",
+            payloadJson = "{}",
+            status = EmailOutboxStatus.SENT,
+            requestedBy = EmailOutboxRequestedBy.ADMIN_API,
+            requestedAt = LocalDateTime.parse("2026-02-27T09:00:00")
+        )
+        val secondOutbox = EmailOutbox(
+            id = 102L,
+            mailType = EmailOutboxType.ARTICLE,
+            recipientEmail = "b@test.com",
+            subject = "B",
+            payloadJson = "{}",
+            status = EmailOutboxStatus.FAIL,
+            requestedBy = EmailOutboxRequestedBy.ADMIN_API,
+            requestedAt = LocalDateTime.parse("2026-02-27T10:00:00")
+        )
+        val firstAttempt = EmailOutboxAttempt(
+            id = 10L,
+            emailOutbox = firstOutbox,
+            attemptNo = 1,
+            result = EmailOutboxAttemptResult.SUCCESS,
+            requestedBy = EmailOutboxRequestedBy.ADMIN_API,
+            occurredAt = LocalDateTime.parse("2026-02-28T13:00:00")
+        )
+        val secondAttempt = EmailOutboxAttempt(
+            id = 11L,
+            emailOutbox = secondOutbox,
+            attemptNo = 2,
+            result = EmailOutboxAttemptResult.FAIL,
+            requestedBy = EmailOutboxRequestedBy.ADMIN_API,
+            occurredAt = LocalDateTime.parse("2026-02-28T12:00:00")
+        )
+        val page = PageImpl(listOf(firstAttempt, secondAttempt), pageable, 2)
+
+        every {
+            emailOutboxDomainService.searchAttempts(
+                pageable = any(),
+                status = EmailOutboxAttemptResult.FAIL,
+                requestedBy = EmailOutboxRequestedBy.ADMIN_API,
+                occurredAtFrom = LocalDate.of(2026, 2, 28).atStartOfDay(),
+                occurredAtTo = LocalDate.of(2026, 3, 1).atStartOfDay()
+            )
+        } returns page
+
+        // when
+        val result = adminMailService.searchOutboxAttempts(
+            pageable = pageable,
+            status = EmailOutboxAttemptResult.FAIL,
+            requestedBy = EmailOutboxRequestedBy.ADMIN_API,
+            startDate = LocalDate.of(2026, 2, 28),
+            endDate = LocalDate.of(2026, 2, 28)
+        )
+
+        // then
+        assertThat(result.totalCount).isEqualTo(2)
+        assertThat(result.content).hasSize(2)
+        assertThat(result.content[0].occurredAt).isEqualTo(LocalDateTime.parse("2026-02-28T13:00:00"))
+        assertThat(result.content[0].status).isEqualTo(EmailOutboxAttemptResult.SUCCESS)
+    }
+
+    @Test
+    @DisplayName("이메일 전송 시도 이력 조회 시 시작일이 종료일보다 늦으면 예외가 발생한다")
+    fun searchOutboxAttemptsWithInvalidDateRangeTest() {
+        val exception = assertThrows<ApplicationException> {
+            adminMailService.searchOutboxAttempts(
+                pageable = PageRequest.of(0, 20),
+                status = null,
+                requestedBy = null,
+                startDate = LocalDate.of(2026, 3, 1),
+                endDate = LocalDate.of(2026, 2, 28)
             )
         }
 
