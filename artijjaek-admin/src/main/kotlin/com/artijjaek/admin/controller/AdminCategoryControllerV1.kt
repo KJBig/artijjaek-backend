@@ -2,6 +2,7 @@ package com.artijjaek.admin.controller
 
 import com.artijjaek.admin.dto.common.SuccessDataResponse
 import com.artijjaek.admin.dto.response.MemberOptionCategoryResponse
+import com.artijjaek.admin.dto.response.TopSubscribedCategoryResponse
 import com.artijjaek.admin.service.AdminCategoryService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -17,6 +18,12 @@ class AdminCategoryControllerV1(
     @GetMapping("/list")
     fun getMemberCategoryOptions(): ResponseEntity<SuccessDataResponse<List<MemberOptionCategoryResponse>>> {
         val response = adminCategoryService.getMemberCategoryOptions()
+        return ResponseEntity.ok(SuccessDataResponse(response))
+    }
+
+    @GetMapping("/subscribed/top")
+    fun getTopSubscribedCategories(): ResponseEntity<SuccessDataResponse<List<TopSubscribedCategoryResponse>>> {
+        val response = adminCategoryService.getTopSubscribedCategories()
         return ResponseEntity.ok(SuccessDataResponse(response))
     }
 }

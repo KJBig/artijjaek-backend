@@ -1,6 +1,7 @@
 package com.artijjaek.core.domain.subscription.service
 
 import com.artijjaek.core.domain.member.entity.Member
+import com.artijjaek.core.domain.subscription.dto.TopSubscribedCompanyCount
 import com.artijjaek.core.domain.subscription.entity.CompanySubscription
 import com.artijjaek.core.domain.subscription.repository.CompanySubscriptionRepository
 import org.springframework.stereotype.Service
@@ -19,5 +20,9 @@ class CompanySubscriptionDomainService(
 
     fun deleteAllByMemberId(memberId: Long) {
         companySubscriptionRepository.deleteAllByMemberId(memberId)
+    }
+
+    fun findTopSubscribedCompaniesWithTies(limit: Int): List<TopSubscribedCompanyCount> {
+        return companySubscriptionRepository.findTopSubscribedCompaniesWithTies(limit)
     }
 }

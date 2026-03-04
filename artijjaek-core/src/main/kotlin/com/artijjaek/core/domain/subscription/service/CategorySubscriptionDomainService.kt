@@ -1,6 +1,7 @@
 package com.artijjaek.core.domain.subscription.service
 
 import com.artijjaek.core.domain.member.entity.Member
+import com.artijjaek.core.domain.subscription.dto.TopSubscribedCategoryCount
 import com.artijjaek.core.domain.subscription.entity.CategorySubscription
 import com.artijjaek.core.domain.subscription.repository.CategorySubscriptionRepository
 import org.springframework.stereotype.Service
@@ -20,6 +21,10 @@ class CategorySubscriptionDomainService(
 
     fun findAllByMemberFetchCategory(member: Member): List<CategorySubscription> {
         return categorySubscriptionRepository.findAllByMemberFetchCategory(member)
+    }
+
+    fun findTopSubscribedCategoriesWithTies(limit: Int): List<TopSubscribedCategoryCount> {
+        return categorySubscriptionRepository.findTopSubscribedCategoriesWithTies(limit)
     }
 
 }

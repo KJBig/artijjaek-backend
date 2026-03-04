@@ -1,23 +1,21 @@
-package com.artijjaek.core.common.mail.service
+package com.artijjaek.mail_worker.smtp
 
 import com.artijjaek.core.common.mail.dto.ArticleAlertDto
 import com.artijjaek.core.common.mail.dto.MemberAlertDto
 import org.slf4j.LoggerFactory
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mail.javamail.MimeMessageHelper
-import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 import java.time.DayOfWeek
 import java.time.LocalDate
 
 @Service
-class MailService(
+class MailSendService(
     private val javaMailSender: JavaMailSender,
 ) {
 
-    private val log = LoggerFactory.getLogger(MailService::class.java)
+    private val log = LoggerFactory.getLogger(MailSendService::class.java)
 
-    @Async("asyncEmailThreadPoolExecutor")
     fun sendArticleMail(memberData: MemberAlertDto, articleDatas: List<ArticleAlertDto>) {
         val mimeMessage = javaMailSender.createMimeMessage()
         val today = LocalDate.now()
@@ -180,7 +178,8 @@ class MailService(
                 """.trimIndent()
             }
 
-            val imageTd = if (!articleData.image.isNullOrBlank()) {
+            val hasImage = !articleData.image.isNullOrBlank()
+            val imageTd = if (hasImage) {
                 """
                     <td width="180" valign="top" style="padding:0;">
                       <img src="${articleData.image}" alt="썸네일" width="180" height="120"
@@ -254,7 +253,6 @@ class MailService(
         }
     }
 
-    @Async("asyncEmailThreadPoolExecutor")
     fun sendSubscribeMail(memberData: MemberAlertDto) {
         val mimeMessage = javaMailSender.createMimeMessage()
 
@@ -421,7 +419,6 @@ class MailService(
         }
     }
 
-    @Async("asyncEmailThreadPoolExecutor")
     fun sendNoticeMail(memberData: MemberAlertDto, title: String, content: String) {
         val mimeMessage = javaMailSender.createMimeMessage()
 

@@ -10,11 +10,12 @@ import com.artijjaek.api.dto.response.MemberDataResponse
 import com.artijjaek.core.common.error.ApplicationException
 import com.artijjaek.core.common.error.ErrorCode.*
 import com.artijjaek.core.common.mail.dto.MemberAlertDto
-import com.artijjaek.core.common.mail.service.MailService
 import com.artijjaek.core.domain.category.entity.Category
 import com.artijjaek.core.domain.category.service.CategoryDomainService
 import com.artijjaek.core.domain.company.entity.Company
 import com.artijjaek.core.domain.company.service.CompanyDomainService
+import com.artijjaek.core.domain.mail.enums.EmailOutboxRequestedBy
+import com.artijjaek.core.domain.mail.queue.publisher.MailQueuePublisher
 import com.artijjaek.core.domain.member.entity.Member
 import com.artijjaek.core.domain.member.enums.MemberStatus
 import com.artijjaek.core.domain.member.service.MemberDomainService
@@ -36,7 +37,7 @@ class MemberService(
     private val categoryDomainService: CategoryDomainService,
     private val categorySubscriptionDomainService: CategorySubscriptionDomainService,
     private val unsubscriptionDomainService: UnsubscriptionDomainService,
-    private val mailService: MailService,
+    private val mailQueuePublisher: MailQueuePublisher,
     private val webHookService: WebHookService,
 ) {
 
@@ -66,7 +67,7 @@ class MemberService(
         val categorySubscriptions = categories.map { CategorySubscription(member = newMember, category = it) }
         categorySubscriptionDomainService.saveAll(categorySubscriptions)
 
-        mailService.sendSubscribeMail(MemberAlertDto.from(newMember))
+        mailQueuePublisher.enqueueWelcomeMail(MemberAlertDto.from(newMember), EmailOutboxRequestedBy.API)
         webHookService.sendNewSubscribeMessage(newMember)
     }
 

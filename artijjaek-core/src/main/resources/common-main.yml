@@ -3,3 +3,24 @@ jwt:
   expiration-time:
     access: ${JWT_ACCESS_EXPIRATION_TIME}
     refresh: ${JWT_REFRESH_EXPIRATION_TIME}
+
+async:
+  alert:
+    core-pool-size: ${ASYNC_ALERT_CORE_POOL_SIZE:30}
+    max-pool-size: ${ASYNC_ALERT_MAX_POOL_SIZE:60}
+    queue-capacity: ${ASYNC_ALERT_QUEUE_CAPACITY:600}
+    thread-name-prefix: ${ASYNC_ALERT_THREAD_NAME_PREFIX:Artijjaek-Async-Thread-}
+  email-dispatch:
+    core-pool-size: ${ASYNC_EMAIL_DISPATCH_CORE_POOL_SIZE:4}
+    max-pool-size: ${ASYNC_EMAIL_DISPATCH_MAX_POOL_SIZE:4}
+    queue-capacity: ${ASYNC_EMAIL_DISPATCH_QUEUE_CAPACITY:100}
+    thread-name-prefix: ${ASYNC_EMAIL_DISPATCH_THREAD_NAME_PREFIX:Artijjaek-Email-Thread-}
+  mail-relay:
+    core-pool-size: ${MAIL_RELAY_CORE_POOL_SIZE:1}
+    max-pool-size: ${MAIL_RELAY_MAX_POOL_SIZE:1}
+    queue-capacity: ${MAIL_RELAY_QUEUE_CAPACITY:100}
+  mail-worker:
+    core-pool-size: ${MAIL_WORKER_CORE_POOL_SIZE:1}
+    max-pool-size: ${MAIL_WORKER_MAX_POOL_SIZE:1}
+    queue-capacity: ${MAIL_WORKER_QUEUE_CAPACITY:10}
+    consumer-count: ${MAIL_WORKER_CONSUMER_COUNT:1}

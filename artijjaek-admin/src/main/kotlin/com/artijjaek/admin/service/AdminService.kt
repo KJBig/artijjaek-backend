@@ -17,7 +17,8 @@ class AdminService(
     fun changeAdminPassword(adminId: Long, request: PatchPasswordRequest) {
         val admin = adminDomainService.findById(adminId)
 
-        if (!PasswordEncoder.isMatch(request.oldPassword, admin.password)) {
+        val oldPasswordMatches = PasswordEncoder.isMatch(request.oldPassword, admin.password)
+        if (!oldPasswordMatches) {
             throw ApplicationException(ADMIN_PASSWORD_NOT_MATCH_ERROR)
         }
 

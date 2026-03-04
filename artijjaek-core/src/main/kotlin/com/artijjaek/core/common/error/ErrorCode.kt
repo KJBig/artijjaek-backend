@@ -27,6 +27,10 @@ enum class ErrorCode(val code: String, val httpStatus: Int, val message: String)
     MEMBER_TOKEN_NOT_MATCH_ERROR("MEE-3", SC_UNAUTHORIZED, "토큰이 일치하지 않습니다."),
     MEMBER_EMAIL_NOT_FOUND_ERROR("MEE-4", SC_BAD_REQUEST, "이메일이 없는 사용자입니다."),
 
+    // Mail Error
+    MAIL_OUTBOX_NOT_FOUND_ERROR("MAE-1", SC_NOT_FOUND, "존재하지 않는 메일 발송 이력입니다."),
+    MAIL_OUTBOX_RETRY_NOT_ALLOWED_ERROR("MAE-2", SC_BAD_REQUEST, "재시도할 수 없는 메일 상태입니다."),
+
     // Subscription Error
     // Unsubscription Error
 
