@@ -19,6 +19,9 @@ data class MailOutboxSimpleResponse(
     val requestedAt: LocalDateTime,
     val nextRetryAt: LocalDateTime?,
     val sentAt: LocalDateTime?,
+    val manualRetryCount: Int,
+    val lastRetriedByAdminId: Long?,
+    val lastRetriedAt: LocalDateTime?,
 ) {
     companion object {
         fun from(outbox: EmailOutbox): MailOutboxSimpleResponse {
@@ -34,7 +37,10 @@ data class MailOutboxSimpleResponse(
                 lastError = outbox.lastError,
                 requestedAt = outbox.requestedAt,
                 nextRetryAt = outbox.nextRetryAt,
-                sentAt = outbox.sentAt
+                sentAt = outbox.sentAt,
+                manualRetryCount = outbox.manualRetryCount,
+                lastRetriedByAdminId = outbox.lastRetriedByAdminId,
+                lastRetriedAt = outbox.lastRetriedAt
             )
         }
     }

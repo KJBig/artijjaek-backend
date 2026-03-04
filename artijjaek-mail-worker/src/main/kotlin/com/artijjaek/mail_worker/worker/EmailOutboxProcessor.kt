@@ -1,8 +1,7 @@
-package com.artijjaek.core.domain.mail.service
+package com.artijjaek.mail_worker.worker
 
 import com.artijjaek.core.common.mail.dto.ArticleAlertDto
 import com.artijjaek.core.common.mail.dto.MemberAlertDto
-import com.artijjaek.core.common.mail.service.MailSendService
 import com.artijjaek.core.domain.mail.dto.ArticleMailPayload
 import com.artijjaek.core.domain.mail.dto.NoticeMailPayload
 import com.artijjaek.core.domain.mail.dto.ProcessResult
@@ -11,6 +10,8 @@ import com.artijjaek.core.domain.mail.entity.EmailOutbox
 import com.artijjaek.core.domain.mail.enums.EmailOutboxStatus
 import com.artijjaek.core.domain.mail.enums.EmailOutboxType
 import com.artijjaek.core.domain.mail.enums.MailFailureType
+import com.artijjaek.core.domain.mail.service.EmailOutboxDomainService
+import com.artijjaek.mail_worker.smtp.MailSendService
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.LoggerFactory
 import org.springframework.mail.MailAuthenticationException
@@ -31,7 +32,8 @@ class EmailOutboxProcessor(
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     fun processIfDue(outboxId: Long, now: LocalDateTime = LocalDateTime.now()): ProcessResult {
-        if (!emailOutboxDomainService.claimForSending(outboxId, now)) {
+        val claimedForSending = emailOutboxDomainService.claimForSending(outboxId, now)
+        if (!claimedForSending) {
             return ProcessResult(skipped = true, nextRetryAt = null)
         }
 
@@ -136,6 +138,7 @@ class EmailOutboxProcessor(
         outbox.status = EmailOutboxStatus.FAIL
         outbox.nextRetryAt = nextRetryAt
         emailOutboxDomainService.save(outbox)
+        alertService.notifyFail(outbox.id, failedAttempts, nextRetryAt, outbox.lastError)
 
         log.warn(
             "[EmailOutbox] send failed id={}, attempts={}, nextRetryAt={}, error={}",
@@ -167,7 +170,16 @@ class EmailOutboxProcessor(
             return MailFailureType.PERMANENT
         }
 
-        val lowerMessage = collectMessages(throwable).lowercase(Locale.ROOT)
+        val message = collectMessages(throwable)
+        val lowerMessage = message.lowercase(Locale.ROOT)
+
+        if (containsSmtp5xx(message)) {
+            return MailFailureType.PERMANENT
+        }
+
+        if (containsSmtp4xx(message)) {
+            return MailFailureType.TRANSIENT
+        }
 
         val permanentSignals = listOf(
             "550",
@@ -196,6 +208,14 @@ class EmailOutboxProcessor(
         return MailFailureType.TRANSIENT
     }
 
+    private fun containsSmtp5xx(message: String): Boolean {
+        return Regex("""\b5\d{2}\b""").containsMatchIn(message)
+    }
+
+    private fun containsSmtp4xx(message: String): Boolean {
+        return Regex("""\b4\d{2}\b""").containsMatchIn(message)
+    }
+
     private fun collectMessages(throwable: Throwable): String {
         val builder = StringBuilder()
         var current: Throwable? = throwable
@@ -208,4 +228,5 @@ class EmailOutboxProcessor(
         }
         return builder.toString()
     }
+
 }

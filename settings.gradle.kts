@@ -5,5 +5,7 @@ include(
     "artijjaek-api",
     "artijjaek-app",
     "artijjaek-batch",
-    "artijjaek-core"
+    "artijjaek-core",
+    "artijjaek-mq",
+    "artijjaek-mail-worker"
 )

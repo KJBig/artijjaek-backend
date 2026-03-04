@@ -9,13 +9,13 @@ import com.artijjaek.core.common.error.ApplicationException
 import com.artijjaek.core.common.error.ErrorCode.*
 import com.artijjaek.core.common.mail.dto.ArticleAlertDto
 import com.artijjaek.core.common.mail.dto.MemberAlertDto
+import com.artijjaek.core.domain.article.service.ArticleDomainService
 import com.artijjaek.core.domain.mail.enums.EmailOutboxRequestedBy
 import com.artijjaek.core.domain.mail.enums.EmailOutboxStatus
 import com.artijjaek.core.domain.mail.enums.EmailOutboxType
+import com.artijjaek.core.domain.mail.queue.publisher.MailQueuePublisher
+import com.artijjaek.core.domain.mail.queue.trigger.MailDispatchTrigger
 import com.artijjaek.core.domain.mail.service.EmailOutboxDomainService
-import com.artijjaek.core.domain.mail.service.EmailOutboxEnqueueService
-import com.artijjaek.core.domain.mail.service.EmailOutboxWorkerCoordinator
-import com.artijjaek.core.domain.article.service.ArticleDomainService
 import com.artijjaek.core.domain.member.service.MemberDomainService
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
@@ -28,9 +28,9 @@ import java.time.LocalDateTime
 class AdminMailService(
     private val memberDomainService: MemberDomainService,
     private val articleDomainService: ArticleDomainService,
-    private val emailOutboxEnqueueService: EmailOutboxEnqueueService,
+    private val mailQueuePublisher: MailQueuePublisher,
     private val emailOutboxDomainService: EmailOutboxDomainService,
-    private val emailOutboxWorkerCoordinator: EmailOutboxWorkerCoordinator,
+    private val mailDispatchTrigger: MailDispatchTrigger,
 ) {
 
     @Transactional
@@ -43,7 +43,7 @@ class AdminMailService(
                 throw ApplicationException(MEMBER_EMAIL_NOT_FOUND_ERROR)
             }
 
-            emailOutboxEnqueueService.enqueueWelcomeMail(MemberAlertDto.from(member), EmailOutboxRequestedBy.ADMIN_API)
+            mailQueuePublisher.enqueueWelcomeMail(MemberAlertDto.from(member), EmailOutboxRequestedBy.ADMIN_API)
         }
     }
 
@@ -68,7 +68,7 @@ class AdminMailService(
                 throw ApplicationException(MEMBER_EMAIL_NOT_FOUND_ERROR)
             }
 
-            emailOutboxEnqueueService.enqueueArticleMail(
+            mailQueuePublisher.enqueueArticleMail(
                 memberData = MemberAlertDto.from(member),
                 articleDatas = articleAlertDtos,
                 requestedBy = EmailOutboxRequestedBy.ADMIN_API
@@ -89,7 +89,7 @@ class AdminMailService(
                 throw ApplicationException(MEMBER_EMAIL_NOT_FOUND_ERROR)
             }
 
-            emailOutboxEnqueueService.enqueueNoticeMail(
+            mailQueuePublisher.enqueueNoticeMail(
                 memberData = MemberAlertDto.from(member),
                 title = title,
                 content = content,
@@ -133,7 +133,7 @@ class AdminMailService(
     }
 
     @Transactional
-    fun retryOutbox(outboxId: Long, resetAttempts: Boolean) {
+    fun retryOutbox(outboxId: Long, resetAttempts: Boolean, retriedByAdminId: Long) {
         val outbox = emailOutboxDomainService.findById(outboxId)
             ?: throw ApplicationException(MAIL_OUTBOX_NOT_FOUND_ERROR)
 
@@ -148,8 +148,10 @@ class AdminMailService(
         outbox.status = EmailOutboxStatus.PENDING
         outbox.nextRetryAt = null
         outbox.lastError = null
-        emailOutboxDomainService.save(outbox)
-
-        emailOutboxWorkerCoordinator.triggerProcessing()
+        outbox.manualRetryCount = outbox.manualRetryCount + 1
+        outbox.lastRetriedByAdminId = retriedByAdminId
+        outbox.lastRetriedAt = LocalDateTime.now()
+        val saved = emailOutboxDomainService.save(outbox)
+        mailDispatchTrigger.dispatchOutbox(saved.id!!)
     }
 }

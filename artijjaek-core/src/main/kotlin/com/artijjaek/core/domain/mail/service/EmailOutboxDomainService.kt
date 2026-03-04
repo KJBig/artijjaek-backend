@@ -38,6 +38,10 @@ class EmailOutboxDomainService(
         return emailOutboxRepository.claimForSending(id, now)
     }
 
+    fun markEnqueued(id: Long, now: LocalDateTime): Boolean {
+        return emailOutboxRepository.markEnqueued(id, now)
+    }
+
     fun findEarliestRetryAt(): LocalDateTime? {
         return emailOutboxRepository.findEarliestRetryAt()
     }

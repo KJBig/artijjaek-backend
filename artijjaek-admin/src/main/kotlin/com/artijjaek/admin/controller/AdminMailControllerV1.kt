@@ -1,5 +1,6 @@
 package com.artijjaek.admin.controller
 
+import com.artijjaek.admin.common.auth.CurrentAdminId
 import com.artijjaek.admin.dto.common.SuccessResponse
 import com.artijjaek.admin.dto.common.SuccessDataResponse
 import com.artijjaek.admin.dto.request.PatchMailOutboxRetryRequest
@@ -79,10 +80,11 @@ class AdminMailControllerV1(
 
     @PatchMapping("/outbox/{outboxId}/retry")
     fun patchMailOutboxRetry(
+        @CurrentAdminId adminId: Long,
         @PathVariable outboxId: Long,
         @RequestBody(required = false) request: PatchMailOutboxRetryRequest?,
     ): ResponseEntity<SuccessResponse> {
-        adminMailService.retryOutbox(outboxId, request?.resetAttempts ?: false)
+        adminMailService.retryOutbox(outboxId, request?.resetAttempts ?: false, adminId)
         return ResponseEntity.ok(SuccessResponse())
     }
 }

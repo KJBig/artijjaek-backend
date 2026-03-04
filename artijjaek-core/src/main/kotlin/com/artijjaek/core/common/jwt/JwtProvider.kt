@@ -45,7 +45,8 @@ class JwtProvider(
             .expiration(expiry)
             .claim("type", "ACCESS")
 
-        if (!role.isNullOrBlank()) {
+        val hasRole = !role.isNullOrBlank()
+        if (hasRole) {
             builder.claim("roles", listOf(role))
         } else {
             builder.claim("roles", emptyList<String>())

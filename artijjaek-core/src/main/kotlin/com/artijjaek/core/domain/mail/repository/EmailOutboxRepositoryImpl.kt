@@ -5,6 +5,7 @@ import com.artijjaek.core.domain.mail.entity.EmailOutbox
 import com.artijjaek.core.domain.mail.enums.EmailOutboxRequestedBy
 import com.artijjaek.core.domain.mail.enums.EmailOutboxStatus
 import com.artijjaek.core.domain.mail.enums.EmailOutboxType
+import com.querydsl.core.types.dsl.CaseBuilder
 import com.querydsl.core.types.Order
 import com.querydsl.core.types.OrderSpecifier
 import com.querydsl.core.types.dsl.BooleanExpression
@@ -63,6 +64,19 @@ class EmailOutboxRepositoryImpl(
         return updated > 0
     }
 
+    override fun markEnqueued(id: Long, now: LocalDateTime): Boolean {
+        val updated = jpaQueryFactory
+            .update(emailOutbox)
+            .set(emailOutbox.status, EmailOutboxStatus.ENQUEUED)
+            .where(
+                emailOutbox.id.eq(id),
+                dueCondition(now)
+            )
+            .execute()
+
+        return updated > 0
+    }
+
     override fun search(
         pageable: Pageable,
         status: EmailOutboxStatus?,
@@ -107,8 +121,13 @@ class EmailOutboxRepositoryImpl(
     }
 
     override fun findOldestDueRequestedAt(now: LocalDateTime): LocalDateTime? {
+        val dueBaseAt = CaseBuilder()
+            .`when`(emailOutbox.status.eq(EmailOutboxStatus.FAIL))
+            .then(emailOutbox.nextRetryAt)
+            .otherwise(emailOutbox.requestedAt)
+
         return jpaQueryFactory
-            .select(emailOutbox.requestedAt.min())
+            .select(dueBaseAt.min())
             .from(emailOutbox)
             .where(dueCondition(now))
             .fetchOne()
@@ -116,6 +135,7 @@ class EmailOutboxRepositoryImpl(
 
     private fun dueCondition(now: LocalDateTime): BooleanExpression {
         return emailOutbox.status.eq(EmailOutboxStatus.PENDING)
+            .or(emailOutbox.status.eq(EmailOutboxStatus.ENQUEUED))
             .or(
                 emailOutbox.status.eq(EmailOutboxStatus.FAIL)
                     .and(emailOutbox.nextRetryAt.loe(now))

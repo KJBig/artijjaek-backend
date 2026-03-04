@@ -30,6 +30,9 @@ class DiscordWebHookService(
     @Value("\${discord.webhook.unsubscribe}")
     lateinit var DISCORD_UNSUBSCRIBE_URL: String;
 
+    @Value("\${discord.webhook.mail-error}")
+    lateinit var DISCORD_MAIL_ERROR_URL: String;
+
 
     @Async("asyncThreadPoolExecutor")
     override fun sendNewArticleMessage(newArticles: List<ArticleAlertDto>) {
@@ -150,6 +153,33 @@ class DiscordWebHookService(
         stringBuilder.append("Nickname : ").append(member.nickname).append("\n")
         stringBuilder.append("Reason : ").append(unsubscription.reason).append("\n")
         stringBuilder.append("Detail : ").append(unsubscription.detail).append("\n")
+        return stringBuilder.toString()
+    }
+
+    @Async("asyncThreadPoolExecutor")
+    override fun sendMailErrorMessage(outboxId: Long?, errorMessage: String?) {
+        val message = WebHookMessage(buildMailErrorMessage(outboxId, errorMessage))
+        discordWebHookConnector.sendMessageForDiscord(message, DISCORD_MAIL_ERROR_URL)
+    }
+
+    @Async("asyncThreadPoolExecutor")
+    override fun sendMailAlertMessage(content: String) {
+        val message = WebHookMessage(content)
+        discordWebHookConnector.sendMessageForDiscord(message, DISCORD_MAIL_ERROR_URL)
+    }
+
+    private fun buildMailErrorMessage(outboxId: Long?, errorMessage: String?): String {
+        val stringBuilder = StringBuilder()
+        val prefix = """
+            🚨 **메일 발송 DEAD 발생**
+            
+            📅 ${LocalDateTime.now()}
+
+
+        """.trimIndent()
+        stringBuilder.append(prefix)
+        stringBuilder.append("Outbox Id : ").append(outboxId).append("\n")
+        stringBuilder.append("Error : ").append(errorMessage ?: "unknown").append("\n")
         return stringBuilder.toString()
     }
 }

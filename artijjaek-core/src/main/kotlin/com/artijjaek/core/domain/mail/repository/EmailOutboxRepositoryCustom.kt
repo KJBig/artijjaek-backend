@@ -13,6 +13,7 @@ interface EmailOutboxRepositoryCustom {
     fun existsDue(now: LocalDateTime): Boolean
     fun findEarliestRetryAt(): LocalDateTime?
     fun claimForSending(id: Long, now: LocalDateTime): Boolean
+    fun markEnqueued(id: Long, now: LocalDateTime): Boolean
     fun search(
         pageable: Pageable,
         status: EmailOutboxStatus?,

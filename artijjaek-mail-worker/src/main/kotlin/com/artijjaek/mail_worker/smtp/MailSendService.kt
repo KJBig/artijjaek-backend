@@ -1,4 +1,4 @@
-package com.artijjaek.core.common.mail.service
+package com.artijjaek.mail_worker.smtp
 
 import com.artijjaek.core.common.mail.dto.ArticleAlertDto
 import com.artijjaek.core.common.mail.dto.MemberAlertDto
@@ -178,7 +178,8 @@ class MailSendService(
                 """.trimIndent()
             }
 
-            val imageTd = if (!articleData.image.isNullOrBlank()) {
+            val hasImage = !articleData.image.isNullOrBlank()
+            val imageTd = if (hasImage) {
                 """
                     <td width="180" valign="top" style="padding:0;">
                       <img src="${articleData.image}" alt="썸네일" width="180" height="120"

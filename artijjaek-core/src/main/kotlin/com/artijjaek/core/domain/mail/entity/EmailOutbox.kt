@@ -52,4 +52,14 @@ class EmailOutbox(
 
     @Column(name = "sent_at")
     var sentAt: LocalDateTime? = null,
-) : BaseEntity()
+
+    @Column(name = "manual_retry_count", nullable = false)
+    var manualRetryCount: Int = 0,
+
+    @Column(name = "last_retried_by_admin_id")
+    var lastRetriedByAdminId: Long? = null,
+
+    @Column(name = "last_retried_at")
+    var lastRetriedAt: LocalDateTime? = null,
+
+    ) : BaseEntity()

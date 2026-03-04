@@ -1,29 +1,26 @@
-package com.artijjaek.core.domain.mail.service
+package com.artijjaek.core.domain.mail.queue.publisher
 
 import com.artijjaek.core.common.mail.dto.ArticleAlertDto
 import com.artijjaek.core.common.mail.dto.MemberAlertDto
-import com.artijjaek.core.domain.mail.dto.ArticleMailPayload
-import com.artijjaek.core.domain.mail.dto.ArticleSnapshot
-import com.artijjaek.core.domain.mail.dto.MemberSnapshot
-import com.artijjaek.core.domain.mail.dto.NoticeMailPayload
-import com.artijjaek.core.domain.mail.dto.WelcomeMailPayload
+import com.artijjaek.core.domain.mail.dto.*
 import com.artijjaek.core.domain.mail.entity.EmailOutbox
-import com.artijjaek.core.domain.mail.event.MailQueuedEvent
 import com.artijjaek.core.domain.mail.enums.EmailOutboxRequestedBy
 import com.artijjaek.core.domain.mail.enums.EmailOutboxType
+import com.artijjaek.core.domain.mail.queue.trigger.MailDispatchTrigger
+import com.artijjaek.core.domain.mail.service.EmailOutboxDomainService
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 
 @Service
-class EmailOutboxEnqueueService(
+class MailOutboxQueuePublisher(
     private val emailOutboxDomainService: EmailOutboxDomainService,
     private val objectMapper: ObjectMapper,
-    private val applicationEventPublisher: ApplicationEventPublisher,
-) {
-    fun enqueueWelcomeMail(memberData: MemberAlertDto, requestedBy: EmailOutboxRequestedBy) {
-        val payload = WelcomeMailPayload(member = memberSnapshot(memberData))
+    private val mailDispatchTrigger: MailDispatchTrigger,
+) : MailQueuePublisher {
+
+    override fun enqueueWelcomeMail(memberData: MemberAlertDto, requestedBy: EmailOutboxRequestedBy) {
+        val payload = WelcomeMailPayload(member = MemberSnapshot.from(memberData))
         val subject = "[아티짹] 환영합니다 ${memberData.nickname}님!"
 
         saveOutbox(
@@ -35,13 +32,13 @@ class EmailOutboxEnqueueService(
         )
     }
 
-    fun enqueueArticleMail(
+    override fun enqueueArticleMail(
         memberData: MemberAlertDto,
         articleDatas: List<ArticleAlertDto>,
         requestedBy: EmailOutboxRequestedBy,
     ) {
         val payload = ArticleMailPayload(
-            member = memberSnapshot(memberData),
+            member = MemberSnapshot.from(memberData),
             articles = articleDatas.map {
                 ArticleSnapshot(
                     title = it.title,
@@ -52,8 +49,8 @@ class EmailOutboxEnqueueService(
                 )
             }
         )
-        val subject = "[아티짹] ${LocalDate.now()} 아티클 목록"
 
+        val subject = "[아티짹] ${LocalDate.now()} 아티클 목록"
         saveOutbox(
             mailType = EmailOutboxType.ARTICLE,
             recipientEmail = memberData.email!!,
@@ -63,14 +60,14 @@ class EmailOutboxEnqueueService(
         )
     }
 
-    fun enqueueNoticeMail(
+    override fun enqueueNoticeMail(
         memberData: MemberAlertDto,
         title: String,
         content: String,
         requestedBy: EmailOutboxRequestedBy,
     ) {
         val payload = NoticeMailPayload(
-            member = memberSnapshot(memberData),
+            member = MemberSnapshot.from(memberData),
             title = title.trim(),
             content = content.trim()
         )
@@ -100,14 +97,6 @@ class EmailOutboxEnqueueService(
             requestedBy = requestedBy
         )
         val saved = emailOutboxDomainService.save(outbox)
-        applicationEventPublisher.publishEvent(MailQueuedEvent(saved.id!!))
-    }
-
-    private fun memberSnapshot(memberData: MemberAlertDto): MemberSnapshot {
-        return MemberSnapshot(
-            email = memberData.email!!,
-            nickname = memberData.nickname,
-            uuidToken = memberData.uuidToken
-        )
+        mailDispatchTrigger.dispatchOutbox(saved.id!!)
     }
 }
