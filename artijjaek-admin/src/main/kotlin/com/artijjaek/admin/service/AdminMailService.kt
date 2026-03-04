@@ -3,6 +3,10 @@ package com.artijjaek.admin.service
 import com.artijjaek.admin.dto.request.PostArticleMailRequest
 import com.artijjaek.admin.dto.request.PostNoticeMailRequest
 import com.artijjaek.admin.dto.request.PostWelcomeMailRequest
+import com.artijjaek.admin.dto.response.MailDailyFailedCountResponse
+import com.artijjaek.admin.dto.response.MailDailySentCountResponse
+import com.artijjaek.admin.dto.response.MailOutboxAttemptPageResponse
+import com.artijjaek.admin.dto.response.MailOutboxAttemptSimpleResponse
 import com.artijjaek.admin.dto.response.MailOutboxPageResponse
 import com.artijjaek.admin.dto.response.MailOutboxSimpleResponse
 import com.artijjaek.core.common.error.ApplicationException
@@ -10,6 +14,7 @@ import com.artijjaek.core.common.error.ErrorCode.*
 import com.artijjaek.core.common.mail.dto.ArticleAlertDto
 import com.artijjaek.core.common.mail.dto.MemberAlertDto
 import com.artijjaek.core.domain.article.service.ArticleDomainService
+import com.artijjaek.core.domain.mail.enums.EmailOutboxAttemptResult
 import com.artijjaek.core.domain.mail.enums.EmailOutboxRequestedBy
 import com.artijjaek.core.domain.mail.enums.EmailOutboxStatus
 import com.artijjaek.core.domain.mail.enums.EmailOutboxType
@@ -22,6 +27,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Service
@@ -132,6 +138,38 @@ class AdminMailService(
         )
     }
 
+    @Transactional(readOnly = true)
+    fun searchOutboxAttempts(
+        pageable: Pageable,
+        status: EmailOutboxAttemptResult?,
+        requestedBy: EmailOutboxRequestedBy?,
+        startDate: LocalDate?,
+        endDate: LocalDate?,
+    ): MailOutboxAttemptPageResponse {
+        validateNullableDateRange(startDate, endDate)
+
+        val sortedPageable = PageRequest.of(
+            pageable.pageNumber,
+            pageable.pageSize,
+            Sort.by(Sort.Order.desc("occurredAt"), Sort.Order.desc("id"))
+        )
+
+        val page = emailOutboxDomainService.searchAttempts(
+            pageable = sortedPageable,
+            status = status,
+            requestedBy = requestedBy,
+            occurredAtFrom = startDate?.atStartOfDay(),
+            occurredAtTo = endDate?.plusDays(1)?.atStartOfDay()
+        )
+
+        return MailOutboxAttemptPageResponse(
+            pageNumber = page.number,
+            totalCount = page.totalElements,
+            hasNext = page.hasNext(),
+            content = page.content.map { MailOutboxAttemptSimpleResponse.from(it) }
+        )
+    }
+
     @Transactional
     fun retryOutbox(outboxId: Long, resetAttempts: Boolean, retriedByAdminId: Long) {
         val outbox = emailOutboxDomainService.findById(outboxId)
@@ -153,5 +191,65 @@ class AdminMailService(
         outbox.lastRetriedAt = LocalDateTime.now()
         val saved = emailOutboxDomainService.save(outbox)
         mailDispatchTrigger.dispatchOutbox(saved.id!!)
+    }
+
+    @Transactional(readOnly = true)
+    fun getDailySentCounts(
+        startDate: LocalDate,
+        endDate: LocalDate,
+        requestedBy: EmailOutboxRequestedBy?,
+    ): List<MailDailySentCountResponse> {
+        validateDateRange(startDate, endDate)
+
+        val dailyCountMap = emailOutboxDomainService.countDailySuccessAttempts(
+            startDateTime = startDate.atStartOfDay(),
+            endDateTimeExclusive = endDate.plusDays(1).atStartOfDay(),
+            requestedBy = requestedBy
+        ).associate { it.date to it.count }
+
+        return startDate.datesUntil(endDate.plusDays(1))
+            .map { date ->
+                MailDailySentCountResponse(
+                    date = date,
+                    sentCount = dailyCountMap[date] ?: 0L
+                )
+            }
+            .toList()
+    }
+
+    @Transactional(readOnly = true)
+    fun getDailyFailedCounts(
+        startDate: LocalDate,
+        endDate: LocalDate,
+        requestedBy: EmailOutboxRequestedBy?,
+    ): List<MailDailyFailedCountResponse> {
+        validateDateRange(startDate, endDate)
+
+        val dailyCountMap = emailOutboxDomainService.countDailyFailureAttempts(
+            startDateTime = startDate.atStartOfDay(),
+            endDateTimeExclusive = endDate.plusDays(1).atStartOfDay(),
+            requestedBy = requestedBy
+        ).associate { it.date to it.count }
+
+        return startDate.datesUntil(endDate.plusDays(1))
+            .map { date ->
+                MailDailyFailedCountResponse(
+                    date = date,
+                    failedCount = dailyCountMap[date] ?: 0L
+                )
+            }
+            .toList()
+    }
+
+    private fun validateDateRange(startDate: LocalDate, endDate: LocalDate) {
+        if (startDate.isAfter(endDate)) {
+            throw ApplicationException(REQUEST_VALIDATION_ERROR)
+        }
+    }
+
+    private fun validateNullableDateRange(startDate: LocalDate?, endDate: LocalDate?) {
+        if (startDate != null && endDate != null && startDate.isAfter(endDate)) {
+            throw ApplicationException(REQUEST_VALIDATION_ERROR)
+        }
     }
 }

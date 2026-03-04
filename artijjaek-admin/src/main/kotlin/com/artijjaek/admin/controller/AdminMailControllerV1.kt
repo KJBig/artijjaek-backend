@@ -7,8 +7,12 @@ import com.artijjaek.admin.dto.request.PatchMailOutboxRetryRequest
 import com.artijjaek.admin.dto.request.PostArticleMailRequest
 import com.artijjaek.admin.dto.request.PostNoticeMailRequest
 import com.artijjaek.admin.dto.request.PostWelcomeMailRequest
+import com.artijjaek.admin.dto.response.MailDailyFailedCountResponse
+import com.artijjaek.admin.dto.response.MailDailySentCountResponse
+import com.artijjaek.admin.dto.response.MailOutboxAttemptPageResponse
 import com.artijjaek.admin.dto.response.MailOutboxPageResponse
 import com.artijjaek.admin.service.AdminMailService
+import com.artijjaek.core.domain.mail.enums.EmailOutboxAttemptResult
 import com.artijjaek.core.domain.mail.enums.EmailOutboxRequestedBy
 import com.artijjaek.core.domain.mail.enums.EmailOutboxStatus
 import com.artijjaek.core.domain.mail.enums.EmailOutboxType
@@ -24,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 @RestController
@@ -78,6 +83,24 @@ class AdminMailControllerV1(
         return ResponseEntity.ok(SuccessDataResponse(response))
     }
 
+    @GetMapping("/outbox/attempt/list")
+    fun getMailOutboxAttempts(
+        pageable: Pageable,
+        @RequestParam(required = false) status: EmailOutboxAttemptResult?,
+        @RequestParam(required = false) requestedBy: EmailOutboxRequestedBy?,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate?,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate?,
+    ): ResponseEntity<SuccessDataResponse<MailOutboxAttemptPageResponse>> {
+        val response = adminMailService.searchOutboxAttempts(
+            pageable = pageable,
+            status = status,
+            requestedBy = requestedBy,
+            startDate = startDate,
+            endDate = endDate
+        )
+        return ResponseEntity.ok(SuccessDataResponse(response))
+    }
+
     @PatchMapping("/outbox/{outboxId}/retry")
     fun patchMailOutboxRetry(
         @CurrentAdminId adminId: Long,
@@ -86,5 +109,25 @@ class AdminMailControllerV1(
     ): ResponseEntity<SuccessResponse> {
         adminMailService.retryOutbox(outboxId, request?.resetAttempts ?: false, adminId)
         return ResponseEntity.ok(SuccessResponse())
+    }
+
+    @GetMapping("/outbox/sent/daily")
+    fun getDailySentCounts(
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate,
+        @RequestParam(required = false) requestedBy: EmailOutboxRequestedBy?,
+    ): ResponseEntity<SuccessDataResponse<List<MailDailySentCountResponse>>> {
+        val response = adminMailService.getDailySentCounts(startDate, endDate, requestedBy)
+        return ResponseEntity.ok(SuccessDataResponse(response))
+    }
+
+    @GetMapping("/outbox/failed/daily")
+    fun getDailyFailedCounts(
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate,
+        @RequestParam(required = false) requestedBy: EmailOutboxRequestedBy?,
+    ): ResponseEntity<SuccessDataResponse<List<MailDailyFailedCountResponse>>> {
+        val response = adminMailService.getDailyFailedCounts(startDate, endDate, requestedBy)
+        return ResponseEntity.ok(SuccessDataResponse(response))
     }
 }

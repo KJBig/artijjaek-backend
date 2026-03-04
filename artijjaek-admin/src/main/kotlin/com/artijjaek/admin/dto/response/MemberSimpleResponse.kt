@@ -5,7 +5,7 @@ import java.time.LocalDateTime
 
 data class MemberSimpleResponse(
     val memberId: Long,
-    val email: String,
+    val email: String?,
     val nickname: String,
     val memberStatus: MemberStatus,
     val createdAt: LocalDateTime

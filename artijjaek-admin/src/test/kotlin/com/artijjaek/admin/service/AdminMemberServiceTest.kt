@@ -365,6 +365,49 @@ class AdminMemberServiceTest {
     }
 
     @Test
+    @DisplayName("회원 이메일이 null이어도 회원 목록 조회 응답을 생성할 수 있다")
+    fun searchMembersWithNullEmailTest() {
+        // given
+        val pageable = PageRequest.of(0, 10)
+        val member = Member(
+            id = 100L,
+            email = null,
+            nickname = "deleted-user",
+            uuidToken = "token-100",
+            memberStatus = MemberStatus.DELETED
+        ).apply { createdAt = LocalDateTime.of(2026, 2, 1, 0, 0) }
+        val page = PageImpl(listOf(member), pageable, 1)
+
+        every {
+            memberDomainService.findWithCondition(
+                pageable = pageable,
+                memberStatus = null,
+                nicknameKeyword = null,
+                emailKeyword = null,
+                sortBy = MemberSortBy.CREATED_AT,
+                sortDirection = Sort.Direction.DESC
+            )
+        } returns page
+        every { memberDomainService.countByMemberStatus(null) } returns 1L
+        every { memberDomainService.countByMemberStatus(MemberStatus.ACTIVE) } returns 0L
+        every { memberDomainService.countByMemberStatus(MemberStatus.DELETED) } returns 1L
+
+        // when
+        val result = adminMemberService.searchMembers(
+            pageable = pageable,
+            statusFilter = MemberStatusFilter.ALL,
+            searchType = null,
+            keyword = null,
+            sortBy = MemberListSortBy.SUBSCRIBE_DATE,
+            sortDirection = Sort.Direction.DESC
+        )
+
+        // then
+        assertThat(result.content).hasSize(1)
+        assertThat(result.content[0].email).isNull()
+    }
+
+    @Test
     @DisplayName("일자별 신규 구독자 수를 조회할 때 빈 날짜는 0으로 채운다")
     fun getDailyNewSubscriberCountsTest() {
         // given
