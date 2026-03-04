@@ -3,6 +3,7 @@ package com.artijjaek.admin.controller
 import com.artijjaek.admin.common.auth.AuthAdminIdArgumentResolver
 import com.artijjaek.admin.config.security.WebConfig
 import com.artijjaek.admin.dto.response.MemberOptionCompanyResponse
+import com.artijjaek.admin.dto.response.TopSubscribedCompanyResponse
 import com.artijjaek.admin.service.AdminCompanyService
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
@@ -54,5 +55,36 @@ class AdminCompanyControllerV1Test {
             .andExpect(jsonPath("$.data[0].logo").value("https://cdn.example.com/company-a.png"))
 
         verify(exactly = 1) { adminCompanyService.getMemberCompanyOptions() }
+    }
+
+    @Test
+    @WithMockUser(username = "1")
+    @DisplayName("많이 구독한 회사 Top 목록을 조회한다")
+    fun getTopSubscribedCompaniesTest() {
+        // given
+        val response = listOf(
+            TopSubscribedCompanyResponse(
+                rank = 1,
+                companyId = 10L,
+                companyNameKr = "회사A",
+                subscriberCount = 25
+            ),
+            TopSubscribedCompanyResponse(
+                rank = 2,
+                companyId = 11L,
+                companyNameKr = "회사B",
+                subscriberCount = 20
+            )
+        )
+        every { adminCompanyService.getTopSubscribedCompanies() } returns response
+
+        // when & then
+        mockMvc.perform(get("/admin/v1/company/subscribed/top"))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.isSuccess").value(true))
+            .andExpect(jsonPath("$.data[0].rank").value(1))
+            .andExpect(jsonPath("$.data[0].subscriberCount").value(25))
+
+        verify(exactly = 1) { adminCompanyService.getTopSubscribedCompanies() }
     }
 }

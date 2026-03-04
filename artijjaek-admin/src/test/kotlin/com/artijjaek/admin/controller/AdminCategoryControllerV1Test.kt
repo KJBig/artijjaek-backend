@@ -3,6 +3,7 @@ package com.artijjaek.admin.controller
 import com.artijjaek.admin.common.auth.AuthAdminIdArgumentResolver
 import com.artijjaek.admin.config.security.WebConfig
 import com.artijjaek.admin.dto.response.MemberOptionCategoryResponse
+import com.artijjaek.admin.dto.response.TopSubscribedCategoryResponse
 import com.artijjaek.admin.service.AdminCategoryService
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
@@ -52,5 +53,30 @@ class AdminCategoryControllerV1Test {
             .andExpect(jsonPath("$.data[0].categoryName").value("백엔드"))
 
         verify(exactly = 1) { adminCategoryService.getMemberCategoryOptions() }
+    }
+
+    @Test
+    @WithMockUser(username = "1")
+    @DisplayName("많이 구독한 카테고리 Top 목록을 조회한다")
+    fun getTopSubscribedCategoriesTest() {
+        // given
+        val response = listOf(
+            TopSubscribedCategoryResponse(
+                rank = 1,
+                categoryId = 20L,
+                categoryName = "백엔드",
+                subscriberCount = 30
+            )
+        )
+        every { adminCategoryService.getTopSubscribedCategories() } returns response
+
+        // when & then
+        mockMvc.perform(get("/admin/v1/category/subscribed/top"))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.isSuccess").value(true))
+            .andExpect(jsonPath("$.data[0].categoryName").value("백엔드"))
+            .andExpect(jsonPath("$.data[0].subscriberCount").value(30))
+
+        verify(exactly = 1) { adminCategoryService.getTopSubscribedCategories() }
     }
 }
