@@ -5,7 +5,7 @@ import com.artijjaek.core.domain.article.service.ArticleDomainService
 import com.artijjaek.core.domain.category.entity.Category
 import com.artijjaek.core.domain.category.enums.PublishType
 import com.artijjaek.core.domain.company.entity.Company
-import com.artijjaek.core.domain.mail.service.EmailOutboxEnqueueService
+import com.artijjaek.core.domain.mail.queue.publisher.MailQueuePublisher
 import com.artijjaek.core.domain.member.entity.Member
 import com.artijjaek.core.domain.member.entity.MemberArticle
 import com.artijjaek.core.domain.member.enums.MemberStatus
@@ -28,7 +28,7 @@ class TransportBatchTest {
     private val companySubscriptionDomainService = mockk<CompanySubscriptionDomainService>()
     private val categorySubscriptionDomainService = mockk<CategorySubscriptionDomainService>()
     private val articleDomainService = mockk<ArticleDomainService>()
-    private val emailOutboxEnqueueService = mockk<EmailOutboxEnqueueService>(relaxed = true)
+    private val mailQueuePublisher = mockk<MailQueuePublisher>(relaxed = true)
 
     private val config = TransportBatchConfig(
         mockk(),
@@ -38,7 +38,7 @@ class TransportBatchTest {
         companySubscriptionDomainService,
         categorySubscriptionDomainService,
         articleDomainService,
-        emailOutboxEnqueueService
+        mailQueuePublisher
     )
 
     @Test
@@ -85,7 +85,7 @@ class TransportBatchTest {
         assertThat(result!![0].member).isEqualTo(member)
         assertThat(result[0].article).isEqualTo(article1)
         assertThat(result[1].article).isEqualTo(article2)
-        verify(exactly = 1) { emailOutboxEnqueueService.enqueueArticleMail(any(), any(), any()) }
+        verify(exactly = 1) { mailQueuePublisher.enqueueArticleMail(any(), any(), any()) }
     }
 
     @Test
