@@ -2,6 +2,8 @@ package com.artijjaek.admin.controller
 
 import com.artijjaek.admin.common.auth.AuthAdminIdArgumentResolver
 import com.artijjaek.admin.config.security.WebConfig
+import com.artijjaek.admin.dto.response.MailDailyFailedCountResponse
+import com.artijjaek.admin.dto.response.MailDailySentCountResponse
 import com.artijjaek.admin.dto.response.MailOutboxPageResponse
 import com.artijjaek.admin.dto.response.MailOutboxSimpleResponse
 import com.artijjaek.admin.dto.request.PostArticleMailRequest
@@ -29,6 +31,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 @ActiveProfiles("test")
@@ -240,5 +243,69 @@ class AdminMailControllerV1Test {
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.isSuccess").value(true))
         verify(exactly = 1) { adminMailService.retryOutbox(10L, true, 1L) }
+    }
+
+    @Test
+    @WithMockUser(username = "1")
+    @DisplayName("일자별 이메일 전송 성공 수를 조회한다")
+    fun getDailySentCountsTest() {
+        // given
+        every {
+            adminMailService.getDailySentCounts(
+                startDate = LocalDate.of(2026, 2, 1),
+                endDate = LocalDate.of(2026, 2, 2),
+                requestedBy = EmailOutboxRequestedBy.ADMIN_API
+            )
+        } returns listOf(
+            MailDailySentCountResponse(date = LocalDate.of(2026, 2, 1), sentCount = 5),
+            MailDailySentCountResponse(date = LocalDate.of(2026, 2, 2), sentCount = 0)
+        )
+
+        // when
+        val mvcResult = mockMvc.perform(
+            get("/admin/v1/mail/outbox/sent/daily")
+                .param("startDate", "2026-02-01")
+                .param("endDate", "2026-02-02")
+                .param("requestedBy", "ADMIN_API")
+        )
+
+        // then
+        mvcResult
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.isSuccess").value(true))
+            .andExpect(jsonPath("$.data[0].date").value("2026-02-01"))
+            .andExpect(jsonPath("$.data[0].sentCount").value(5))
+            .andExpect(jsonPath("$.data[1].sentCount").value(0))
+    }
+
+    @Test
+    @WithMockUser(username = "1")
+    @DisplayName("일자별 이메일 전송 실패 수를 조회한다")
+    fun getDailyFailedCountsTest() {
+        // given
+        every {
+            adminMailService.getDailyFailedCounts(
+                startDate = LocalDate.of(2026, 2, 1),
+                endDate = LocalDate.of(2026, 2, 2),
+                requestedBy = null
+            )
+        } returns listOf(
+            MailDailyFailedCountResponse(date = LocalDate.of(2026, 2, 1), failedCount = 1),
+            MailDailyFailedCountResponse(date = LocalDate.of(2026, 2, 2), failedCount = 3)
+        )
+
+        // when
+        val mvcResult = mockMvc.perform(
+            get("/admin/v1/mail/outbox/failed/daily")
+                .param("startDate", "2026-02-01")
+                .param("endDate", "2026-02-02")
+        )
+
+        // then
+        mvcResult
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.isSuccess").value(true))
+            .andExpect(jsonPath("$.data[0].failedCount").value(1))
+            .andExpect(jsonPath("$.data[1].failedCount").value(3))
     }
 }

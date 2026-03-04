@@ -11,6 +11,7 @@ import com.artijjaek.core.domain.category.entity.Category
 import com.artijjaek.core.domain.category.enums.PublishType
 import com.artijjaek.core.domain.company.entity.Company
 import com.artijjaek.core.domain.mail.entity.EmailOutbox
+import com.artijjaek.core.domain.mail.dto.DailyEmailSendAttemptCount
 import com.artijjaek.core.domain.mail.enums.EmailOutboxRequestedBy
 import com.artijjaek.core.domain.mail.enums.EmailOutboxStatus
 import com.artijjaek.core.domain.mail.enums.EmailOutboxType
@@ -32,6 +33,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.test.context.ActiveProfiles
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 @ActiveProfiles("test")
@@ -260,6 +262,80 @@ class AdminMailServiceTest {
                 any()
             )
         }
+    }
+
+    @Test
+    @DisplayName("일자별 이메일 전송 성공 수를 조회할 때 빈 날짜는 0으로 채운다")
+    fun getDailySentCountsTest() {
+        // given
+        every {
+            emailOutboxDomainService.countDailySuccessAttempts(
+                startDateTime = LocalDate.of(2026, 2, 1).atStartOfDay(),
+                endDateTimeExclusive = LocalDate.of(2026, 2, 4).atStartOfDay(),
+                requestedBy = EmailOutboxRequestedBy.ADMIN_API
+            )
+        } returns listOf(
+            DailyEmailSendAttemptCount(date = LocalDate.of(2026, 2, 1), count = 5),
+            DailyEmailSendAttemptCount(date = LocalDate.of(2026, 2, 3), count = 2)
+        )
+
+        // when
+        val result = adminMailService.getDailySentCounts(
+            startDate = LocalDate.of(2026, 2, 1),
+            endDate = LocalDate.of(2026, 2, 3),
+            requestedBy = EmailOutboxRequestedBy.ADMIN_API
+        )
+
+        // then
+        assertThat(result).hasSize(3)
+        assertThat(result[0].date).isEqualTo(LocalDate.of(2026, 2, 1))
+        assertThat(result[0].sentCount).isEqualTo(5)
+        assertThat(result[1].date).isEqualTo(LocalDate.of(2026, 2, 2))
+        assertThat(result[1].sentCount).isEqualTo(0)
+        assertThat(result[2].date).isEqualTo(LocalDate.of(2026, 2, 3))
+        assertThat(result[2].sentCount).isEqualTo(2)
+    }
+
+    @Test
+    @DisplayName("일자별 이메일 전송 실패 수를 조회할 때 빈 날짜는 0으로 채운다")
+    fun getDailyFailedCountsTest() {
+        // given
+        every {
+            emailOutboxDomainService.countDailyFailureAttempts(
+                startDateTime = LocalDate.of(2026, 2, 1).atStartOfDay(),
+                endDateTimeExclusive = LocalDate.of(2026, 2, 4).atStartOfDay(),
+                requestedBy = null
+            )
+        } returns listOf(
+            DailyEmailSendAttemptCount(date = LocalDate.of(2026, 2, 2), count = 4)
+        )
+
+        // when
+        val result = adminMailService.getDailyFailedCounts(
+            startDate = LocalDate.of(2026, 2, 1),
+            endDate = LocalDate.of(2026, 2, 3),
+            requestedBy = null
+        )
+
+        // then
+        assertThat(result).hasSize(3)
+        assertThat(result[0].failedCount).isEqualTo(0)
+        assertThat(result[1].failedCount).isEqualTo(4)
+        assertThat(result[2].failedCount).isEqualTo(0)
+    }
+
+    @Test
+    @DisplayName("일자별 이메일 전송 성공 수 조회 시 시작일이 종료일보다 늦으면 예외가 발생한다")
+    fun getDailySentCountsWithInvalidDateRangeTest() {
+        val exception = assertThrows<ApplicationException> {
+            adminMailService.getDailySentCounts(
+                startDate = LocalDate.of(2026, 2, 3),
+                endDate = LocalDate.of(2026, 2, 1),
+                requestedBy = null
+            )
+        }
+
+        assertThat(exception.code).isEqualTo(REQUEST_VALIDATION_ERROR.code)
     }
 
     @Test

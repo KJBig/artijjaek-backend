@@ -6,7 +6,9 @@ import com.artijjaek.core.domain.mail.dto.ArticleMailPayload
 import com.artijjaek.core.domain.mail.dto.NoticeMailPayload
 import com.artijjaek.core.domain.mail.dto.ProcessResult
 import com.artijjaek.core.domain.mail.dto.WelcomeMailPayload
+import com.artijjaek.core.domain.mail.entity.EmailOutboxAttempt
 import com.artijjaek.core.domain.mail.entity.EmailOutbox
+import com.artijjaek.core.domain.mail.enums.EmailOutboxAttemptResult
 import com.artijjaek.core.domain.mail.enums.EmailOutboxStatus
 import com.artijjaek.core.domain.mail.enums.EmailOutboxType
 import com.artijjaek.core.domain.mail.enums.MailFailureType
@@ -105,11 +107,21 @@ class EmailOutboxProcessor(
     }
 
     private fun markSuccess(outbox: EmailOutbox, now: LocalDateTime) {
+        val attemptNo = outbox.attemptCount + 1
         outbox.status = EmailOutboxStatus.SENT
         outbox.sentAt = now
         outbox.nextRetryAt = null
         outbox.lastError = null
         emailOutboxDomainService.save(outbox)
+        emailOutboxDomainService.saveAttempt(
+            EmailOutboxAttempt(
+                emailOutbox = outbox,
+                attemptNo = attemptNo,
+                result = EmailOutboxAttemptResult.SUCCESS,
+                requestedBy = outbox.requestedBy,
+                occurredAt = now
+            )
+        )
     }
 
     private fun markFailure(outbox: EmailOutbox, throwable: Throwable, now: LocalDateTime): LocalDateTime? {
@@ -123,6 +135,7 @@ class EmailOutboxProcessor(
             outbox.status = EmailOutboxStatus.DEAD
             outbox.nextRetryAt = null
             emailOutboxDomainService.save(outbox)
+            saveFailureAttempt(outbox, failedAttempts, now)
             alertService.notifyDead(outbox.id, outbox.lastError)
 
             log.error(
@@ -138,6 +151,7 @@ class EmailOutboxProcessor(
         outbox.status = EmailOutboxStatus.FAIL
         outbox.nextRetryAt = nextRetryAt
         emailOutboxDomainService.save(outbox)
+        saveFailureAttempt(outbox, failedAttempts, now)
         alertService.notifyFail(outbox.id, failedAttempts, nextRetryAt, outbox.lastError)
 
         log.warn(
@@ -148,6 +162,19 @@ class EmailOutboxProcessor(
             outbox.lastError
         )
         return nextRetryAt
+    }
+
+    private fun saveFailureAttempt(outbox: EmailOutbox, attemptNo: Int, now: LocalDateTime) {
+        emailOutboxDomainService.saveAttempt(
+            EmailOutboxAttempt(
+                emailOutbox = outbox,
+                attemptNo = attemptNo,
+                result = EmailOutboxAttemptResult.FAIL,
+                errorMessage = outbox.lastError,
+                requestedBy = outbox.requestedBy,
+                occurredAt = now
+            )
+        )
     }
 
     private fun retryDelaySeconds(failedAttempts: Int): Long {

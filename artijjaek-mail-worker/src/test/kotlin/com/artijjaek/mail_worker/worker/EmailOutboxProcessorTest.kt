@@ -2,6 +2,7 @@ package com.artijjaek.mail_worker.worker
 
 import com.artijjaek.core.domain.mail.dto.MemberSnapshot
 import com.artijjaek.core.domain.mail.dto.NoticeMailPayload
+import com.artijjaek.core.domain.mail.entity.EmailOutboxAttempt
 import com.artijjaek.core.domain.mail.entity.EmailOutbox
 import com.artijjaek.core.domain.mail.enums.EmailOutboxRequestedBy
 import com.artijjaek.core.domain.mail.enums.EmailOutboxStatus
@@ -50,6 +51,7 @@ class EmailOutboxProcessorTest {
         every { emailOutboxDomainService.claimForSending(1L, any()) } returns true
         every { emailOutboxDomainService.findById(1L) } returns outbox
         every { emailOutboxDomainService.save(any()) } answers { firstArg() }
+        every { emailOutboxDomainService.saveAttempt(any()) } answers { firstArg<EmailOutboxAttempt>() }
         every { mailSendService.sendNoticeMail(any(), any(), any()) } throws RuntimeException("421 temporary failure")
 
         // when
@@ -80,6 +82,7 @@ class EmailOutboxProcessorTest {
         every { emailOutboxDomainService.claimForSending(2L, any()) } returns true
         every { emailOutboxDomainService.findById(2L) } returns outbox
         every { emailOutboxDomainService.save(any()) } answers { firstArg() }
+        every { emailOutboxDomainService.saveAttempt(any()) } answers { firstArg<EmailOutboxAttempt>() }
         every { mailSendService.sendNoticeMail(any(), any(), any()) } throws RuntimeException("421 temporary failure")
 
         // when
@@ -104,6 +107,7 @@ class EmailOutboxProcessorTest {
         every { emailOutboxDomainService.claimForSending(3L, any()) } returns true
         every { emailOutboxDomainService.findById(3L) } returns outbox
         every { emailOutboxDomainService.save(any()) } answers { firstArg() }
+        every { emailOutboxDomainService.saveAttempt(any()) } answers { firstArg<EmailOutboxAttempt>() }
         every {
             mailSendService.sendNoticeMail(
                 any(),
