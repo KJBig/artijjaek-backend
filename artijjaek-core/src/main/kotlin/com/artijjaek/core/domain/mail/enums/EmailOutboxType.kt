@@ -4,4 +4,5 @@ enum class EmailOutboxType {
     WELCOME,
     ARTICLE,
     NOTICE,
+    NEW_COMPANY,
 }

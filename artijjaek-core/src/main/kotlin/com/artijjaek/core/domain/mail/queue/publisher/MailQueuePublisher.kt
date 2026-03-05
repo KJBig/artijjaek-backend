@@ -1,6 +1,7 @@
 package com.artijjaek.core.domain.mail.queue.publisher
 
 import com.artijjaek.core.common.mail.dto.ArticleAlertDto
+import com.artijjaek.core.common.mail.dto.CompanyAlertDto
 import com.artijjaek.core.common.mail.dto.MemberAlertDto
 import com.artijjaek.core.domain.mail.enums.EmailOutboxRequestedBy
 
@@ -16,6 +17,12 @@ interface MailQueuePublisher {
         memberData: MemberAlertDto,
         title: String,
         content: String,
+        requestedBy: EmailOutboxRequestedBy
+    )
+
+    fun enqueueNewCompanyMail(
+        memberData: MemberAlertDto,
+        companies: List<CompanyAlertDto>,
         requestedBy: EmailOutboxRequestedBy
     )
 }

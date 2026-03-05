@@ -1,6 +1,7 @@
 package com.artijjaek.admin.service
 
 import com.artijjaek.admin.dto.request.PostArticleMailRequest
+import com.artijjaek.admin.dto.request.PostNewCompanyMailRequest
 import com.artijjaek.admin.dto.request.PostNoticeMailRequest
 import com.artijjaek.admin.dto.request.PostWelcomeMailRequest
 import com.artijjaek.core.common.error.ApplicationException
@@ -10,6 +11,7 @@ import com.artijjaek.core.domain.article.service.ArticleDomainService
 import com.artijjaek.core.domain.category.entity.Category
 import com.artijjaek.core.domain.category.enums.PublishType
 import com.artijjaek.core.domain.company.entity.Company
+import com.artijjaek.core.domain.company.service.CompanyDomainService
 import com.artijjaek.core.domain.mail.entity.EmailOutbox
 import com.artijjaek.core.domain.mail.entity.EmailOutboxAttempt
 import com.artijjaek.core.domain.mail.dto.DailyEmailSendAttemptCount
@@ -52,6 +54,9 @@ class AdminMailServiceTest {
 
     @MockK
     lateinit var articleDomainService: ArticleDomainService
+
+    @MockK
+    lateinit var companyDomainService: CompanyDomainService
 
     @MockK
     lateinit var mailQueuePublisher: MailQueuePublisher
@@ -266,6 +271,86 @@ class AdminMailServiceTest {
                 any()
             )
         }
+    }
+
+    @Test
+    @DisplayName("특정 회원들에게 신규 회사 추가 안내 이메일을 발송한다")
+    fun sendNewCompanyMailTest() {
+        // given
+        val firstMember = Member(
+            id = 1L,
+            email = "first@test.com",
+            nickname = "first",
+            uuidToken = "token-1",
+            memberStatus = MemberStatus.ACTIVE
+        )
+        val secondMember = Member(
+            id = 2L,
+            email = "second@test.com",
+            nickname = "second",
+            uuidToken = "token-2",
+            memberStatus = MemberStatus.ACTIVE
+        )
+        val companyA = Company(
+            id = 10L,
+            nameKr = "회사A",
+            nameEn = "CompanyA",
+            logo = "logo-a",
+            baseUrl = "base-a",
+            blogUrl = "blog-a",
+            crawlUrl = "crawl-a",
+            crawlAvailability = true
+        )
+        val companyB = Company(
+            id = 11L,
+            nameKr = "회사B",
+            nameEn = "CompanyB",
+            logo = "logo-b",
+            baseUrl = "base-b",
+            blogUrl = "blog-b",
+            crawlUrl = "crawl-b",
+            crawlAvailability = true
+        )
+        val request = PostNewCompanyMailRequest(
+            memberIds = listOf(1L, 2L, 1L),
+            companyIds = listOf(10L, 11L, 10L)
+        )
+
+        every { companyDomainService.findAllOrByIds(listOf(10L, 11L)) } returns listOf(companyA, companyB)
+        every { memberDomainService.findById(1L) } returns firstMember
+        every { memberDomainService.findById(2L) } returns secondMember
+        justRun { mailQueuePublisher.enqueueNewCompanyMail(any(), any(), any()) }
+
+        // when
+        adminMailService.sendNewCompanyMail(request)
+
+        // then
+        verify(exactly = 1) { companyDomainService.findAllOrByIds(listOf(10L, 11L)) }
+        verify(exactly = 1) { memberDomainService.findById(1L) }
+        verify(exactly = 1) { memberDomainService.findById(2L) }
+        verify(exactly = 2) { mailQueuePublisher.enqueueNewCompanyMail(any(), any(), any()) }
+    }
+
+    @Test
+    @DisplayName("신규 회사 메일 발송 시 존재하지 않는 회사 ID가 포함되면 예외가 발생한다")
+    fun sendNewCompanyMailWithNotFoundCompanyTest() {
+        // given
+        val request = PostNewCompanyMailRequest(
+            memberIds = listOf(1L),
+            companyIds = listOf(10L, 11L)
+        )
+        every { companyDomainService.findAllOrByIds(listOf(10L, 11L)) } returns emptyList()
+
+        // when
+        val exception = assertThrows<ApplicationException> {
+            adminMailService.sendNewCompanyMail(request)
+        }
+
+        // then
+        assertThat(exception.code).isEqualTo(COMPANY_NOT_FOUND_ERROR.code)
+        assertThat(exception.message).isEqualTo(COMPANY_NOT_FOUND_ERROR.message)
+        verify(exactly = 0) { memberDomainService.findById(any()) }
+        verify(exactly = 0) { mailQueuePublisher.enqueueNewCompanyMail(any(), any(), any()) }
     }
 
     @Test
