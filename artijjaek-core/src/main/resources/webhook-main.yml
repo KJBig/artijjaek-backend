@@ -6,3 +6,4 @@ discord:
     new-subscribe: ${DISCORD_NEW_SUBSCRIBE_URL}
     unsubscribe: ${DISCORD_UNSUBSCRIBE_URL}
     mail-error: ${DISCORD_MAIL_ERROR_URL}
+    crawl-error: ${DISCORD_CRAWL_ERROR_URL}
