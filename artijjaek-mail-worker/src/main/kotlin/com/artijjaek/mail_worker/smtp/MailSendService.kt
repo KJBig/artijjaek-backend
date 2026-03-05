@@ -1,6 +1,7 @@
 package com.artijjaek.mail_worker.smtp
 
 import com.artijjaek.core.common.mail.dto.ArticleAlertDto
+import com.artijjaek.core.common.mail.dto.CompanyAlertDto
 import com.artijjaek.core.common.mail.dto.MemberAlertDto
 import org.slf4j.LoggerFactory
 import org.springframework.mail.javamail.JavaMailSender
@@ -514,6 +515,144 @@ class MailSendService(
         } catch (e: Exception) {
             log.error("공지사항 메일 발송 실패! : {}", memberData.email, e)
             throw RuntimeException(e)
+        }
+    }
+
+    fun sendNewCompanyMail(memberData: MemberAlertDto, companies: List<CompanyAlertDto>) {
+        val mimeMessage = javaMailSender.createMimeMessage()
+
+        try {
+            val mimeMessageHelper = MimeMessageHelper(mimeMessage, false, "UTF-8")
+
+            mimeMessageHelper.setTo(memberData.email!!)
+            mimeMessageHelper.setFrom("artijjaek.dev@gmail.com", "아티짹")
+            mimeMessageHelper.setReplyTo("artijjaek.dev@gmail.com")
+            mimeMessageHelper.setSubject("[아티짹] 신규 구독 회사가 추가되었어요")
+
+            val body = """
+                <!DOCTYPE html>
+                <html lang="ko">
+                <head>
+                  <meta charset="UTF-8" />
+                  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                  <title>신규 구독 회사 안내</title>
+                </head>
+                <body style="margin:0;padding:0;background-color:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
+                  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#ffffff;padding:20px 0;">
+                    <tr>
+                      <td align="center" style="padding:0 12px;">
+                        <table role="presentation" width="800" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:800px;border-collapse:separate;border-spacing:0;">
+                          <tr>
+                            <td style="border:1px solid #e1e5e9;border-radius:16px;overflow:hidden;background-color:#ffffff;">
+                              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
+                                <tr>
+                                  <td align="center" style="padding:32px 24px 40px;background:#667eea;background-image:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#ffffff;">
+                                    <div style="font-size:24px;font-weight:800;line-height:1.2;margin:0;">신규 회사가 추가되었어요</div>
+                                    <div style="margin-top:8px;opacity:0.92;font-size:14px;line-height:1.4;">관심 있는 기술 블로그를 바로 구독해보세요.</div>
+                                  </td>
+                                </tr>
+                              </table>
+
+                              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;background-color:#f7f6f3;">
+                                <tr>
+                                  <td style="padding:24px;">
+                                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:separate;border-spacing:0;background:#ffffff;border:1px solid #e1e5e9;border-radius:12px;">
+                                      <tr>
+                                        <td style="padding:0;">
+                                          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
+                                            <tr>
+                                              <td style="width:4px;background-color:#667eea;border-top-left-radius:12px;border-bottom-left-radius:12px;font-size:0;line-height:0;">&nbsp;</td>
+                                              <td style="padding:20px;">
+                                                <div style="margin:0 0 8px 0;color:rgb(55,53,47);font-size:18px;font-weight:800;line-height:1.3;">안녕하세요, ${memberData.nickname}님!</div>
+                                                <div style="margin:0;color:rgb(120,119,116);font-size:14px;line-height:1.7;">
+                                                  아래 회사들이 새로 추가되었습니다. 구독 설정에서 원하는 회사를 선택해보세요.
+                                                </div>
+                                              </td>
+                                            </tr>
+                                          </table>
+                                        </td>
+                                      </tr>
+                                    </table>
+
+                                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
+                                      <tr><td style="height:16px;line-height:16px;font-size:0;">&nbsp;</td></tr>
+                                    </table>
+
+                                    ${generateCompanyCards(companies)}
+                                  </td>
+                                </tr>
+                              </table>
+
+                              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;background-color:#ffffff;border-top:1px solid #e1e5e9;">
+                                <tr>
+                                  <td align="center" style="padding:24px;">
+                                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:0 auto 16px auto;">
+                                      <tr>
+                                        <td style="border-radius:6px;background:#667eea;background-image:linear-gradient(135deg,#667eea 0%,#764ba2 100%);">
+                                          <a href="https://www.artijjaek.kr/setting?email=${memberData.email}&token=${memberData.uuidToken}"
+                                             style="display:inline-block;padding:12px 24px;color:#ffffff !important;text-decoration:none;border-radius:6px;font-weight:600;font-size:14px;">
+                                            ⚙️ 구독 설정
+                                          </a>
+                                        </td>
+                                      </tr>
+                                    </table>
+
+                                    <div style="margin:0;color:rgb(120,119,116);font-size:12px;line-height:1.4;">
+                                      이 메일은 자동으로 발송되었습니다.<br />
+                                    </div>
+                                  </td>
+                                </tr>
+                              </table>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </body>
+                </html>
+            """.trimIndent()
+
+            mimeMessageHelper.setText(body, true)
+            javaMailSender.send(mimeMessage)
+            log.info("신규 회사 안내 메일 발송 성공! : {}", memberData.email)
+        } catch (e: Exception) {
+            log.error("신규 회사 안내 메일 발송 실패! : {}", memberData.email, e)
+            throw RuntimeException(e)
+        }
+    }
+
+    private fun generateCompanyCards(companies: List<CompanyAlertDto>): String {
+        return companies.joinToString("\n") { company ->
+            val safeNameKr = cleanText(company.nameKr)
+            val safeNameEn = cleanText(company.nameEn)
+            val safeLogo = company.logo
+            val safeBlogUrl = company.blogUrl.takeIf { it.isNotBlank() } ?: "#"
+
+            """
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" borde
+                r="0"
+                       style="border-collapse:separate;border-spacing:0;background-color:#ffffff;border:1px solid #e1e5e9;border-radius:8px;overflow:hidden;margin-bottom:12px;">
+                  <tr>
+                    <td style="padding:0;">
+                      <a href="$safeBlogUrl" style="display:block;width:100%;height:100%;text-decoration:none;color:inherit;">
+                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
+                          <tr>
+                            <td width="56" style="padding:16px 8px 16px 16px;vertical-align:middle;">
+                              <img src="$safeLogo" alt="$safeNameKr" width="32" height="32"
+                                   style="display:block;border:0;outline:none;text-decoration:none;width:32px;height:32px;border-radius:6px;background:#f1f1ef;" />
+                            </td>
+                            <td style="padding:16px 16px 16px 8px;vertical-align:middle;">
+                              <div style="margin:0 0 4px 0;font-size:16px;font-weight:800;line-height:1.3;color:rgb(55,53,47);">$safeNameKr</div>
+                              <div style="margin:0;font-size:12px;line-height:1.4;color:rgb(120,119,116);">$safeNameEn</div>
+                            </td>
+                          </tr>
+                        </table>
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+            """.trimIndent()
         }
     }
 
