@@ -93,8 +93,8 @@ class CrawlingBatchTest {
 
         // then
         assertThat(result).hasSize(2)
-        assertThat(result!![0].link).isEqualTo("url3")
-        assertThat(result[1].link).isEqualTo("url1")
+        assertThat(result!![0].link).isEqualTo("url1")
+        assertThat(result[1].link).isEqualTo("url3")
     }
 
     @Test

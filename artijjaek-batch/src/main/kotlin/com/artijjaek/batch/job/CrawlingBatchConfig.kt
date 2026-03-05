@@ -62,7 +62,7 @@ class CrawlingBatchConfig(
     fun crawlingProcessor(): ItemProcessor<Company, List<Article>> {
         return ItemProcessor { company ->
             val crawler = crawlerFactory.getCrawler(company)
-            val crawledArticles = applyCrawlOrder(crawler.crawl(company), company.crawlOrder)
+            val crawledArticles = applyCrawlOrderAndLimit(crawler.crawl(company), company.crawlOrder)
 
             // Article 중복 제거
             val crawledArticleUrls = crawledArticles.map { it.link }.toList()
@@ -74,16 +74,17 @@ class CrawlingBatchConfig(
 
             printDetectLog(company, newArticles)
 
-            newArticles
+            newArticles.reversed()
         }
 
     }
 
-    private fun applyCrawlOrder(articles: List<Article>, crawlOrder: CrawlOrder): List<Article> {
-        return when (crawlOrder) {
+    private fun applyCrawlOrderAndLimit(articles: List<Article>, crawlOrder: CrawlOrder): List<Article> {
+        val ordered = when (crawlOrder) {
             CrawlOrder.NORMAL -> articles
-            CrawlOrder.REVERSE -> articles.reversed().take(10)
+            CrawlOrder.REVERSE -> articles.reversed()
         }
+        return ordered.take(10)
     }
 
     private fun printDetectLog(company: Company, newArticles: List<Article>) {

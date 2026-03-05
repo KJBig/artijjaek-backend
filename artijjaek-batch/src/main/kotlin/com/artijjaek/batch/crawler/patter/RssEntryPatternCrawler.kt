@@ -23,7 +23,6 @@ class RssEntryPatternCrawler : PatternCrawler {
         val doc = Jsoup.parse(xml, "", Parser.xmlParser())
 
         return doc.select("entry")
-            .take(10)
             .map { entry ->
                 val title = entry.selectFirst("title")?.text().orEmpty()
                 val linkElement = entry.selectFirst("link")

@@ -114,7 +114,7 @@ class DaangnTeamBlogCrawler(
         return elements.stream().filter { element ->
             val href = element.attr("href")
             href.contains("/blog/archive/")
-        }.distinct().limit(10).toList()
+        }.distinct().toList()
     }
 
     private fun findArticleUrl(element: Element, baseUrl: String): String {
