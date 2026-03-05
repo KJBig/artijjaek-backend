@@ -9,4 +9,5 @@ interface CompanyRepositoryCustom {
     fun findAllOrByIds(companyIds: List<Long>): List<Company>
     fun findWithPageable(pageable: Pageable): Page<Company>
     fun findWithPageableOrderBySortOption(sortOption: CompanySortOption, pageable: Pageable): Page<Company>
+    fun findWithCondition(pageable: Pageable, keyword: String?): Page<Company>
 }

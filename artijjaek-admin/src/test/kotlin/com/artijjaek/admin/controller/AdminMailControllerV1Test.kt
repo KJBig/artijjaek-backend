@@ -9,6 +9,7 @@ import com.artijjaek.admin.dto.response.MailOutboxAttemptSimpleResponse
 import com.artijjaek.admin.dto.response.MailOutboxPageResponse
 import com.artijjaek.admin.dto.response.MailOutboxSimpleResponse
 import com.artijjaek.admin.dto.request.PostArticleMailRequest
+import com.artijjaek.admin.dto.request.PostNewCompanyMailRequest
 import com.artijjaek.admin.dto.request.PostNoticeMailRequest
 import com.artijjaek.admin.dto.request.PostWelcomeMailRequest
 import com.artijjaek.admin.service.AdminMailService
@@ -168,6 +169,62 @@ class AdminMailControllerV1Test {
         // then
         mvcResult.andExpect(status().isBadRequest)
         verify(exactly = 0) { adminMailService.sendNoticeMail(any()) }
+    }
+
+    @Test
+    @WithMockUser(username = "1")
+    @DisplayName("특정 회원들에게 신규 회사 추가 안내 이메일을 수동 발송한다")
+    fun postNewCompanyMailTest() {
+        // given
+        val request = PostNewCompanyMailRequest(
+            memberIds = listOf(1L, 2L, 3L),
+            companyIds = listOf(10L, 11L)
+        )
+        every { adminMailService.sendNewCompanyMail(request) } returns Unit
+
+        // when
+        val mvcResult = mockMvc.perform(
+            post("/admin/v1/mail/new-company")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "memberIds": [1, 2, 3],
+                      "companyIds": [10, 11]
+                    }
+                    """.trimIndent()
+                )
+        )
+
+        // then
+        mvcResult
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.isSuccess").value(true))
+            .andExpect(jsonPath("$.message").value("요청성공"))
+        verify(exactly = 1) { adminMailService.sendNewCompanyMail(request) }
+    }
+
+    @Test
+    @WithMockUser(username = "1")
+    @DisplayName("신규 회사 메일 요청값이 비어있으면 400 응답을 반환한다")
+    fun postNewCompanyMailBadRequestTest() {
+        // when
+        val mvcResult = mockMvc.perform(
+            post("/admin/v1/mail/new-company")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "memberIds": [],
+                      "companyIds": []
+                    }
+                    """.trimIndent()
+                )
+        )
+
+        // then
+        mvcResult.andExpect(status().isBadRequest)
+        verify(exactly = 0) { adminMailService.sendNewCompanyMail(any()) }
     }
 
     @Test

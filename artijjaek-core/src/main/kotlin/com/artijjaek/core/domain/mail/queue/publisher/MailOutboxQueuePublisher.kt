@@ -1,6 +1,7 @@
 package com.artijjaek.core.domain.mail.queue.publisher
 
 import com.artijjaek.core.common.mail.dto.ArticleAlertDto
+import com.artijjaek.core.common.mail.dto.CompanyAlertDto
 import com.artijjaek.core.common.mail.dto.MemberAlertDto
 import com.artijjaek.core.domain.mail.dto.*
 import com.artijjaek.core.domain.mail.entity.EmailOutbox
@@ -75,6 +76,26 @@ class MailOutboxQueuePublisher(
 
         saveOutbox(
             mailType = EmailOutboxType.NOTICE,
+            recipientEmail = memberData.email!!,
+            subject = subject,
+            payload = payload,
+            requestedBy = requestedBy
+        )
+    }
+
+    override fun enqueueNewCompanyMail(
+        memberData: MemberAlertDto,
+        companies: List<CompanyAlertDto>,
+        requestedBy: EmailOutboxRequestedBy,
+    ) {
+        val payload = NewCompanyMailPayload(
+            member = MemberSnapshot.from(memberData),
+            companies = companies.map { CompanySnapshot.from(it) }
+        )
+        val subject = "[아티짹] 신규 구독 회사가 추가되었어요"
+
+        saveOutbox(
+            mailType = EmailOutboxType.NEW_COMPANY,
             recipientEmail = memberData.email!!,
             subject = subject,
             payload = payload,

@@ -1,6 +1,7 @@
 package com.artijjaek.admin.service
 
 import com.artijjaek.admin.dto.request.PostArticleMailRequest
+import com.artijjaek.admin.dto.request.PostNewCompanyMailRequest
 import com.artijjaek.admin.dto.request.PostNoticeMailRequest
 import com.artijjaek.admin.dto.request.PostWelcomeMailRequest
 import com.artijjaek.admin.dto.response.MailDailyFailedCountResponse
@@ -12,8 +13,10 @@ import com.artijjaek.admin.dto.response.MailOutboxSimpleResponse
 import com.artijjaek.core.common.error.ApplicationException
 import com.artijjaek.core.common.error.ErrorCode.*
 import com.artijjaek.core.common.mail.dto.ArticleAlertDto
+import com.artijjaek.core.common.mail.dto.CompanyAlertDto
 import com.artijjaek.core.common.mail.dto.MemberAlertDto
 import com.artijjaek.core.domain.article.service.ArticleDomainService
+import com.artijjaek.core.domain.company.service.CompanyDomainService
 import com.artijjaek.core.domain.mail.enums.EmailOutboxAttemptResult
 import com.artijjaek.core.domain.mail.enums.EmailOutboxRequestedBy
 import com.artijjaek.core.domain.mail.enums.EmailOutboxStatus
@@ -34,6 +37,7 @@ import java.time.LocalDateTime
 class AdminMailService(
     private val memberDomainService: MemberDomainService,
     private val articleDomainService: ArticleDomainService,
+    private val companyDomainService: CompanyDomainService,
     private val mailQueuePublisher: MailQueuePublisher,
     private val emailOutboxDomainService: EmailOutboxDomainService,
     private val mailDispatchTrigger: MailDispatchTrigger,
@@ -99,6 +103,32 @@ class AdminMailService(
                 memberData = MemberAlertDto.from(member),
                 title = title,
                 content = content,
+                requestedBy = EmailOutboxRequestedBy.ADMIN_API
+            )
+        }
+    }
+
+    @Transactional
+    fun sendNewCompanyMail(request: PostNewCompanyMailRequest) {
+        val companyIds = request.companyIds.distinct()
+        val companies = companyDomainService.findAllOrByIds(companyIds)
+        if (companies.size != companyIds.size) {
+            throw ApplicationException(COMPANY_NOT_FOUND_ERROR)
+        }
+
+        val companyAlertDtos = companies.map { CompanyAlertDto.from(it) }
+
+        request.memberIds.distinct().forEach { memberId ->
+            val member = memberDomainService.findById(memberId)
+                ?: throw ApplicationException(MEMBER_NOT_FOUND_ERROR)
+
+            if (member.email.isNullOrBlank()) {
+                throw ApplicationException(MEMBER_EMAIL_NOT_FOUND_ERROR)
+            }
+
+            mailQueuePublisher.enqueueNewCompanyMail(
+                memberData = MemberAlertDto.from(member),
+                companies = companyAlertDtos,
                 requestedBy = EmailOutboxRequestedBy.ADMIN_API
             )
         }
