@@ -5,6 +5,7 @@ import com.artijjaek.core.domain.member.entity.Member
 import com.artijjaek.core.domain.subscription.dto.TopSubscribedCompanyCount
 import com.artijjaek.core.domain.subscription.entity.CompanySubscription
 import com.artijjaek.core.domain.subscription.entity.QCompanySubscription.companySubscription
+import com.artijjaek.core.domain.unsubscription.entity.QUnsubscription.unsubscription
 import com.querydsl.jpa.impl.JPAQueryFactory
 
 
@@ -28,6 +29,8 @@ class CompanySubscriptionRepositoryImpl(
         val topCounts = jpaQueryFactory
             .select(subscriptionCount)
             .from(companySubscription)
+            .leftJoin(unsubscription).on(unsubscription.member.id.eq(companySubscription.member.id))
+            .where(unsubscription.id.isNull)
             .groupBy(companySubscription.company.id)
             .orderBy(subscriptionCount.desc())
             .limit(limit.toLong())
@@ -44,6 +47,8 @@ class CompanySubscriptionRepositoryImpl(
             .select(company.id, company.nameKr, subscriptionCount)
             .from(companySubscription)
             .join(companySubscription.company, company)
+            .leftJoin(unsubscription).on(unsubscription.member.id.eq(companySubscription.member.id))
+            .where(unsubscription.id.isNull)
             .groupBy(company.id, company.nameKr)
             .having(subscriptionCount.goe(thresholdCount))
             .orderBy(subscriptionCount.desc(), company.nameKr.asc(), company.id.asc())
