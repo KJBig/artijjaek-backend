@@ -565,7 +565,7 @@ class MailSendService(
                                               <td style="padding:20px;">
                                                 <div style="margin:0 0 8px 0;color:rgb(55,53,47);font-size:18px;font-weight:800;line-height:1.3;">안녕하세요, ${memberData.nickname}님!</div>
                                                 <div style="margin:0;color:rgb(120,119,116);font-size:14px;line-height:1.7;">
-                                                  아래 회사들이 새로 추가되었습니다. 구독 설정에서 원하는 회사를 선택해보세요.
+                                                  아래 회사들이 새로 추가되었습니다. 구독 설정에서 원하는 회사를 추가해 보세요.
                                                 </div>
                                               </td>
                                             </tr>
