@@ -4,6 +4,7 @@ import com.artijjaek.core.domain.company.entity.Company
 import com.artijjaek.core.domain.company.entity.QCompany.company
 import com.artijjaek.core.domain.company.enums.CompanySortOption
 import com.artijjaek.core.domain.subscription.entity.QCompanySubscription.companySubscription
+import com.querydsl.core.BooleanBuilder
 import com.querydsl.jpa.impl.JPAQueryFactory
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -52,6 +53,33 @@ class CompanyRepositoryImpl(
 
         val countQuery = jpaQueryFactory.select(company.count())
             .from(company)
+
+        return PageableExecutionUtils.getPage(content, pageable) {
+            countQuery.fetchOne() ?: 0L
+        }
+    }
+
+    override fun findWithCondition(pageable: Pageable, keyword: String?): Page<Company> {
+        val condition = BooleanBuilder()
+        val trimmedKeyword = keyword?.trim()?.takeIf { it.isNotBlank() }
+
+        trimmedKeyword?.let {
+            condition.and(
+                company.nameKr.contains(it)
+                    .or(company.nameEn.containsIgnoreCase(it))
+            )
+        }
+
+        val content = jpaQueryFactory.selectFrom(company)
+            .where(condition)
+            .offset(pageable.offset)
+            .limit(pageable.pageSize.toLong())
+            .orderBy(company.id.desc())
+            .fetch()
+
+        val countQuery = jpaQueryFactory.select(company.count())
+            .from(company)
+            .where(condition)
 
         return PageableExecutionUtils.getPage(content, pageable) {
             countQuery.fetchOne() ?: 0L

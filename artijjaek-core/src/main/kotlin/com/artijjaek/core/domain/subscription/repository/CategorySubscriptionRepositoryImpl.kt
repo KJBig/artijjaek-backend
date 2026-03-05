@@ -5,6 +5,7 @@ import com.artijjaek.core.domain.member.entity.Member
 import com.artijjaek.core.domain.subscription.dto.TopSubscribedCategoryCount
 import com.artijjaek.core.domain.subscription.entity.CategorySubscription
 import com.artijjaek.core.domain.subscription.entity.QCategorySubscription.categorySubscription
+import com.artijjaek.core.domain.unsubscription.entity.QUnsubscription.unsubscription
 import com.querydsl.jpa.impl.JPAQueryFactory
 
 
@@ -28,6 +29,8 @@ class CategorySubscriptionRepositoryImpl(
         val topCounts = jpaQueryFactory
             .select(subscriptionCount)
             .from(categorySubscription)
+            .leftJoin(unsubscription).on(unsubscription.member.id.eq(categorySubscription.member.id))
+            .where(unsubscription.id.isNull)
             .groupBy(categorySubscription.category.id)
             .orderBy(subscriptionCount.desc())
             .limit(limit.toLong())
@@ -44,6 +47,8 @@ class CategorySubscriptionRepositoryImpl(
             .select(category.id, category.name, subscriptionCount)
             .from(categorySubscription)
             .join(categorySubscription.category, category)
+            .leftJoin(unsubscription).on(unsubscription.member.id.eq(categorySubscription.member.id))
+            .where(unsubscription.id.isNull)
             .groupBy(category.id, category.name)
             .having(subscriptionCount.goe(thresholdCount))
             .orderBy(subscriptionCount.desc(), category.name.asc(), category.id.asc())

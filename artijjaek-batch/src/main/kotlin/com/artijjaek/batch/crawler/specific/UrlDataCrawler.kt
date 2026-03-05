@@ -1,16 +1,17 @@
-package com.artijjaek.batch.crawler
+package com.artijjaek.batch.crawler.specific
 
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 @Component
 class UrlDataCrawler {
 
-    private val log = org.slf4j.LoggerFactory.getLogger(UrlDataCrawler::class.java)
+    private val log = LoggerFactory.getLogger(UrlDataCrawler::class.java)
 
-    fun crawlingUrlData(url: String): UrlData {
+    fun crawlingUrlData(url: String): String {
         try {
             val doc: Document = Jsoup.connect(url)
                 .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
@@ -29,9 +30,7 @@ class UrlDataCrawler {
     }
 }
 
-private fun extractData(head: Element): UrlData {
+private fun extractData(head: Element): String {
     val ogTitle = head.select("meta[property=og:title]").attr("content")
-    val ogImage = head.select("meta[property=og:image]").attr("content")
-
-    return UrlData(ogTitle, ogImage)
+    return ogTitle
 }

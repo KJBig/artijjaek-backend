@@ -33,6 +33,9 @@ class DiscordWebHookService(
     @Value("\${discord.webhook.mail-error}")
     lateinit var DISCORD_MAIL_ERROR_URL: String;
 
+    @Value("\${discord.webhook.crawl-error}")
+    lateinit var DISCORD_CRAWL_ERROR_URL: String;
+
 
     @Async("asyncThreadPoolExecutor")
     override fun sendNewArticleMessage(newArticles: List<ArticleAlertDto>) {
@@ -168,6 +171,17 @@ class DiscordWebHookService(
         discordWebHookConnector.sendMessageForDiscord(message, DISCORD_MAIL_ERROR_URL)
     }
 
+    @Async("asyncThreadPoolExecutor")
+    override fun sendCrawlErrorMessage(companyNameKr: String, errorMessage: String?) {
+        val message = WebHookMessage(
+            buildCrawlErrorMessage(
+                companyNameKr = companyNameKr,
+                errorMessage = errorMessage
+            )
+        )
+        discordWebHookConnector.sendMessageForDiscord(message, DISCORD_CRAWL_ERROR_URL)
+    }
+
     private fun buildMailErrorMessage(outboxId: Long?, errorMessage: String?): String {
         val stringBuilder = StringBuilder()
         val prefix = """
@@ -181,5 +195,16 @@ class DiscordWebHookService(
         stringBuilder.append("Outbox Id : ").append(outboxId).append("\n")
         stringBuilder.append("Error : ").append(errorMessage ?: "unknown").append("\n")
         return stringBuilder.toString()
+    }
+
+    private fun buildCrawlErrorMessage(companyNameKr: String, errorMessage: String?): String {
+        return """
+            🚨 **크롤링 재시도 실패**
+
+            📅 ${LocalDateTime.now()}
+
+            Company : $companyNameKr
+            Error : ${errorMessage ?: "unknown"}
+        """.trimIndent()
     }
 }

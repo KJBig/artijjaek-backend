@@ -1,6 +1,5 @@
-package com.artijjaek.batch.crawler.blog
+package com.artijjaek.batch.crawler.specific
 
-import com.artijjaek.batch.crawler.UrlDataCrawler
 import com.artijjaek.core.domain.article.entity.Article
 import com.artijjaek.core.domain.company.entity.Company
 import org.jsoup.Jsoup
@@ -14,11 +13,11 @@ import java.net.URLDecoder
 @Component
 class DaangnTeamBlogCrawler(
     private val urlDataCrawler: UrlDataCrawler,
-) : BlogCrawler {
+) : CompanySpecificCrawler {
 
     private val log = LoggerFactory.getLogger(DaangnTeamBlogCrawler::class.java)
 
-    override val blogName: String = "DAANGN"
+    override val companyNameEn: String = "DAANGN"
 
     override fun crawl(company: Company): List<Article> {
         val url: String = company.baseUrl + company.crawlUrl
@@ -42,19 +41,18 @@ class DaangnTeamBlogCrawler(
                 .forEach {
                     try {
                         val articleUrl = findArticleUrl(it, url)
-                        val crawlingUrlData = urlDataCrawler.crawlingUrlData(articleUrl)
+                        val title = urlDataCrawler.crawlingUrlData(articleUrl)
 
                         log.info(
-                            "[${company.nameKr}] : Title->${crawlingUrlData.title}, Link->$articleUrl, " +
-                                    "Img->${crawlingUrlData.imageUrl}"
+                            "[${company.nameKr}] : Title->${title}, Link->$articleUrl, "
                         )
 
                         articles.add(
                             Article(
                                 company = company,
-                                title = crawlingUrlData.title,
+                                title = title,
                                 link = articleUrl,
-                                image = crawlingUrlData.imageUrl,
+                                image = null,
                                 description = null,
                                 category = null
                             )
@@ -116,7 +114,7 @@ class DaangnTeamBlogCrawler(
         return elements.stream().filter { element ->
             val href = element.attr("href")
             href.contains("/blog/archive/")
-        }.distinct().limit(10).toList()
+        }.distinct().toList()
     }
 
     private fun findArticleUrl(element: Element, baseUrl: String): String {

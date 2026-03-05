@@ -5,6 +5,7 @@ import com.artijjaek.admin.dto.common.SuccessResponse
 import com.artijjaek.admin.dto.common.SuccessDataResponse
 import com.artijjaek.admin.dto.request.PatchMailOutboxRetryRequest
 import com.artijjaek.admin.dto.request.PostArticleMailRequest
+import com.artijjaek.admin.dto.request.PostNewCompanyMailRequest
 import com.artijjaek.admin.dto.request.PostNoticeMailRequest
 import com.artijjaek.admin.dto.request.PostWelcomeMailRequest
 import com.artijjaek.admin.dto.response.MailDailyFailedCountResponse
@@ -58,6 +59,14 @@ class AdminMailControllerV1(
         @Valid @RequestBody request: PostNoticeMailRequest,
     ): ResponseEntity<SuccessResponse> {
         adminMailService.sendNoticeMail(request)
+        return ResponseEntity.ok(SuccessResponse())
+    }
+
+    @PostMapping("/new-company")
+    fun postNewCompanyMail(
+        @Valid @RequestBody request: PostNewCompanyMailRequest,
+    ): ResponseEntity<SuccessResponse> {
+        adminMailService.sendNewCompanyMail(request)
         return ResponseEntity.ok(SuccessResponse())
     }
 

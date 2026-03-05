@@ -3,6 +3,7 @@ package com.artijjaek.core.domain.company.service
 import com.artijjaek.core.domain.company.entity.Company
 import com.artijjaek.core.domain.company.enums.CompanySortOption
 import com.artijjaek.core.domain.company.repository.CompanyRepository
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -30,6 +31,14 @@ class CompanyDomainService(
 
     fun findAll(): List<Company> {
         return companyRepository.findAll()
+    }
+
+    fun findById(companyId: Long): Company? {
+        return companyRepository.findByIdOrNull(companyId)
+    }
+
+    fun findWithCondition(pageable: Pageable, keyword: String?): Page<Company> {
+        return companyRepository.findWithCondition(pageable, keyword)
     }
 
     fun countCompanies(): Long {

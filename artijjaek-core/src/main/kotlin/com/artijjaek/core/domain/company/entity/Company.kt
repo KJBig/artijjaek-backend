@@ -1,6 +1,8 @@
 package com.artijjaek.core.domain.company.entity
 
 import com.artijjaek.core.common.entity.BaseEntity
+import com.artijjaek.core.domain.company.enums.CrawlOrder
+import com.artijjaek.core.domain.company.enums.CrawlPattern
 import jakarta.persistence.*
 
 @Entity
@@ -31,6 +33,14 @@ class Company(
 
     @Column(nullable = false)
     var crawlAvailability: Boolean,
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    var crawlPattern: CrawlPattern = CrawlPattern.RSS,
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    var crawlOrder: CrawlOrder = CrawlOrder.NORMAL,
 
     ) : BaseEntity() {
 

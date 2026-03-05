@@ -1,8 +1,10 @@
 package com.artijjaek.mail_worker.worker
 
 import com.artijjaek.core.common.mail.dto.ArticleAlertDto
+import com.artijjaek.core.common.mail.dto.CompanyAlertDto
 import com.artijjaek.core.common.mail.dto.MemberAlertDto
 import com.artijjaek.core.domain.mail.dto.ArticleMailPayload
+import com.artijjaek.core.domain.mail.dto.NewCompanyMailPayload
 import com.artijjaek.core.domain.mail.dto.NoticeMailPayload
 import com.artijjaek.core.domain.mail.dto.ProcessResult
 import com.artijjaek.core.domain.mail.dto.WelcomeMailPayload
@@ -101,6 +103,27 @@ class EmailOutboxProcessor(
                     ),
                     payload.title,
                     payload.content
+                )
+            }
+
+            EmailOutboxType.NEW_COMPANY -> {
+                val payload = objectMapper.readValue(outbox.payloadJson, NewCompanyMailPayload::class.java)
+                val member = payload.member
+                val companies = payload.companies.map {
+                    CompanyAlertDto(
+                        nameKr = it.nameKr,
+                        nameEn = it.nameEn,
+                        logo = it.logo,
+                        blogUrl = it.blogUrl
+                    )
+                }
+                mailSendService.sendNewCompanyMail(
+                    MemberAlertDto(
+                        email = member.email,
+                        nickname = member.nickname,
+                        uuidToken = member.uuidToken
+                    ),
+                    companies
                 )
             }
         }

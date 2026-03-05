@@ -8,6 +8,9 @@ import com.artijjaek.core.domain.member.enums.MemberStatus
 import com.artijjaek.core.domain.member.repository.MemberRepository
 import com.artijjaek.core.domain.subscription.entity.CompanySubscription
 import com.artijjaek.core.domain.subscription.repository.CompanySubscriptionRepository
+import com.artijjaek.core.domain.unsubscription.entity.Unsubscription
+import com.artijjaek.core.domain.unsubscription.enums.UnSubscriptionReason
+import com.artijjaek.core.domain.unsubscription.repository.UnsubscriptionRepository
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.DisplayName
@@ -32,9 +35,13 @@ class CompanySubscriptionRepositoryTest {
     @Autowired
     lateinit var memberRepository: MemberRepository
 
+    @Autowired
+    lateinit var unsubscriptionRepository: UnsubscriptionRepository
+
     @AfterEach
     fun clear() {
         companySubscriptionRepository.deleteAll()
+        unsubscriptionRepository.deleteAll()
         memberRepository.deleteAll()
         companyRepository.deleteAll()
     }
@@ -73,6 +80,71 @@ class CompanySubscriptionRepositoryTest {
         // then
         Assertions.assertThat(result.size).isEqualTo(1)
         Assertions.assertThat(result[0].company.nameKr).isEqualTo("회사")
+    }
+
+    @Test
+    @DisplayName("탈퇴한 사용자의 회사 구독 기록은 인기 회사 집계에서 제외된다")
+    fun findTopSubscribedCompaniesWithTies_excludeUnsubscriptionTest() {
+        // given
+        val companyA = companyRepository.save(
+            Company(
+                nameKr = "회사A",
+                nameEn = "CompanyA",
+                logo = "http://example.com/logo-a.png",
+                baseUrl = "http://example.com/a",
+                blogUrl = "http://example.com/blog-a",
+                crawlUrl = "http://example.com/crawl-a",
+                crawlAvailability = true
+            )
+        )
+        val companyB = companyRepository.save(
+            Company(
+                nameKr = "회사B",
+                nameEn = "CompanyB",
+                logo = "http://example.com/logo-b.png",
+                baseUrl = "http://example.com/b",
+                blogUrl = "http://example.com/blog-b",
+                crawlUrl = "http://example.com/crawl-b",
+                crawlAvailability = true
+            )
+        )
+
+        val activeMember = memberRepository.save(
+            Member(
+                email = "active@example.com",
+                nickname = "active",
+                uuidToken = "uuid-active",
+                memberStatus = MemberStatus.ACTIVE
+            )
+        )
+        val unsubscribedMember = memberRepository.save(
+            Member(
+                email = "bye@example.com",
+                nickname = "bye",
+                uuidToken = "uuid-bye",
+                memberStatus = MemberStatus.DELETED
+            )
+        )
+
+        companySubscriptionRepository.save(CompanySubscription(member = activeMember, company = companyB))
+        companySubscriptionRepository.save(CompanySubscription(member = unsubscribedMember, company = companyA))
+
+        unsubscriptionRepository.save(
+            Unsubscription(
+                member = unsubscribedMember,
+                email = unsubscribedMember.email,
+                reason = UnSubscriptionReason.ETC,
+                detail = "테스트"
+            )
+        )
+
+        // when
+        val result = companySubscriptionRepository.findTopSubscribedCompaniesWithTies(5)
+
+        // then
+        Assertions.assertThat(result).hasSize(1)
+        Assertions.assertThat(result[0].companyId).isEqualTo(companyB.id)
+        Assertions.assertThat(result[0].subscriberCount).isEqualTo(1L)
     }
 
 }
