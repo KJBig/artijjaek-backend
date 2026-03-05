@@ -2,10 +2,12 @@ package com.artijjaek.batch.job
 
 import com.artijjaek.batch.config.TestConfig
 import com.artijjaek.batch.crawler.CrawlerFactory
-import com.artijjaek.batch.crawler.blog.BlogCrawler
+import com.artijjaek.batch.crawler.patter.PatternCrawler
 import com.artijjaek.core.domain.article.entity.Article
 import com.artijjaek.core.domain.article.service.ArticleDomainService
 import com.artijjaek.core.domain.company.entity.Company
+import com.artijjaek.core.domain.company.enums.CrawlOrder
+import com.artijjaek.core.domain.company.enums.CrawlPattern
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -30,7 +32,7 @@ class CrawlingBatchTest {
 
     private val articleDomainService = mockk<ArticleDomainService>(relaxed = true)
     private val crawlerFactory = mockk<CrawlerFactory>()
-    private val crawler = mockk<BlogCrawler>()
+    private val crawler = mockk<PatternCrawler>()
 
     private val config = CrawlingBatchConfig(
         mockk(),
@@ -82,7 +84,7 @@ class CrawlingBatchTest {
         val article3 = createArticle(company, "아티클3", "url3")
         val processor = config.crawlingProcessor()
 
-        every { crawlerFactory.getCrawler("OLIVE YOUNG") } returns crawler
+        every { crawlerFactory.getCrawler(company) } returns crawler
         every { crawler.crawl(company) } returns listOf(article1, article2, article3)
         every { articleDomainService.findExistByUrls(company, any()) } returns listOf(article2)
 
@@ -120,7 +122,9 @@ class CrawlingBatchTest {
             baseUrl = "http://example.com",
             blogUrl = "http://example.com/blog",
             crawlUrl = "http://example.com/crawl",
-            crawlAvailability = true
+            crawlAvailability = true,
+            crawlPattern = CrawlPattern.RSS,
+            crawlOrder = CrawlOrder.REVERSE
         )
     }
 

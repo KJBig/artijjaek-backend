@@ -4,6 +4,7 @@ import com.artijjaek.batch.crawler.CrawlerFactory
 import com.artijjaek.core.domain.article.entity.Article
 import com.artijjaek.core.domain.article.service.ArticleDomainService
 import com.artijjaek.core.domain.company.entity.Company
+import com.artijjaek.core.domain.company.enums.CrawlOrder
 import jakarta.persistence.EntityManagerFactory
 import org.slf4j.LoggerFactory
 import org.springframework.batch.core.Job
@@ -60,8 +61,8 @@ class CrawlingBatchConfig(
     @Bean
     fun crawlingProcessor(): ItemProcessor<Company, List<Article>> {
         return ItemProcessor { company ->
-            val crawler = crawlerFactory.getCrawler(company.nameEn)
-            val crawledArticles = crawler.crawl(company)
+            val crawler = crawlerFactory.getCrawler(company)
+            val crawledArticles = applyCrawlOrder(crawler.crawl(company), company.crawlOrder)
 
             // Article 중복 제거
             val crawledArticleUrls = crawledArticles.map { it.link }.toList()
@@ -73,9 +74,16 @@ class CrawlingBatchConfig(
 
             printDetectLog(company, newArticles)
 
-            newArticles.reversed()
+            newArticles
         }
 
+    }
+
+    private fun applyCrawlOrder(articles: List<Article>, crawlOrder: CrawlOrder): List<Article> {
+        return when (crawlOrder) {
+            CrawlOrder.NORMAL -> articles
+            CrawlOrder.REVERSE -> articles.reversed().take(10)
+        }
     }
 
     private fun printDetectLog(company: Company, newArticles: List<Article>) {
