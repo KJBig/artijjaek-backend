@@ -137,7 +137,7 @@ class CrawlingBatchTest {
         assertThat(result).hasSize(1)
         verify(exactly = 2) { crawler.crawl(company) }
         verify(exactly = 0) {
-            webHookService.sendCrawlErrorMessage(any(), any(), any(), any(), any())
+            webHookService.sendCrawlErrorMessage(any(), any())
         }
     }
 
@@ -159,10 +159,7 @@ class CrawlingBatchTest {
         verify(exactly = 2) { crawler.crawl(company) }
         verify(exactly = 1) {
             webHookService.sendCrawlErrorMessage(
-                companyNameEn = "OLIVE YOUNG",
                 companyNameKr = "올리브영",
-                crawlUrl = "http://example.comhttp://example.com/crawl",
-                attempts = 2,
                 errorMessage = "permanent failure"
             )
         }
