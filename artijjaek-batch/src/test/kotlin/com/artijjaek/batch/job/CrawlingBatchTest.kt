@@ -8,6 +8,7 @@ import com.artijjaek.core.domain.article.service.ArticleDomainService
 import com.artijjaek.core.domain.company.entity.Company
 import com.artijjaek.core.domain.company.enums.CrawlOrder
 import com.artijjaek.core.domain.company.enums.CrawlPattern
+import com.artijjaek.core.webhook.WebHookService
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -33,13 +34,15 @@ class CrawlingBatchTest {
     private val articleDomainService = mockk<ArticleDomainService>(relaxed = true)
     private val crawlerFactory = mockk<CrawlerFactory>()
     private val crawler = mockk<PatternCrawler>()
+    private val webHookService = mockk<WebHookService>(relaxed = true)
 
     private val config = CrawlingBatchConfig(
         mockk(),
         mockk(),
         mockk(),
         articleDomainService,
-        crawlerFactory
+        crawlerFactory,
+        webHookService
     )
 
     @Test
@@ -51,7 +54,8 @@ class CrawlingBatchTest {
             mockk(),
             entityManagerFactory,
             articleDomainService,
-            crawlerFactory
+            crawlerFactory,
+            webHookService
         )
         saveCompaniesForReaderTest(entityManagerFactory)
         val reader = readerConfig.crawlCompanyReader()
@@ -112,6 +116,56 @@ class CrawlingBatchTest {
         // then
         verify(exactly = 1) { articleDomainService.save(article1) }
         verify(exactly = 1) { articleDomainService.save(article2) }
+    }
+
+    @Test
+    @DisplayName("크롤링이 한 번 실패하면 재시도 후 성공한다")
+    fun crawlingProcessorRetrySuccessTest() {
+        // given
+        val company = createCompany()
+        val article = createArticle(company, "아티클", "url1")
+        val processor = config.crawlingProcessor()
+
+        every { crawlerFactory.getCrawler(company) } returns crawler
+        every { crawler.crawl(company) } throws RuntimeException("temporary failure") andThen listOf(article)
+        every { articleDomainService.findExistByUrls(company, any()) } returns emptyList()
+
+        // when
+        val result = processor.process(company)
+
+        // then
+        assertThat(result).hasSize(1)
+        verify(exactly = 2) { crawler.crawl(company) }
+        verify(exactly = 0) {
+            webHookService.sendCrawlErrorMessage(any(), any(), any(), any(), any())
+        }
+    }
+
+    @Test
+    @DisplayName("크롤링이 두 번 실패하면 Discord 웹훅 전송 후 해당 회사를 스킵한다")
+    fun crawlingProcessorRetryFailSkipTest() {
+        // given
+        val company = createCompany()
+        val processor = config.crawlingProcessor()
+
+        every { crawlerFactory.getCrawler(company) } returns crawler
+        every { crawler.crawl(company) } throws RuntimeException("permanent failure")
+
+        // when
+        val result = processor.process(company)
+
+        // then
+        assertThat(result).isEmpty()
+        verify(exactly = 2) { crawler.crawl(company) }
+        verify(exactly = 1) {
+            webHookService.sendCrawlErrorMessage(
+                companyNameEn = "OLIVE YOUNG",
+                companyNameKr = "올리브영",
+                crawlUrl = "http://example.comhttp://example.com/crawl",
+                attempts = 2,
+                errorMessage = "permanent failure"
+            )
+        }
     }
 
     private fun createCompany(): Company {

@@ -14,4 +14,5 @@ interface WebHookService {
     fun sendUnsubscribeMessage(member: Member, unsubscription: Unsubscription)
     fun sendMailErrorMessage(outboxId: Long?, errorMessage: String?)
     fun sendMailAlertMessage(content: String)
+    fun sendCrawlErrorMessage(companyNameKr: String, errorMessage: String?)
 }
