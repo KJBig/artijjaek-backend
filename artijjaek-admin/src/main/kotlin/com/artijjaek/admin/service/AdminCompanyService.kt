@@ -1,9 +1,19 @@
 package com.artijjaek.admin.service
 
+import com.artijjaek.admin.dto.request.PostCompanyRequest
+import com.artijjaek.admin.dto.request.PutCompanyRequest
+import com.artijjaek.admin.dto.response.CompanyListPageResponse
+import com.artijjaek.admin.dto.response.CompanySimpleResponse
 import com.artijjaek.admin.dto.response.MemberOptionCompanyResponse
+import com.artijjaek.admin.dto.response.PostCompanyResponse
 import com.artijjaek.admin.dto.response.TopSubscribedCompanyResponse
+import com.artijjaek.core.common.error.ApplicationException
+import com.artijjaek.core.common.error.ErrorCode.COMPANY_NOT_FOUND_ERROR
+import com.artijjaek.core.domain.company.entity.Company
 import com.artijjaek.core.domain.company.service.CompanyDomainService
 import com.artijjaek.core.domain.subscription.service.CompanySubscriptionDomainService
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -39,6 +49,71 @@ class AdminCompanyService(
                 subscriberCount = topCompanies[index].subscriberCount
             )
         }
+    }
+
+    @Transactional(readOnly = true)
+    fun searchCompanies(pageable: Pageable, keyword: String?): CompanyListPageResponse {
+        val page = companyDomainService.findWithCondition(
+            pageable = PageRequest.of(pageable.pageNumber, pageable.pageSize),
+            keyword = keyword
+        )
+
+        return CompanyListPageResponse(
+            pageNumber = page.number,
+            totalCount = page.totalElements,
+            hasNext = page.hasNext(),
+            content = page.content.map {
+                CompanySimpleResponse(
+                    companyId = it.id!!,
+                    nameKr = it.nameKr,
+                    nameEn = it.nameEn,
+                    logo = it.logo,
+                    baseUrl = it.baseUrl,
+                    blogUrl = it.blogUrl,
+                    crawlUrl = it.crawlUrl,
+                    crawlAvailability = it.crawlAvailability,
+                    crawlPattern = it.crawlPattern,
+                    crawlOrder = it.crawlOrder,
+                    createdAt = it.createdAt!!
+                )
+            }
+        )
+    }
+
+    @Transactional
+    fun createCompany(request: PostCompanyRequest): PostCompanyResponse {
+        val company = Company(
+            nameKr = request.nameKr,
+            nameEn = request.nameEn,
+            logo = request.logo,
+            baseUrl = request.baseUrl,
+            blogUrl = request.blogUrl,
+            crawlUrl = request.crawlUrl,
+            crawlAvailability = request.crawlAvailability,
+            crawlPattern = request.crawlPattern,
+            crawlOrder = request.crawlOrder
+        )
+        companyDomainService.save(company)
+
+        return PostCompanyResponse(companyId = company.id!!)
+    }
+
+    @Transactional
+    fun updateCompany(companyId: Long, request: PutCompanyRequest) {
+        val company = companyDomainService.findById(companyId)
+            ?: throw ApplicationException(COMPANY_NOT_FOUND_ERROR)
+
+        company.nameKr = request.nameKr
+        company.nameEn = request.nameEn
+        company.logo = request.logo
+        company.baseUrl = request.baseUrl
+        company.blogUrl = request.blogUrl
+        company.crawlUrl = request.crawlUrl
+        company.crawlAvailability = request.crawlAvailability
+        company.crawlPattern = request.crawlPattern
+        company.crawlOrder = request.crawlOrder
+
+        companyDomainService.save(company)
     }
 
     private fun denseRank(counts: List<Long>): List<Int> {
